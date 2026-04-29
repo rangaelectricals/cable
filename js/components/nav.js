@@ -40,10 +40,17 @@ const Nav = {
     const user  = Auth.getUser();
     if (!user) return;
     const navItems = this.items(user.role);
-    const container = document.getElementById('sidebar-content');
+    
+    // Render desktop sidebar
+    this._renderContainer('sidebar-content', navItems, activeSection);
+    // Render mobile drawer
+    this._renderContainer('drawer-content', navItems, activeSection);
+  },
+
+  _renderContainer(containerId, navItems, activeSection) {
+    const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Group items
     const grouped = {};
     navItems.forEach(item => {
       if (!grouped[item.group]) grouped[item.group] = [];
@@ -52,70 +59,34 @@ const Nav = {
 
     const groupOrder = ['Main','Settings','Reports','Admin'];
 
-    container.innerHTML = groupOrder
-      .filter(g => grouped[g])
-      .map(group => `
-        <div class="mb-2">
-          <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-base-content/35">
-            ${group}
-          </div>
-          ${grouped[group].map(item => this._sidebarItem(item, activeSection)).join('')}
-        </div>`
-      ).join('');
+    container.innerHTML = '<ul class="flex flex-col list-none m-0 p-0">' + 
+      groupOrder.filter(g => grouped[g]).map(group => `
+        <div class="sidebar-divider mx-2 mt-4 mb-2 first:hidden"></div>
+        <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-2 opacity-50">${group}</div>
+        ${grouped[group].map(item => this._sidebarItem(item, activeSection)).join('')}
+      `).join('') + '</ul>';
 
-    // Activate Lucide icons
     if (window.lucide) lucide.createIcons({ nodes: [container] });
   },
 
   _sidebarItem(item, active) {
     const isActive = item.id === active;
+    const activeClass = isActive ? 'active-link' : 'text-gray-400';
     return `
-    <button
-      onclick="App.navigateTo('${item.id}')"
-      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm
-             transition-all duration-150 mb-0.5 text-left
-             ${isActive
-               ? 'bg-primary/10 text-primary font-semibold'
-               : 'text-base-content/70 hover:bg-base-200 hover:text-base-content font-medium'}"
-      id="nav-${item.id}">
-      ${this._icon(this.icons[item.id])}
-      <span>${item.label}</span>
-      ${isActive ? '<span class="ml-auto w-1.5 h-1.5 rounded-full bg-primary"></span>' : ''}
-    </button>`;
+    <li>
+      <button
+        onclick="App.navigateTo('${item.id}')"
+        class="nav-link w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-all ${activeClass}"
+        id="nav-${item.id}">
+        ${this._icon(this.icons[item.id], 20)}
+        <span>${item.label}</span>
+      </button>
+    </li>`;
   },
 
   // ── Render mobile bottom nav ────────────────────────────────────────────────
   renderBottomNav(activeSection) {
-    const user = Auth.getUser();
-    if (!user) return;
-    const navItems = this.items(user.role);
-    const container = document.getElementById('bottom-nav-content');
-    if (!container) return;
-
-    // Show max 5 items on bottom nav (most important ones)
-    const priority = ['dashboard','cables','scan','logs','users','masters'];
-    const visible  = priority.filter(id => navItems.find(i => i.id === id)).slice(0, 5);
-
-    container.innerHTML = visible.map(id => {
-      const item     = navItems.find(i => i.id === id);
-      if (!item) return '';
-      const isActive = id === activeSection;
-      const shortLabels = {
-        dashboard: 'Home', cables: 'Cables', specs: 'Specs',
-        scan: 'Scan', masters: 'Masters', logs: 'Logs', users: 'Users',
-      };
-      return `
-      <button onclick="App.navigateTo('${id}')"
-              class="flex flex-col items-center gap-0.5 text-[10px] font-medium
-                     py-1 transition-colors
-                     ${isActive ? 'text-primary border-t-2 border-primary' : 'text-base-content/50 border-t-2 border-transparent'}"
-              id="btn-${id}">
-        ${this._icon(this.icons[id], 20)}
-        ${shortLabels[id] || item.label}
-      </button>`;
-    }).join('');
-
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    // Disabled in vendor-outstanding layout as we use the mobile drawer instead
   },
 
   // ── Update active state (without re-rendering) ──────────────────────────────
