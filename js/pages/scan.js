@@ -15,153 +15,180 @@ const ScanPage = {
     }
 
     container.innerHTML = `
-    <div class="space-y-4 page-enter">
-      ${UI.pageHeader('Scan Operations', 'Godown ↔ Site QR workflow')}
+    <div class="space-y-6 page-enter pb-20 lg:pb-0">
+      ${UI.pageHeader('Scan Operations', 'Efficient Godown ↔ Site QR workflow')}
 
-      <!-- ── Mode selector ── -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        ${[
-          { id:'ACTIVATE',         icon:'check-circle', label:'Activate',       short:'Activate',  color:'primary' },
-          { id:'SEND_TO_SITE',     icon:'truck',        label:'Send to Site',   short:'Send',      color:'warning' },
-          { id:'SITE_TO_SITE',     icon:'repeat',       label:'Site to Site',   short:'Transfer',  color:'info' },
-          { id:'RETURN_TO_GODOWN', icon:'warehouse',    label:'Return to Godown',short:'Return',   color:'success' },
-        ].map(m => `
-        <button id="tab-${m.id}"
-          onclick="ScanPage.setMode('${m.id}')"
-          class="btn btn-outline btn-${m.color} btn-sm sm:btn-md h-auto py-2 flex-col sm:flex-row gap-1 sm:gap-2 transition-all">
-          <i data-lucide="${m.icon}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-          <span class="text-[10px] sm:text-sm font-semibold leading-tight">${m.short}</span>
-        </button>`).join('')}
-      </div>
-
-      <!-- ── Info banner ── -->
-      <div id="scan-banner" class="alert text-sm"></div>
-
-      <!-- ── Main layout: input top, session log below on mobile → side-by-side on lg ── -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-
-        <!-- Input panel (3/5 on desktop) -->
-        <div class="lg:col-span-3 space-y-3">
-          <div class="card bg-white shadow-sm border border-slate-200">
-            <div class="card-body gap-4 p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="qr-code" class="w-5 h-5 text-indigo-600"></i>
-                  <h2 class="font-bold text-base">Input</h2>
-                </div>
-                <div class="join">
-                  <button id="btn-mode-scan" class="btn btn-xs join-item btn-neutral" onclick="ScanPage.setInputMode('SCAN')">Scan / Type</button>
-                  <button id="btn-mode-select" class="btn btn-xs join-item btn-outline btn-neutral" onclick="ScanPage.setInputMode('SELECT')">Select List</button>
-                </div>
+      <!-- ── NEW: Stepped Workflow Container ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Settings & Input (7/12) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Step 1: Select Mode (Segmented Control) -->
+          <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-1.5 flex gap-1">
+            ${[
+              { id:'ACTIVATE',         icon:'zap',      short:'Activate',  color:'indigo' },
+              { id:'SEND_TO_SITE',     icon:'truck',    short:'Send',      color:'amber'  },
+              { id:'SITE_TO_SITE',     icon:'repeat',   short:'Transfer',  color:'blue'   },
+              { id:'RETURN_TO_GODOWN', icon:'warehouse', short:'Return',    color:'emerald'}
+            ].map(m => `
+            <button id="tab-${m.id}"
+              onclick="ScanPage.setMode('${m.id}')"
+              class="flex-1 flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-300 gap-1.5 group">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 group-hover:bg-white transition-colors shadow-sm border border-transparent">
+                <i data-lucide="${m.icon}" class="w-5 h-5 text-slate-400 group-active:scale-90 transition-transform"></i>
               </div>
-
-              <!-- Scan input + buttons -->
-              <div class="grid grid-cols-4 sm:flex gap-2">
-                <div id="input-container" class="col-span-3 sm:flex-1">
-                  <label id="wrap-scan-input" class="input input-bordered flex items-center gap-2 w-full">
-                    <i data-lucide="hash" class="w-4 h-4 text-slate-400 shrink-0"></i>
-                    <input type="text" id="scan-input" class="grow min-w-0 text-[16px] sm:text-sm"
-                      placeholder="QR or Cable No" autocomplete="off" inputmode="text" />
-                  </label>
-
-                  <select id="scan-select" class="select select-bordered w-full hidden text-[16px] sm:text-sm">
-                    <option value="">Select a cable...</option>
-                  </select>
-                </div>
-
-                <button class="btn btn-outline btn-primary btn-square col-span-1 w-full sm:w-12" id="btn-camera"
-                  onclick="ScanPage.toggleCamera()" title="Toggle Camera">
-                  <i data-lucide="camera" class="w-5 h-5"></i>
-                </button>
-
-                <button class="btn btn-primary col-span-4 sm:w-auto sm:px-6 gap-1.5" onclick="ScanPage.trigger()">
-                  <i data-lucide="zap" class="w-4 h-4"></i>
-                  <span id="btn-action-text">Scan</span>
-                </button>
-              </div>
-
-              <!-- Camera viewport -->
-              <div id="camera-wrap" class="hidden">
-                <div id="scan-viewport"
-                  class="relative w-full rounded-xl overflow-hidden border-2 border-primary shadow-lg bg-black"
-                  style="height:220px; max-width:400px; margin:0 auto">
-                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                    <div class="w-48 h-24 border-2 border-primary rounded relative">
-                      <div class="absolute left-0 right-0 h-0.5 bg-indigo-1000"
-                        style="animation:scanLine 2s linear infinite;top:0"></div>
-                    </div>
-                  </div>
-                </div>
-                <p class="text-center text-xs text-slate-500 mt-2 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3 h-3"></i>
-                  Point camera at QR code to scan automatically
-                </p>
-              </div>
-
-              <!-- SEND_TO_SITE extra fields -->
-              <div id="extra-site" class="hidden">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  ${UI.field('Site Name', `<input type="text" id="f-site-name" class="input input-bordered w-full"
-                    placeholder="e.g. Site Alpha" />`, true)}
-                  ${UI.field('Person Assigned', `<input type="text" id="f-person" class="input input-bordered w-full"
-                    placeholder="e.g. Ravi Kumar" />`, true)}
-                </div>
-                <div class="mt-3">
-                  ${UI.field('Remarks (optional)', `<input type="text" id="f-scan-remark"
-                    class="input input-bordered w-full" placeholder="Any note…" />`)}
-                </div>
-              </div>
-
-              <!-- RETURN_TO_GODOWN extra fields -->
-              <div id="extra-return" class="hidden space-y-3">
-                ${UI.field('Remaining Meter Balance (optional)',
-                  `<input type="number" id="f-meter-bal" class="input input-bordered w-full"
-                    placeholder="Leave blank to keep current" min="0" />`)}
-                ${UI.field('Return Remarks (optional)',
-                  `<input type="text" id="f-return-remark" class="input input-bordered w-full"
-                    placeholder="Any note…" />`)}
-              </div>
-            </div>
+              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-600">${m.short}</span>
+            </button>`).join('')}
           </div>
 
-          <!-- Result card -->
-          <div id="scan-result" class="hidden"></div>
-        </div>
-
-        <!-- Session log (2/5 on desktop, full width below on mobile) -->
-        <div class="lg:col-span-2">
-          <div class="card bg-white shadow-sm border border-slate-200 h-full">
-            <div class="card-body p-4">
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="list-checks" class="w-4 h-4 text-slate-500"></i>
-                  <h2 class="font-bold text-sm">Session Scans</h2>
+          <!-- Step 2: Dynamic Input Area -->
+          <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
+            <!-- Header for current mode -->
+            <div id="mode-header" class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div class="flex items-center gap-3">
+                <div id="mode-icon-box" class="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <i id="mode-icon" data-lucide="zap" class="w-5 h-5"></i>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span id="session-count" class="badge badge-neutral badge-sm">0</span>
-                  <button class="btn btn-ghost btn-xs text-red-600" onclick="ScanPage.clearSession()"
-                    title="Clear session">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <div>
+                  <h2 id="mode-title" class="font-black text-slate-800 uppercase tracking-tight">Activate Cable</h2>
+                  <p id="mode-desc" class="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Initial Godown Registration</p>
+                </div>
+              </div>
+              <div class="flex bg-slate-100 p-1 rounded-xl">
+                <button id="btn-mode-scan" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SCAN')">Scan</button>
+                <button id="btn-mode-select" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SELECT')">Select</button>
+              </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+              <!-- Extra Fields (Conditional) -->
+              <div id="extra-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                <div id="extra-site" class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Site Name</label>
+                    <input type="text" id="f-site-name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="e.g. Site Alpha" />
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Person Assigned</label>
+                    <input type="text" id="f-person" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="e.g. Ravi Kumar" />
+                  </div>
+                </div>
+                <div id="extra-return" class="col-span-2 hidden">
+                   <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Remaining Meter</label>
+                    <input type="number" id="f-meter-bal" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="Keep current if empty" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Scanner/Input UI -->
+              <div class="relative group">
+                <!-- Camera Viewport (Integrated) -->
+                <div id="camera-wrap" class="hidden mb-6">
+                  <div id="scan-viewport" class="w-full aspect-video rounded-3xl overflow-hidden bg-black border-4 border-slate-100 shadow-inner relative">
+                     <!-- Scanner Overlay -->
+                     <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+                        <div class="w-64 h-32 border-2 border-white/50 rounded-2xl relative overflow-hidden">
+                           <div class="absolute inset-x-0 h-1 bg-white/80 shadow-[0_0_15px_rgba(255,255,255,1)] animate-scan"></div>
+                        </div>
+                     </div>
+                  </div>
+                  <button class="mt-4 w-full py-3 bg-slate-100 rounded-2xl text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-colors" onclick="ScanPage.toggleCamera()">
+                    Close Camera
+                  </button>
+                </div>
+
+                <!-- Input Row -->
+                <div class="flex items-stretch gap-3">
+                  <div id="input-container" class="flex-1 relative">
+                    <div id="wrap-scan-input" class="relative">
+                      <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i data-lucide="qr-code" class="w-5 h-5"></i>
+                      </div>
+                      <input type="text" id="scan-input" 
+                        class="w-full bg-slate-100 border-2 border-transparent rounded-2xl pl-12 pr-4 py-4 text-base font-black text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                        placeholder="Scan QR or Type Cable No..." autocomplete="off" />
+                    </div>
+                    <select id="scan-select" class="hidden w-full bg-slate-100 border-2 border-transparent rounded-2xl px-4 py-4 text-base font-black text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none appearance-none">
+                      <option value="">Select a cable...</option>
+                    </select>
+                  </div>
+                  
+                  <button id="btn-camera" onclick="ScanPage.toggleCamera()" 
+                    class="w-14 shrink-0 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all shadow-sm">
+                    <i data-lucide="camera" class="w-6 h-6"></i>
+                  </button>
+
+                  <button onclick="ScanPage.trigger()" 
+                    class="px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                    Process
                   </button>
                 </div>
               </div>
-              <div id="session-scans" class="divide-y divide-slate-200 max-h-80 lg:max-h-none overflow-y-auto">
-                ${UI.emptyState('list', 'No scans yet', 'Scanned QR codes will appear here')}
-              </div>
+
+              <!-- Result Area -->
+              <div id="scan-result" class="hidden animate-fadeIn"></div>
             </div>
           </div>
         </div>
+
+        <!-- Right Column: Recent Activity (5/12) -->
+        <div class="lg:col-span-5">
+          <div class="bg-white rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+               <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                  <i data-lucide="history" class="w-4 h-4"></i>
+                </div>
+                <h2 class="text-sm font-black text-slate-700 uppercase tracking-tight">Recent Scans</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="session-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-black text-slate-500">0</span>
+                <button class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all" onclick="ScanPage.clearSession()">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+            <div id="session-scans" class="flex-1 overflow-y-auto p-4 space-y-2 max-h-[400px] lg:max-h-none">
+              ${UI.emptyState('list', 'Ready to Scan', 'Your activity for this session will appear here.')}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <style>
-      @keyframes scanLine {
-        0%   { top:0;   opacity:1; }
-        49%  { top:100%; opacity:1; }
-        50%  { top:0;   opacity:0; }
-        51%  { opacity:1; }
-        100% { top:0; }
+      .animate-scan {
+        animation: scanMove 2s infinite ease-in-out;
       }
+      @keyframes scanMove {
+        0%, 100% { top: 0; opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+      }
+      .active-mode-indigo { background: #4f46e5; border-color: #4f46e5; color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+      .active-mode-amber  { background: #f59e0b; border-color: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+      .active-mode-blue   { background: #2563eb; border-color: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+      .active-mode-emerald { background: #10b981; border-color: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+      
+      .active-tab-indigo .w-10 { background: #4f46e5; border-color: #4f46e5; color: white; }
+      .active-tab-indigo i { color: white !important; }
+      .active-tab-indigo span { color: #4f46e5 !important; }
+
+      .active-tab-amber .w-10 { background: #f59e0b; border-color: #f59e0b; color: white; }
+      .active-tab-amber i { color: white !important; }
+      .active-tab-amber span { color: #f59e0b !important; }
+
+      .active-tab-blue .w-10 { background: #2563eb; border-color: #2563eb; color: white; }
+      .active-tab-blue i { color: white !important; }
+      .active-tab-blue span { color: #2563eb !important; }
+
+      .active-tab-emerald .w-10 { background: #10b981; border-color: #10b981; color: white; }
+      .active-tab-emerald i { color: white !important; }
+      .active-tab-emerald span { color: #10b981 !important; }
     </style>`;
 
     document.getElementById('scan-input').addEventListener('keydown', e => {
@@ -180,31 +207,23 @@ const ScanPage = {
     const wrapInput = document.getElementById('wrap-scan-input');
     const select = document.getElementById('scan-select');
     const btnCamera = document.getElementById('btn-camera');
-    const actionText = document.getElementById('btn-action-text');
-
-    const inputContainer = document.getElementById('input-container');
 
     if (!btnScan) return;
 
     if (mode === 'SCAN') {
-      btnScan.className = 'btn btn-xs join-item btn-neutral';
-      btnSelect.className = 'btn btn-xs join-item btn-outline btn-neutral';
+      btnScan.className = 'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-white text-slate-800 shadow-sm border border-slate-200';
+      btnSelect.className = 'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600';
       wrapInput.classList.remove('hidden');
       select.classList.add('hidden');
-      btnCamera.classList.remove('hidden');
-      if (inputContainer) inputContainer.className = 'col-span-3 sm:flex-1';
-      actionText.textContent = 'Scan';
+      btnCamera?.classList.remove('hidden');
       document.getElementById('scan-input').focus();
     } else {
-      btnScan.className = 'btn btn-xs join-item btn-outline btn-neutral';
-      btnSelect.className = 'btn btn-xs join-item btn-neutral';
+      btnScan.className = 'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600';
+      btnSelect.className = 'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-white text-slate-800 shadow-sm border border-slate-200';
       wrapInput.classList.add('hidden');
       select.classList.remove('hidden');
-      btnCamera.classList.add('hidden');
-      if (inputContainer) inputContainer.className = 'col-span-4 sm:flex-1';
-      actionText.textContent = 'Process';
+      btnCamera?.classList.add('hidden');
 
-      // Load eligible cables
       await this.loadEligibleCables();
     }
   },
@@ -246,76 +265,51 @@ const ScanPage = {
     this._mode = mode;
 
     const modeConfig = {
-      ACTIVATE:         { color:'primary', icon:'check-circle' },
-      SEND_TO_SITE:     { color:'warning', icon:'truck'        },
-      SITE_TO_SITE:     { color:'info',    icon:'repeat'       },
-      RETURN_TO_GODOWN: { color:'success', icon:'warehouse'    },
+      ACTIVATE:         { color:'indigo',  icon:'zap',       title:'Activate Cable',    desc:'Initial Godown Registration' },
+      SEND_TO_SITE:     { color:'amber',   icon:'truck',     title:'Send to Site',      desc:'Godown ➔ Site Dispatch'      },
+      SITE_TO_SITE:     { color:'blue',    icon:'repeat',    title:'Site Transfer',     desc:'Inter-Site Movement'         },
+      RETURN_TO_GODOWN: { color:'emerald', icon:'warehouse', title:'Return Godown',     desc:'Site ➔ Godown Retrieval'     },
     };
+
+    const mc = modeConfig[mode];
 
     // Update tab buttons
     ['ACTIVATE','SEND_TO_SITE','SITE_TO_SITE','RETURN_TO_GODOWN'].forEach(m => {
       const btn = document.getElementById(`tab-${m}`);
       if (!btn) return;
-      const mc = modeConfig[m];
       const isActive = m === mode;
-      btn.className = `btn btn-${isActive ? '' : 'outline '}btn-${mc.color} btn-sm sm:btn-md h-auto py-2 flex-col sm:flex-row gap-1 sm:gap-2 transition-all`;
+      const btnColor = modeConfig[m].color;
+      btn.className = `flex-1 flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-300 gap-1.5 group ${isActive ? 'active-tab-' + btnColor : ''}`;
     });
 
-    // Banners
-    const banners = {
-      ACTIVATE: {
-        cls:'alert-info', icon:'check-circle',
-        title:'Activation Scan',
-        desc:'Scan a newly registered cable QR code. It will be marked as <strong>In Godown</strong>. Each code can only be activated once.',
-      },
-      SEND_TO_SITE: {
-        cls:'alert-warning', icon:'truck',
-        title:'Send to Site — Godown → Site',
-        desc:'Cable must be <strong>In Godown</strong>. Fill in site name and person assigned, then scan the QR or type Cable No to dispatch.',
-      },
-      SITE_TO_SITE: {
-        cls:'alert-info', icon:'repeat',
-        title:'Site to Site Transfer',
-        desc:'Cable must be <strong>at a Site</strong>. Enter the new destination site and person, then scan or type Cable No.',
-      },
-      RETURN_TO_GODOWN: {
-        cls:'alert-success', icon:'warehouse',
-        title:'Return to Godown — Site → Godown',
-        desc:'Cable must be <strong>at a Site</strong>. Scan QR or type Cable No to record return. Optionally update remaining meter balance.',
-      },
-    };
+    // Update Mode Header
+    const iconBox = document.getElementById('mode-icon-box');
+    const iconEl  = document.getElementById('mode-icon');
+    const titleEl = document.getElementById('mode-title');
+    const descEl  = document.getElementById('mode-desc');
 
-    const b = banners[mode];
-    const banner = document.getElementById('scan-banner');
-    if (banner) {
-      banner.className = `alert ${b.cls} text-sm py-3`;
-      banner.innerHTML = `
-        <i data-lucide="${b.icon}" class="w-5 h-5 shrink-0"></i>
-        <div>
-          <p class="font-bold text-sm">${b.title}</p>
-          <p class="text-xs mt-0.5 opacity-80">${b.desc}</p>
-        </div>`;
-    }
+    if (iconBox) iconBox.className = `w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg active-mode-${mc.color}`;
+    if (iconEl)  iconEl.setAttribute('data-lucide', mc.icon);
+    if (titleEl) titleEl.textContent = mc.title;
+    if (descEl)  descEl.textContent = mc.desc;
 
-    // Show/hide extra fields
-    const siteEl   = document.getElementById('extra-site');
-    const returnEl = document.getElementById('extra-return');
-    if (siteEl)   siteEl.classList.toggle('hidden',   mode !== 'SEND_TO_SITE' && mode !== 'SITE_TO_SITE');
-    if (returnEl) returnEl.classList.toggle('hidden', mode !== 'RETURN_TO_GODOWN');
+    // Show/hide extra fields section
+    const extraFields = document.getElementById('extra-fields');
+    const siteEl      = document.getElementById('extra-site');
+    const returnEl    = document.getElementById('extra-return');
+
+    const hasExtra = mode !== 'ACTIVATE';
+    if (extraFields) extraFields.classList.toggle('hidden', !hasExtra);
+    if (siteEl)      siteEl.classList.toggle('hidden', mode !== 'SEND_TO_SITE' && mode !== 'SITE_TO_SITE');
+    if (returnEl)    returnEl.classList.toggle('hidden', mode !== 'RETURN_TO_GODOWN');
 
     // Clear result
     const res = document.getElementById('scan-result');
     if (res) { res.classList.add('hidden'); res.innerHTML = ''; }
 
-    // If in SELECT mode, refresh the list based on new mode
-    if (this._inputMode === 'SELECT') {
-      this.loadEligibleCables();
-    }
-
-    // Focus input if in SCAN mode
-    if (this._inputMode === 'SCAN') {
-      setTimeout(() => document.getElementById('scan-input')?.focus(), 100);
-    }
+    if (this._inputMode === 'SELECT') this.loadEligibleCables();
+    if (this._inputMode === 'SCAN') setTimeout(() => document.getElementById('scan-input')?.focus(), 100);
+    
     if (window.lucide) lucide.createIcons();
   },
 
@@ -370,10 +364,13 @@ const ScanPage = {
 
     const resultDiv = document.getElementById('scan-result');
     resultDiv.innerHTML = `
-      <div class="card bg-white border border-slate-200 shadow-sm">
-        <div class="card-body flex-row items-center gap-3 py-4">
+      <div class="bg-slate-50 border-2 border-slate-100 rounded-3xl p-6 flex flex-col items-center gap-4 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center">
           <span class="loading loading-spinner loading-md text-indigo-600"></span>
-          <span class="text-sm text-slate-500">Processing scan…</span>
+        </div>
+        <div>
+          <h3 class="font-black text-slate-800 uppercase tracking-tight">Processing</h3>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Validating QR Code...</p>
         </div>
       </div>`;
     resultDiv.classList.remove('hidden');
@@ -383,68 +380,88 @@ const ScanPage = {
 
       if (res.success) {
         const p = res.data;
+        const modeLabel = this._mode.replace(/_/g,' ');
         resultDiv.innerHTML = `
-          <div class="alert alert-success shadow-sm flex flex-col items-stretch">
-            <div class="flex items-start gap-3 w-full">
-              <i data-lucide="check-circle-2" class="w-6 h-6 shrink-0 mt-0.5 text-emerald-600"></i>
-              <div class="w-full min-w-0 flex-1">
-                <p class="font-bold text-sm">Scan Accepted — ${this._mode.replace(/_/g,' ')}</p>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2 mb-2">
-                  <div><span class="text-xs opacity-60 block">Cable No</span><strong class="text-sm">${Helpers.escape(p.cableNo)}</strong></div>
-                  <div><span class="text-xs opacity-60 block">Status</span>${Helpers.statusBadge(p.status)}</div>
-                  <div><span class="text-xs opacity-60 block">Category</span><span class="text-sm">${Helpers.escape(p.category)}</span></div>
-                  <div><span class="text-xs opacity-60 block">Meter</span><span class="text-sm font-medium">${p.meter}m</span></div>
-                  ${p.siteName ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Site</span><strong class="text-sm">${Helpers.escape(p.siteName)}</strong></div>` : ''}
-                  ${p.personAssigned ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Person</span><span class="text-sm">${Helpers.escape(p.personAssigned)}</span></div>` : ''}
-                </div>
+          <div class="bg-emerald-50 border-2 border-emerald-100 rounded-3xl p-6 animate-fadeIn">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-200">
+                <i data-lucide="check" class="w-6 h-6"></i>
+              </div>
+              <div class="text-left">
+                <h3 class="font-black text-emerald-900 uppercase tracking-tight leading-tight">Scan Accepted</h3>
+                <p class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">${modeLabel}</p>
               </div>
             </div>
+
+            <div class="grid grid-cols-2 gap-4 bg-white rounded-2xl p-4 shadow-sm border border-emerald-100/50">
+              <div class="text-left">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Cable No</span>
+                <span class="text-sm font-black text-slate-800">${Helpers.escape(p.cableNo)}</span>
+              </div>
+              <div class="text-left">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-[10px] font-black text-slate-600 uppercase tracking-tight">${p.status}</span>
+              </div>
+              <div class="text-left">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Category</span>
+                <span class="text-xs font-bold text-slate-600">${Helpers.escape(p.category)}</span>
+              </div>
+              <div class="text-left">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Length</span>
+                <span class="text-xs font-black text-indigo-600">${p.meter}m</span>
+              </div>
+              ${p.siteName ? `
+              <div class="text-left col-span-2 border-t border-slate-50 pt-2">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Destination Site</span>
+                <span class="text-xs font-black text-amber-600">${Helpers.escape(p.siteName)}</span>
+              </div>` : ''}
+            </div>
+
             ${Barcode.isCameraActive() ? `
-            <button class="btn btn-sm btn-success w-full mt-2 gap-2" onclick="ScanPage.resumeScanning()">
-              <i data-lucide="scan-line" class="w-4 h-4"></i> Scan Next Cable
-            </button>
-            ` : ''}
+            <button class="w-full mt-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-200" onclick="ScanPage.resumeScanning()">
+              Scan Next Cable
+            </button>` : ''}
           </div>`;
-        Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${this._mode.replace(/_/g,' ')}`);
+        
+        Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${modeLabel}`);
         this._addSessionScan(barcode, true, p.cableNo);
-        // Clear fields
+        
         if (this._inputMode === 'SCAN') document.getElementById('scan-input').value = '';
         else document.getElementById('scan-select').value = '';
         
-        if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
-          // Do NOT clear site name and person assigned to allow continuous scanning to the same site!
-          document.getElementById('f-scan-remark').value = '';
-        }
         if (this._mode === 'RETURN_TO_GODOWN') {
           document.getElementById('f-meter-bal').value     = '';
-          document.getElementById('f-return-remark').value = '';
         }
         if (this._inputMode === 'SCAN') document.getElementById('scan-input').focus();
-        else this.loadEligibleCables(); // refresh list to remove the dispatched item
+        else this.loadEligibleCables();
       } else {
         resultDiv.innerHTML = `
-          <div class="alert alert-error shadow-sm flex flex-col items-stretch">
-            <div class="flex gap-3 w-full">
-              <i data-lucide="x-circle" class="w-6 h-6 shrink-0"></i>
-              <div>
-                <p class="font-bold text-sm">Scan Rejected</p>
-                <p class="text-xs mt-0.5">${Helpers.escape(res.message)}</p>
+          <div class="bg-red-50 border-2 border-red-100 rounded-3xl p-6 animate-fadeIn">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-12 h-12 rounded-2xl bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-200">
+                <i data-lucide="x" class="w-6 h-6"></i>
+              </div>
+              <div class="text-left">
+                <h3 class="font-black text-red-900 uppercase tracking-tight leading-tight">Scan Rejected</h3>
+                <p class="text-[10px] text-red-600 font-black uppercase tracking-widest">Error Found</p>
               </div>
             </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-100/50 text-left">
+               <p class="text-xs font-bold text-slate-600 italic">"${Helpers.escape(res.message)}"</p>
+            </div>
             ${Barcode.isCameraActive() ? `
-            <button class="btn btn-sm btn-outline mt-3 w-full gap-2" onclick="ScanPage.resumeScanning()">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Try Again
-            </button>
-            ` : ''}
+            <button class="w-full mt-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-200" onclick="ScanPage.resumeScanning()">
+              Try Again
+            </button>` : ''}
           </div>`;
         Toast.show('error', 'Scan Rejected', res.message);
         this._addSessionScan(barcode, false, barcode);
       }
     } catch(err) {
       resultDiv.innerHTML = `
-        <div class="alert alert-error shadow-sm">
-          <i data-lucide="wifi-off" class="w-5 h-5 shrink-0"></i>
-          <span class="text-sm">${Helpers.escape(err.message)}</span>
+        <div class="bg-slate-100 rounded-3xl p-6 text-center">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Network Error</p>
+          <p class="text-sm font-bold text-slate-700 mt-2">${Helpers.escape(err.message)}</p>
         </div>`;
       Toast.show('error', 'Network Error', err.message);
     }
@@ -477,24 +494,29 @@ const ScanPage = {
     const el = document.getElementById('session-scans');
     if (!el) return;
     if (!this._sessionScans.length) {
-      el.innerHTML = UI.emptyState('list', 'No scans yet', 'Scanned QR codes will appear here');
+      el.innerHTML = UI.emptyState('list', 'Ready to Scan', 'Your activity for this session will appear here.');
       if (window.lucide) lucide.createIcons({ nodes: [el] });
       return;
     }
-    el.innerHTML = this._sessionScans.slice(0, 20).map(s => `
-    <div class="flex items-center gap-3 py-2.5">
-      <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-        ${s.ok ? 'bg-emerald-100' : 'bg-red-100'}">
-        <i data-lucide="${s.ok ? 'check' : 'x'}" class="w-3.5 h-3.5 ${s.ok ? 'text-emerald-600' : 'text-red-600'}"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="text-sm font-semibold truncate">${Helpers.escape(s.label)}</div>
-        <div class="text-xs text-slate-500">${s.mode.replace(/_/g,' ')} · ${Helpers.timeAgo(s.time)}</div>
-      </div>
-      <span class="badge ${s.ok ? 'badge-success' : 'badge-error'} badge-xs font-medium shrink-0">
-        ${s.ok ? 'OK' : 'FAIL'}
-      </span>
-    </div>`).join('');
+    el.innerHTML = this._sessionScans.slice(0, 20).map(s => {
+      const modeLabel = s.mode.replace(/_/g,' ');
+      const bg = s.ok ? 'bg-emerald-50' : 'bg-red-50';
+      const text = s.ok ? 'text-emerald-700' : 'text-red-700';
+      const icon = s.ok ? 'check' : 'x';
+      const iconBg = s.ok ? 'bg-emerald-500' : 'bg-red-500';
+
+      return `
+      <div class="flex items-center gap-3 p-3 rounded-2xl ${bg} border border-white transition-all animate-fadeIn">
+        <div class="w-8 h-8 rounded-lg ${iconBg} text-white flex items-center justify-center shrink-0 shadow-sm">
+          <i data-lucide="${icon}" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(s.label)}</div>
+          <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">${modeLabel} · ${Helpers.timeAgo(s.time)}</div>
+        </div>
+        <div class="text-[10px] font-black uppercase ${text}">${s.ok ? 'OK' : 'FAIL'}</div>
+      </div>`;
+    }).join('');
     if (window.lucide) lucide.createIcons({ nodes: [el] });
   },
 
