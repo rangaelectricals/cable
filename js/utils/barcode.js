@@ -78,7 +78,7 @@ const Barcode = (() => {
         numOfWorkers: Math.min(navigator.hardwareConcurrency || 2, 4),
         frequency: 10,
         decoder: {
-          readers: ['code_128_reader', 'ean_reader'],
+          readers: ['code_128_reader'],
           multiple: false
         },
         locate: true,
@@ -87,10 +87,32 @@ const Barcode = (() => {
         Quagga.start(); _cameraActive = true;
       });
       let debounce = false;
+      let lastResult = null;
+      let count = 0;
+
       Quagga.onDetected(result => {
         if (debounce) return;
         const code = result.codeResult.code;
-        if (code && onScan) { debounce = true; onScan(code); setTimeout(()=>{ debounce=false; }, 2000); }
+        if (!code) return;
+
+        // Pattern filter: Only accept barcodes starting with CBL-
+        if (!code.startsWith('CBL-')) return;
+
+        // Multiple confirmation logic: Must see the same code 3 times to be sure
+        if (code === lastResult) {
+          count++;
+        } else {
+          lastResult = code;
+          count = 1;
+        }
+
+        if (count >= 3 && onScan) {
+          debounce = true;
+          onScan(code);
+          lastResult = null;
+          count = 0;
+          setTimeout(() => { debounce = false; }, 3000); // 3s cooldown after successful scan
+        }
       });
       return true;
     } catch(e) { Toast.show('error','Camera Error', e.message); return false; }
