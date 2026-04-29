@@ -395,8 +395,7 @@ const ScanPage = {
         else document.getElementById('scan-select').value = '';
         
         if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
-          document.getElementById('f-site-name').value   = '';
-          document.getElementById('f-person').value      = '';
+          // Do NOT clear site name and person assigned to allow continuous scanning to the same site!
           document.getElementById('f-scan-remark').value = '';
         }
         if (this._mode === 'RETURN_TO_GODOWN') {
