@@ -3,25 +3,33 @@
  */
 const Barcode = (() => {
   async function generate(imgId, value) {
-    const qrlib = window.QRCode;
-    if (typeof qrlib === 'undefined') { console.warn('QRCode library not loaded'); return; }
     const img = document.getElementById(imgId);
     if (!img) return;
-    try {
-      const url = await qrlib.toDataURL(value, {
-        width: 256,
-        margin: 2,
-        color: { dark: '#000000', light: '#ffffff' }
-      });
-      img.src = url;
-    } catch(e) { console.error('QR gen error', e); }
+
+    // Local library check
+    const qrlib = window.QRCode || window.qrcode;
+    
+    if (qrlib && qrlib.toDataURL) {
+      try {
+        const url = await qrlib.toDataURL(value, { width: 400, margin: 1 });
+        img.src = url;
+        return;
+      } catch(e) { console.error('Local QR failed', e); }
+    }
+
+    // Fallback to Remote API (QRServer) - Extremely reliable
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(value)}`;
   }
 
   async function toDataURL(value) {
-    if (typeof QRCode === 'undefined') return null;
-    try {
-      return await QRCode.toDataURL(value, { width: 300, margin: 2 });
-    } catch { return null; }
+    const qrlib = window.QRCode || window.qrcode;
+    if (qrlib && qrlib.toDataURL) {
+      try {
+        return await qrlib.toDataURL(value, { width: 400, margin: 1 });
+      } catch { }
+    }
+    // Fallback URL for printing
+    return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(value)}`;
   }
 
   async function printLabel(product) {
