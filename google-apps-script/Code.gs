@@ -143,29 +143,27 @@ function _objectToRow(headers, obj) {
 /** Append a new row to a sheet from an object. */
 function appendObject(sheetName, obj) {
   var sheet   = getSheet(sheetName);
-  var headers = _getHeaders(sheet);
+  var headers = SHEET_HEADERS[sheetName] || _getHeaders(sheet);
   sheet.appendRow(_objectToRow(headers, obj));
 }
 
 /** Update a row by its 'id' column value. Returns true if found. */
 function updateById(sheetName, id, updates) {
   var sheet   = getSheet(sheetName);
-  var lastRow = sheet.getLastRow();
-  var lastCol = sheet.getLastColumn();
-  if (lastRow < 2 || lastCol < 1) return false;
+  var values  = sheet.getDataRange().getValues();
+  if (values.length < 2) return false;
 
-  var values  = sheet.getRange(1, 1, lastRow, lastCol).getValues();
   var headers = values[0].map(String);
   var idCol   = headers.indexOf('id');
   if (idCol < 0) return false;
 
   for (var i = 1; i < values.length; i++) {
     if (String(values[i][idCol]) === String(id)) {
+      var row = values[i];
       headers.forEach(function(h, ci) {
-        if (h in updates) {
-          sheet.getRange(i + 1, ci + 1).setValue(updates[h]);
-        }
+        if (h in updates) row[ci] = updates[h];
       });
+      sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
       return true;
     }
   }
@@ -442,14 +440,30 @@ function handleScanAction(p) {
   var barcode = p.barcode;
   if (!action || !barcode) return _err('action and barcode are required.');
 
-  var products = sheetToObjects(getSheet(SHEET_NAMES.PRODUCTS));
-  var searchKey = String(barcode).trim().toLowerCase();
-  var product  = products.filter(function(x) {
-    return String(x.barcode).toLowerCase() === searchKey ||
-           String(x.cableNo).toLowerCase() === searchKey;
-  })[0];
+  var sheet = getSheet(SHEET_NAMES.PRODUCTS);
+  var data = sheet.getDataRange().getValues();
+  if (data.length < 2) return _err('ID / Cable No "' + barcode + '" not found. Register the cable first.');
+
+  var headers = data[0].map(String);
+  var barcodeIdx = headers.indexOf('barcode');
+  var cableNoIdx = headers.indexOf('cableNo');
   
-  if (!product) return _err('ID / Cable No "' + barcode + '" not found. Register the cable first.');
+  var searchKey = String(barcode).trim().toLowerCase();
+  var productRow = null;
+
+  for (var i = 1; i < data.length; i++) {
+    var b = String(data[i][barcodeIdx] || '').toLowerCase();
+    var c = String(data[i][cableNoIdx] || '').toLowerCase();
+    if (b === searchKey || c === searchKey) {
+      productRow = data[i];
+      break;
+    }
+  }
+  
+  if (!productRow) return _err('ID / Cable No "' + barcode + '" not found. Register the cable first.');
+
+  var product = {};
+  headers.forEach(function(h, idx) { product[h] = productRow[idx] !== undefined ? productRow[idx] : ''; });
 
   // Always use the true barcode for logs
   barcode = product.barcode;
