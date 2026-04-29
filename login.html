@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <title>Sign In — CableTrack Pro</title>
+  <meta name="description" content="CableTrack Pro — Cable Inventory & Movement Tracking System" />
+
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+
+    /* Animated gradient hero */
+    .hero-gradient {
+      background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 40%, #4f46e5 80%, #6d28d9 100%);
+    }
+
+    /* Card slide-up */
+    .login-card {
+      animation: slideUp .35s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(20px); }
+      to   { opacity:1; transform: translateY(0);    }
+    }
+
+    /* Feature pill */
+    .feature-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 12px 14px;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-base-200 flex flex-col lg:flex-row">
+
+  <!-- ── LEFT PANEL — hero (desktop only) ─────────────────────────────────── -->
+  <div class="hidden lg:flex flex-col justify-between hero-gradient text-white
+              w-[420px] xl:w-[480px] shrink-0 p-10">
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <div class="font-extrabold text-lg leading-tight">CableTrack Pro</div>
+        <div class="text-xs text-white/60">v2.0 · Cable Management</div>
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <div>
+      <h1 class="text-3xl xl:text-4xl font-extrabold leading-snug mb-4">
+        Cable Inventory<br/>& Movement<br/>Tracking
+      </h1>
+      <p class="text-white/65 text-sm leading-relaxed mb-8">
+        Real-time barcode scanning, role-based access, and full godown-to-site workflow management.
+      </p>
+
+      <!-- Feature pills -->
+      <div class="space-y-3">
+        <div class="feature-pill">
+          <i data-lucide="package" class="w-5 h-5 text-white/80 shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold">Full Inventory Control</div>
+            <div class="text-xs text-white/55">Track every cable with barcode</div>
+          </div>
+        </div>
+        <div class="feature-pill">
+          <i data-lucide="scan-line" class="w-5 h-5 text-white/80 shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold">Camera Barcode Scanning</div>
+            <div class="text-xs text-white/55">Activate, dispatch &amp; return in seconds</div>
+          </div>
+        </div>
+        <div class="feature-pill">
+          <i data-lucide="shield-check" class="w-5 h-5 text-white/80 shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold">Role-Based Access</div>
+            <div class="text-xs text-white/55">Super Admin · Admin · Viewer</div>
+          </div>
+        </div>
+        <div class="feature-pill">
+          <i data-lucide="trending-up" class="w-5 h-5 text-white/80 shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold">Godown → Site Workflow</div>
+            <div class="text-xs text-white/55">Full movement history & audit trail</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-xs text-white/30">© 2024 CableTrack Pro · Secure HTTPS</p>
+  </div>
+
+  <!-- ── RIGHT PANEL — login form ─────────────────────────────────────────── -->
+  <div class="flex-1 flex items-center justify-center p-5 sm:p-8">
+    <div class="login-card w-full max-w-md">
+
+      <!-- Mobile brand (hidden on desktop) -->
+      <div class="flex items-center gap-3 mb-8 lg:hidden">
+        <div class="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center">
+          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="font-extrabold text-lg text-primary leading-tight">CableTrack Pro</div>
+          <div class="text-xs text-base-content/40">Cable Management System</div>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-base-content mb-1">Welcome back</h2>
+      <p class="text-sm text-base-content/50 mb-7">Sign in to access your dashboard</p>
+
+      <!-- Error alert -->
+      <div id="login-error" class="alert alert-error mb-5 hidden text-sm py-3">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="login-error-msg"></span>
+      </div>
+
+      <!-- Login form -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+        <!-- Username -->
+        <div class="form-control">
+          <label class="label pb-1.5">
+            <span class="label-text font-semibold text-xs uppercase tracking-wide">Username</span>
+          </label>
+          <label class="input input-bordered flex items-center gap-3 focus-within:input-primary">
+            <i data-lucide="user" class="w-4 h-4 text-base-content/40 shrink-0"></i>
+            <input type="text" id="username" name="username" class="grow text-sm"
+                   placeholder="Enter your username" autocomplete="username" required />
+          </label>
+        </div>
+
+        <!-- Password -->
+        <div class="form-control">
+          <label class="label pb-1.5">
+            <span class="label-text font-semibold text-xs uppercase tracking-wide">Password</span>
+          </label>
+          <label class="input input-bordered flex items-center gap-3 focus-within:input-primary">
+            <i data-lucide="lock" class="w-4 h-4 text-base-content/40 shrink-0"></i>
+            <input type="password" id="password" name="password" class="grow text-sm"
+                   placeholder="Enter your password" autocomplete="current-password" required />
+            <button type="button" onclick="togglePwd()"
+                    class="btn btn-ghost btn-xs px-1 text-base-content/40 hover:text-base-content">
+              <i id="eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="login-btn" class="btn btn-primary w-full mt-2 gap-2">
+          <span id="login-btn-text">Sign In</span>
+          <span id="login-spinner" class="loading loading-spinner loading-sm hidden"></span>
+          <i id="login-arrow" data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <!-- Default credentials hint -->
+      <div class="divider text-xs text-base-content/30 my-6">DEFAULT SETUP</div>
+      <div class="alert alert-info py-3 text-sm">
+        <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+        <div>
+          <p class="font-medium">First time setup</p>
+          <p class="text-xs mt-0.5 opacity-70">
+            Run <code class="font-mono bg-info-content/10 px-1 rounded">setupSheets()</code> in Apps Script,
+            then sign in with <code class="font-mono">admin / admin123</code>
+          </p>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-base-content/25 mt-8">
+        CableTrack Pro v2.0 · Google Apps Script Backend
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-wrap" class="toast toast-top toast-end z-50"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/utils/toast.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    // Init Lucide icons
+    document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+
+    // Redirect if already signed in
+    try {
+      const s = JSON.parse(localStorage.getItem(CONFIG.SESSION_KEY));
+      if (s?.token) window.location.replace('dashboard.html');
+    } catch {}
+
+    let pwdVisible = false;
+    function togglePwd() {
+      pwdVisible = !pwdVisible;
+      const p  = document.getElementById('password');
+      const ic = document.getElementById('eye-icon');
+      p.type = pwdVisible ? 'text' : 'password';
+      ic.setAttribute('data-lucide', pwdVisible ? 'eye-off' : 'eye');
+      if (window.lucide) lucide.createIcons({ nodes: [ic.parentElement] });
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errDiv   = document.getElementById('login-error');
+      const errMsg   = document.getElementById('login-error-msg');
+      const btn      = document.getElementById('login-btn');
+      const txt      = document.getElementById('login-btn-text');
+      const spn      = document.getElementById('login-spinner');
+      const arrow    = document.getElementById('login-arrow');
+
+      errDiv.classList.add('hidden');
+      btn.disabled = true;
+      txt.textContent = 'Signing in…';
+      spn.classList.remove('hidden');
+      arrow.classList.add('hidden');
+
+      try {
+        const res = await API.login(username, password);
+        if (res.success && res.user) {
+          const u = res.user;
+          const session = {
+            id: u.id, username: u.username, name: u.name, role: u.role,
+            token: btoa(`${u.username}:${Date.now()}`),
+            loginAt: new Date().toISOString(),
+          };
+          localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify(session));
+          Toast.show('success', 'Welcome!', `Signed in as ${u.name}`);
+          setTimeout(() => window.location.replace('dashboard.html'), 600);
+        } else {
+          errDiv.classList.remove('hidden');
+          errMsg.textContent = res.message || 'Invalid username or password.';
+          btn.disabled = false; txt.textContent = 'Sign In';
+          spn.classList.add('hidden'); arrow.classList.remove('hidden');
+          if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('login-error')] });
+        }
+      } catch(err) {
+        errDiv.classList.remove('hidden');
+        errMsg.textContent = '⚠️ Cannot reach server. Check your Apps Script URL in js/config.js';
+        btn.disabled = false; txt.textContent = 'Sign In';
+        spn.classList.add('hidden'); arrow.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

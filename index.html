@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CableTrack Pro</title>
+  <meta name="description" content="Cable Inventory & Movement Tracking System" />
+  <script src="js/config.js"></script>
+  <script>
+    // Redirect to appropriate page based on session
+    const sess = localStorage.getItem(CONFIG.SESSION_KEY);
+    if (sess) {
+      try {
+        const s = JSON.parse(sess);
+        if (s && s.token) { window.location.replace('dashboard.html'); }
+        else window.location.replace('login.html');
+      } catch { window.location.replace('login.html'); }
+    } else {
+      window.location.replace('login.html');
+    }
+  </script>
+</head>
+<body style="background:#0a0818;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;">
+  <div style="color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;font-size:0.9rem;">Redirecting…</div>
+</body>
+</html>
