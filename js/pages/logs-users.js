@@ -64,7 +64,7 @@ const LogsPage = {
             <div class="grid grid-cols-2 sm:flex gap-2 flex-wrap">
               <label class="input input-bordered input-sm flex items-center gap-2 col-span-2 sm:flex-1">
                 <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
-                <input type="text" id="log-cable" class="grow text-sm" placeholder="Search Cable No / QR…"
+                <input type="text" id="log-cable" class="grow text-sm" placeholder="Search NO / Cable No / QR…"
                   oninput="LogsPage._onFilter()" />
               </label>
               <select id="log-action"
@@ -98,6 +98,7 @@ const LogsPage = {
               <thead class="bg-slate-100 text-xs uppercase tracking-wide">
                 <tr>
                   <th>#</th>
+                  <th>NO</th>
                   <th>Date / Time</th>
                   <th>Cable No</th>
                   <th>Action</th>
@@ -194,6 +195,7 @@ const LogsPage = {
     body.innerHTML = this._logs.map((l, i) => `
     <tr class="hover">
       <td class="text-slate-400 text-xs">${rowStart+i+1}</td>
+      <td class="text-xs font-black text-slate-400">${Helpers.escape(l.no || '-')}</td>
       <td class="text-xs whitespace-nowrap">${Helpers.formatDateTime(l.timestamp)}</td>
       <td class="font-semibold text-sm">${Helpers.escape(l.cableNo)}</td>
       <td>${UI.actionBadge(l.action)}</td>

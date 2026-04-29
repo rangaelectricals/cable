@@ -143,7 +143,7 @@ const DashboardPage = {
         <i data-lucide="${m.icon}" class="w-4 h-4 ${m.color}"></i>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-sm font-semibold truncate">${Helpers.escape(log.cableNo)}</div>
+        <div class="text-sm font-semibold truncate">${log.no ? Helpers.escape(log.no) + ' - ' : ''}${Helpers.escape(log.cableNo)}</div>
         <div class="text-xs text-slate-500 truncate">
           ${Helpers.escape(log.note || log.siteName || '—')} · ${Helpers.timeAgo(log.timestamp)}
         </div>

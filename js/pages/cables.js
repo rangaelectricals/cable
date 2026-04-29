@@ -73,7 +73,7 @@ const CablesPage = {
               <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 shrink-0"></i>
                 <input type="text" id="cable-search" class="grow min-w-0 text-sm"
-                  placeholder="Cable No / QR / Site…"
+                  placeholder="NO / Cable No / QR / Site…"
                   value="${Helpers.escape(this._filters.search)}"
                   oninput="CablesPage._onFilter()" />
               </label>
@@ -233,7 +233,7 @@ const CablesPage = {
               <div class="flex-1 min-w-0">
                 <div class="font-semibold text-sm">Required columns</div>
                 <div class="font-mono text-xs text-slate-500 mt-0.5 truncate">
-                  cableNo, category, core, sqmm, meter, quantity*, remarks*
+                  no*, cableNo, category, core, sqmm, meter, quantity*, remarks*
                 </div>
               </div>
               <button class="btn btn-outline btn-xs shrink-0 gap-1.5" onclick="Helpers.downloadTemplate()">
@@ -273,7 +273,7 @@ const CablesPage = {
               <table class="table table-xs table-zebra">
                 <thead class="bg-slate-100 text-xs uppercase sticky top-0">
                   <tr>
-                    <th>#</th><th>Cable No</th><th>Category</th>
+                    <th>#</th><th>NO</th><th>Cable No</th><th>Category</th>
                     <th>Core</th><th>SQMM</th><th>Meter</th><th>Qty</th><th>Status</th>
                   </tr>
                 </thead>
@@ -824,6 +824,7 @@ const CablesPage = {
             errors.push(`Row ${idx+1}: missing ${missing.join(', ')}`);
           } else {
             valid.push({
+              no:       String(norm.no || '').trim(),
               cableNo:  String(norm.cableno).trim(),
               category: String(norm.category).trim(),
               core:     String(norm.core).trim(),
@@ -843,6 +844,7 @@ const CablesPage = {
           body.innerHTML = valid.map((r,i) => `
           <tr>
             <td class="text-slate-400">${i+1}</td>
+            <td class="text-xs font-black text-slate-400">${Helpers.escape(r.no || '-')}</td>
             <td class="font-semibold">${Helpers.escape(r.cableNo)}</td>
             <td>${Helpers.escape(r.category)}</td>
             <td>${Helpers.escape(r.core)}</td>

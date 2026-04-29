@@ -71,10 +71,10 @@ const Helpers = {
 
   /** Download the bulk upload CSV template */
   downloadTemplate() {
-    const header = 'cableNo,category,core,sqmm,meter,quantity,remarks';
+    const header = 'no,cableNo,category,core,sqmm,meter,quantity,remarks';
     const sample = [
-      'CBL-001,Power Cable,3C,10,500,1,',
-      'CBL-002,Control Cable,2C,1.5,300,2,Test remark',
+      '1,CBL-001,Power Cable,3C,10,500,1,',
+      '2,CBL-002,Control Cable,2C,1.5,300,2,Test remark',
     ].join('\n');
     Helpers.downloadCSVRaw(header + '\n' + sample, 'bulk_upload_template.csv');
   },
