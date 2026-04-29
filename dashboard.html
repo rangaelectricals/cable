@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <title>CableTrack Pro — Dashboard</title>
+  <meta name="description" content="CableTrack Pro — Cable Inventory & Movement Tracking" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- DaisyUI + Tailwind -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons (free premium SVG icons) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Barcode libs -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+
+  <style>
+    *, *::before, *::after { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    .font-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+    /* ── Page enter animation ── */
+    .page-enter { animation: fadeUp .22s ease both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── Sidebar active state ── */
+    .nav-item-active {
+      background: hsl(var(--p)/0.1) !important;
+      color: hsl(var(--p)) !important;
+      font-weight: 600;
+    }
+    .nav-item-active svg { stroke: hsl(var(--p)); }
+
+    /* ── Bottom nav active ── */
+    .btm-nav > button.active { color: hsl(var(--p)); border-color: hsl(var(--p)); }
+
+    /* ── Sidebar ── */
+    .drawer-side { z-index: 50; }
+
+    /* ── Touch-friendly tap targets ── */
+    .btn { min-height: 2.25rem; }
+
+    /* ── Mobile content bottom padding (above btm-nav) ── */
+    @media (max-width: 1023px) {
+      #main-content { padding-bottom: 5rem !important; }
+    }
+
+    /* ── Scrollbar thin ── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: hsl(var(--b3)); border-radius: 4px; }
+
+    /* ── Mobile card table ── */
+    .mobile-card { border: 1px solid hsl(var(--b3)); border-radius: 0.75rem; background: white; }
+    .mobile-card-row { display: flex; justify-content: space-between; align-items: center;
+      padding: 0.375rem 0; border-bottom: 1px solid hsl(var(--b2)); }
+    .mobile-card-row:last-child { border-bottom: none; }
+    .mobile-card-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; color: hsl(var(--bc)/0.45); }
+
+    /* ── Stat card responsive ── */
+    .stat { min-width: 0; }
+    .stat-value { font-size: 1.75rem !important; }
+  </style>
+</head>
+<body class="bg-base-200 min-h-screen">
+
+<!-- ──────────────────────────────────────────────────────────────────────────
+     DRAWER LAYOUT  (DaisyUI responsive drawer)
+     Mobile  : sidebar hidden, opens as overlay via checkbox toggle
+     lg+     : drawer-open — sidebar always visible
+────────────────────────────────────────────────────────────────────────────── -->
+<div class="drawer lg:drawer-open min-h-screen">
+  <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
+
+  <!-- ── DRAWER CONTENT (main area) ────────────────────────────────────────── -->
+  <div class="drawer-content flex flex-col min-h-screen">
+
+    <!-- ── TOP BAR ──────────────────────────────────────────────────────────── -->
+    <header class="sticky top-0 z-30 flex items-center justify-between
+                   h-14 px-4 bg-white border-b border-base-200 shadow-sm shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- Mobile hamburger -->
+        <label for="sidebar-drawer" class="btn btn-ghost btn-sm btn-square lg:hidden">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </label>
+        <!-- Mobile brand -->
+        <div class="flex items-center gap-2 lg:hidden">
+          <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+            <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="font-bold text-sm text-primary">CableTrack Pro</span>
+        </div>
+        <!-- Desktop breadcrumb -->
+        <div id="page-breadcrumb"
+             class="hidden lg:block text-sm font-medium text-base-content/60 breadcrumbs py-0">
+          <ul><li><a>CableTrack Pro</a></li><li>Dashboard</li></ul>
+        </div>
+      </div>
+
+      <!-- Right side: user info + avatar -->
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex flex-col items-end mr-1">
+          <span id="header-user-name" class="text-xs font-semibold leading-tight"></span>
+          <span id="header-user-role" class="text-xs leading-none text-base-content/50"></span>
+        </div>
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8">
+                <span id="avatar-initials" class="text-xs font-bold">—</span>
+              </div>
+            </div>
+          </div>
+          <ul tabindex="0"
+              class="dropdown-content z-50 menu menu-sm shadow-lg bg-base-100
+                     rounded-xl w-48 border border-base-200 p-2 mt-1">
+            <li class="menu-title text-xs px-2 py-1" id="dropdown-user-name"></li>
+            <li>
+              <a onclick="Auth.logout()"
+                 class="flex items-center gap-2 text-error rounded-lg">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── PAGE CONTENT ──────────────────────────────────────────────────────── -->
+    <main id="main-content"
+          class="flex-1 p-4 lg:p-6 w-full max-w-screen-xl mx-auto">
+      <div class="flex items-center justify-center h-64">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    </main>
+
+    <!-- ── BOTTOM NAV (mobile only, lg:hidden) ───────────────────────────────── -->
+    <nav class="btm-nav btm-nav-sm lg:hidden z-40 border-t border-base-200 bg-white"
+         id="bottom-nav-bar">
+      <!-- filled by nav.js -->
+      <div id="bottom-nav-content" class="contents"></div>
+    </nav>
+  </div><!-- end drawer-content -->
+
+  <!-- ── DRAWER SIDE (sidebar) ─────────────────────────────────────────────── -->
+  <div class="drawer-side">
+    <!-- Overlay closes drawer on mobile -->
+    <label for="sidebar-drawer" class="drawer-overlay"></label>
+
+    <!-- Sidebar panel -->
+    <aside class="w-64 min-h-full bg-white border-r border-base-200 flex flex-col">
+      <!-- Brand -->
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-base-200 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
+          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="font-extrabold text-sm leading-tight text-base-content">CableTrack Pro</div>
+          <div class="text-xs text-base-content/40 font-medium">v2.0 · Cable Management</div>
+        </div>
+      </div>
+
+      <!-- Nav items rendered by nav.js -->
+      <div id="sidebar-content" class="flex-1 overflow-y-auto py-3 px-3"></div>
+
+      <!-- Sidebar footer -->
+      <div class="border-t border-base-200 p-4 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary rounded-full w-9">
+              <span id="sidebar-avatar" class="text-xs font-bold">—</span>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate"></div>
+            <div id="sidebar-user-role" class="text-xs text-base-content/50 truncate"></div>
+          </div>
+          <button onclick="Auth.logout()" class="btn btn-ghost btn-xs btn-square"
+                  title="Sign Out">
+            <i data-lucide="log-out" class="w-4 h-4 text-error"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div><!-- end drawer-side -->
+</div><!-- end drawer -->
+
+<!-- Toast container -->
+<div id="toast-wrap" class="toast toast-top toast-end z-[100]"></div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay"
+     class="hidden fixed inset-0 bg-base-100/80 backdrop-blur-sm z-[200]
+            flex items-center justify-center">
+  <div class="flex flex-col items-center gap-3">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+    <span id="loading-text" class="text-sm text-base-content/60 font-medium">Loading…</span>
+  </div>
+</div>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────────────────────────── -->
+<script src="js/config.js"></script>
+<script src="js/utils/helpers.js"></script>
+<script src="js/utils/toast.js"></script>
+<script src="js/utils/loading.js"></script>
+<script src="js/utils/barcode.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components/ui.js"></script>
+<script src="js/components/nav.js"></script>
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/cables.js"></script>
+<script src="js/pages/scan.js"></script>
+<script src="js/pages/logs-users.js"></script>
+<script src="js/pages/masters.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ── Populate user info ──────────────────────────────────────────────────────
+  const user = Auth.getUser();
+  if (!user) return;
+  const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('avatar-initials').textContent     = initials;
+  document.getElementById('sidebar-avatar').textContent     = initials;
+  document.getElementById('dropdown-user-name').textContent = user.name;
+  document.getElementById('sidebar-user-name').textContent  = user.name;
+  document.getElementById('sidebar-user-role').textContent  = ROLE_LABELS[user.role] || user.role;
+  document.getElementById('header-user-name').textContent   = user.name;
+  document.getElementById('header-user-role').textContent   = ROLE_LABELS[user.role] || user.role;
+
+  // ── Intercept navigateTo to update breadcrumb and close drawer ─────────────
+  const PAGE_LABELS = {
+    dashboard: 'Dashboard',
+    cables:    'Cable Inventory',
+    scan:      'Scan Operations',
+    masters:   'Masters',
+    logs:      'Activity Logs',
+    users:     'User Management',
+  };
+
+  const origNav = App.navigateTo.bind(App);
+  App.navigateTo = async function(section) {
+    // Close mobile sidebar drawer
+    document.getElementById('sidebar-drawer').checked = false;
+
+    // Update breadcrumb
+    const bc = document.getElementById('page-breadcrumb');
+    if (bc) bc.innerHTML =
+      `<ul><li><a>CableTrack Pro</a></li><li>${PAGE_LABELS[section] || section}</li></ul>`;
+
+    await origNav(section);
+
+    // Re-init Lucide icons after dynamic HTML is rendered
+    if (window.lucide) lucide.createIcons();
+  };
+
+  // Initial Lucide render
+  if (window.lucide) lucide.createIcons();
+});
+</script>
+</body>
+</html>
