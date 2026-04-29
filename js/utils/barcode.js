@@ -2,52 +2,49 @@
  * Barcode generation (JsBarcode) and camera scanning (Quagga)
  */
 const Barcode = (() => {
-  function generate(svgId, value) {
-    if (typeof JsBarcode === 'undefined') { console.warn('JsBarcode not loaded'); return; }
+  function generate(canvasId, value) {
+    if (typeof QRCode === 'undefined') { console.warn('QRCode not loaded'); return; }
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
     try {
-      JsBarcode(`#${svgId}`, value, {
-        format: 'CODE128', width: 2, height: 56,
-        displayValue: true, fontSize: 11, margin: 10,
-        background: '#ffffff', lineColor: '#000000',
+      QRCode.toCanvas(canvas, value, {
+        width: 180,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
       });
-    } catch(e) { console.error('Barcode gen error', e); }
+    } catch(e) { console.error('QR gen error', e); }
   }
 
   async function toDataURL(value) {
-    return new Promise(resolve => {
-      const c = document.createElement('canvas');
-      c.style.display = 'none';
-      document.body.appendChild(c);
-      try {
-        JsBarcode(c, value, { format:'CODE128', width:2, height:56, displayValue:true, fontSize:11, margin:10 });
-        resolve(c.toDataURL('image/png'));
-      } catch { resolve(null); }
-      finally { document.body.removeChild(c); }
-    });
+    if (typeof QRCode === 'undefined') return null;
+    try {
+      return await QRCode.toDataURL(value, { width: 300, margin: 2 });
+    } catch { return null; }
   }
 
   async function printLabel(product) {
     const dataUrl = await toDataURL(product.barcode);
     const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html><head><title>Barcode - ${product.cableNo}</title>
+    w.document.write(`<!DOCTYPE html><html><head><title>QR Code - ${product.cableNo}</title>
     <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Inter,sans-serif;}
-    .wrap{width:85mm;padding:6mm;border:1px solid #ccc;border-radius:4px;}
-    .title{font-size:11pt;font-weight:700;margin-bottom:2mm;}
-    .sub{font-size:8pt;color:#666;margin-bottom:3mm;}
-    img{display:block;max-width:100%;margin:0 auto 3mm;}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm;font-size:7.5pt;}
-    label{color:#888;}span{font-weight:600;display:block;}
-    @media print{body{margin:0;}}</style></head>
+    .wrap{width:80mm;padding:6mm;border:1px solid #eee;border-radius:8px;text-align:center;}
+    .title{font-size:12pt;font-weight:800;color:#1d4ed8;margin-bottom:1mm;}
+    .sub{font-size:9pt;color:#666;margin-bottom:4mm;}
+    img{display:block;width:45mm;height:45mm;margin:0 auto 4mm;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:2mm;font-size:8pt;text-align:left;}
+    label{color:#888;display:block;font-size:7pt;text-transform:uppercase;font-weight:700;}
+    span{font-weight:700;color:#111;}
+    @media print{body{margin:0;}.wrap{border:none;}}</style></head>
     <body><div class="wrap">
-      <div class="title">⚡ CableTrack Pro</div>
+      <div class="title">CableTrack Pro</div>
       <div class="sub">${product.cableNo} — ${product.category}</div>
       ${dataUrl ? `<img src="${dataUrl}" />` : ''}
       <div class="grid">
-        <div><label>Core</label><span>${product.core}</span></div>
-        <div><label>SQMM</label><span>${product.sqmm}mm²</span></div>
+        <div><label>Core/SQMM</label><span>${product.core} / ${product.sqmm}mm²</span></div>
         <div><label>Meter</label><span>${product.meter}m</span></div>
-        <div><label>Status</label><span>${STATUS_LABELS[product.status]||product.status}</span></div>
-        <div style="grid-column:1/-1"><label>Barcode</label><span style="font-family:monospace;font-size:7pt">${product.barcode}</span></div>
+        <div style="grid-column:1/-1;margin-top:2mm;padding-top:2mm;border-top:1px solid #eee;">
+          <label>ID / Barcode</label><span style="font-family:monospace;font-size:7pt">${product.barcode}</span>
+        </div>
       </div>
     </div><script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
     w.document.close();
@@ -67,18 +64,17 @@ const Barcode = (() => {
     _scanner = new Html5Qrcode(containerId);
 
     const config = {
-      fps: 20, // High FPS for quick detection
+      fps: 20,
       qrbox: (viewWidth, viewHeight) => {
-        // Dynamic scan box: 80% width, 40% height (optimized for 1D barcodes)
-        const w = Math.floor(viewWidth * 0.8);
-        const h = Math.floor(viewHeight * 0.4);
-        return { width: w, height: h };
+        // Square scan box for QR codes
+        const s = Math.min(viewWidth, viewHeight) * 0.7;
+        return { width: s, height: s };
       },
-      aspectRatio: 1.777778, // 16:9
+      aspectRatio: 1.0, 
       videoConstraints: {
         facingMode: 'environment',
-        width: { min: 640, ideal: 1280, max: 1920 },
-        height: { min: 480, ideal: 720, max: 1080 },
+        width: { min: 640, ideal: 1280 },
+        height: { min: 640, ideal: 1280 },
         focusMode: 'continuous'
       }
     };
@@ -91,10 +87,10 @@ const Barcode = (() => {
       await _scanner.start({ facingMode: 'environment' }, config, (decodedText) => {
         if (debounce) return;
         
-        // Pattern filter: Only accept system barcodes
+        // Pattern filter: Only accept system barcodes/QRs
         if (!decodedText.startsWith('CBL-')) return;
 
-        // Triple-read confirmation for 100% accuracy
+        // Double-read confirmation is enough for QR (more robust than 1D)
         if (decodedText === lastResult) {
           count++;
         } else {
@@ -102,12 +98,12 @@ const Barcode = (() => {
           count = 1;
         }
 
-        if (count >= 3 && onScan) {
+        if (count >= 2 && onScan) {
           debounce = true;
           onScan(decodedText);
           lastResult = null;
           count = 0;
-          setTimeout(() => { debounce = false; }, 3000);
+          setTimeout(() => { debounce = false; }, 2000);
         }
       });
       return true;
@@ -130,34 +126,19 @@ const Barcode = (() => {
   }
 
   async function downloadPNG(product, options = {}) {
-    const { width = 4, height = 100, fontSize = 16, margin = 10 } = options;
-    return new Promise(resolve => {
-      const c = document.createElement('canvas');
-      c.style.display = 'none';
-      document.body.appendChild(c);
-      try {
-        JsBarcode(c, product.barcode, {
-          format: 'CODE128',
-          width: width,
-          height: height,
-          displayValue: true,
-          fontSize: fontSize,
-          margin: margin,
-          background: '#ffffff',
-          lineColor: '#000000'
-        });
-        const link = document.createElement('a');
-        link.download = `barcode-${product.cableNo}-${width}x${height}.png`;
-        link.href = c.toDataURL('image/png');
-        link.click();
-        resolve(true);
-      } catch (e) {
-        console.error('Download PNG error', e);
-        resolve(false);
-      } finally {
-        document.body.removeChild(c);
-      }
-    });
+    const { size = 512, margin = 2 } = options;
+    if (typeof QRCode === 'undefined') return false;
+    try {
+      const dataUrl = await QRCode.toDataURL(product.barcode, { width: size, margin: margin });
+      const link = document.createElement('a');
+      link.download = `qr-${product.cableNo}-${size}.png`;
+      link.href = dataUrl;
+      link.click();
+      return true;
+    } catch (e) {
+      console.error('Download QR error', e);
+      return false;
+    }
   }
 
   return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, isCameraActive };

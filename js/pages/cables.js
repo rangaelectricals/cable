@@ -159,7 +159,7 @@ const CablesPage = {
         </div>
       </dialog>
 
-      <!-- ── BARCODE MODAL ───────────────────────────────────────────────── -->
+      <!-- ── QR CODE MODAL ───────────────────────────────────────────────── -->
       <dialog id="modal-barcode" class="modal modal-bottom sm:modal-middle">
         <div class="modal-box w-full max-w-sm text-center">
           <form method="dialog">
@@ -167,7 +167,7 @@ const CablesPage = {
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </form>
-          <h3 class="font-bold text-lg mb-4">Cable Barcode</h3>
+          <h3 class="font-bold text-lg mb-4">Cable QR Code</h3>
           <div id="barcode-content"></div>
           <div id="barcode-actions" class="flex justify-center gap-2 mt-4"></div>
         </div>
@@ -186,7 +186,7 @@ const CablesPage = {
           <div class="modal-action mt-5">
             <button class="btn btn-ghost btn-sm" onclick="Modal.close('modal-cable-detail')">Close</button>
             <button id="btn-detail-barcode" class="btn btn-outline btn-sm gap-2">
-              <i data-lucide="barcode" class="w-4 h-4"></i> Barcode
+              <i data-lucide="qr-code" class="w-4 h-4"></i> QR Code
             </button>
             <button id="btn-detail-edit" class="btn btn-primary btn-sm gap-2" style="display:none">
               <i data-lucide="pencil" class="w-4 h-4"></i> Edit
@@ -551,8 +551,8 @@ const CablesPage = {
     const p = this._products.find(p => String(p.id) === String(id));
     if (!p) return;
     document.getElementById('barcode-content').innerHTML = `
-      <div class="bg-white p-4 rounded-xl border border-base-200 inline-block">
-        <svg id="bc-svg" class="max-w-full"></svg>
+      <div class="bg-white p-4 rounded-2xl border border-base-200 inline-block shadow-sm">
+        <canvas id="bc-canvas" class="max-w-full rounded-lg"></canvas>
       </div>
       <div class="mt-4 space-y-4">
         <div class="text-sm text-base-content/60">
@@ -560,38 +560,36 @@ const CablesPage = {
           <span class="text-xs">${Helpers.escape(p.category)} · ${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}mm²</span><br/>
           <code class="text-xs text-base-content/35">${Helpers.escape(p.barcode)}</code>
         </div>
-        <div class="divider text-[10px] uppercase tracking-widest opacity-30">Sticker Size</div>
+        <div class="divider text-[10px] uppercase tracking-widest opacity-30">QR Size</div>
         <div class="flex flex-col gap-2">
           <select id="bc-size-select" class="select select-bordered select-sm w-full">
-            <option value="2,60,12">Small (Compact)</option>
-            <option value="4,100,16" selected>Medium (Standard)</option>
-            <option value="6,150,20">Large (High Res)</option>
-            <option value="2,150,11">Vertical Slim</option>
+            <option value="256">Small (256px)</option>
+            <option value="512" selected>Medium (512px)</option>
+            <option value="1024">Large (1024px)</option>
           </select>
           <button class="btn btn-primary btn-sm w-full gap-2" onclick="CablesPage.downloadBarcode('${p.id}')">
-            <i data-lucide="download" class="w-4 h-4"></i> Download PNG
+            <i data-lucide="download" class="w-4 h-4"></i> Download QR PNG
           </button>
         </div>
       </div>`;
     document.getElementById('barcode-actions').innerHTML =
       `<button class="btn btn-ghost btn-sm" onclick="Modal.close('modal-barcode')">Close</button>
        <button class="btn btn-outline btn-sm gap-2" onclick="window.print()">
-         <i data-lucide="printer" class="w-4 h-4"></i> Print
+         <i data-lucide="printer" class="w-4 h-4"></i> Print Label
        </button>`;
     Modal.open('modal-barcode');
-    setTimeout(() => Barcode.generate('bc-svg', p.barcode), 100);
+    setTimeout(() => Barcode.generate('bc-canvas', p.barcode), 100);
     if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('modal-barcode')] });
   },
 
   async downloadBarcode(id) {
     const p = this._products.find(p => String(p.id) === String(id));
     if (!p) return;
-    const select = document.getElementById('bc-size-select');
-    const [width, height, fontSize] = select.value.split(',').map(Number);
+    const size = parseInt(document.getElementById('bc-size-select').value);
     
-    Toast.show('info', 'Preparing...', 'Generating high quality PNG');
-    await Barcode.downloadPNG(p, { width, height, fontSize, margin: 15 });
-    Toast.show('success', 'Downloaded', 'Barcode PNG saved to your device.');
+    Toast.show('info', 'Preparing...', 'Generating high quality QR');
+    await Barcode.downloadPNG(p, { size });
+    Toast.show('success', 'Downloaded', 'QR Code PNG saved.');
   },
 
   async exportCSV() {
