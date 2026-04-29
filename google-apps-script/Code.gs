@@ -507,6 +507,8 @@ function handleScanAction(p) {
 
     updates.status = 'IN_GODOWN';
     updates.dateIn = now.slice(0, 10);
+    updates.siteName = '';
+    updates.personAssigned = '';
 
     if (p.meterBalance !== undefined && p.meterBalance !== '') {
       var mb = parseFloat(p.meterBalance);
