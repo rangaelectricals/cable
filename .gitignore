@@ -9,3 +9,5 @@ Thumbs.db
 # Local env files
 .env
 .env.local
+
+vendor-outstanding/
