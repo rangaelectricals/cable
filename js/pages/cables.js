@@ -339,11 +339,18 @@ const CablesPage = {
         <div class="text-[10px] font-mono text-slate-400 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
       </td>
       <td class="text-sm">
-        <div class="font-medium whitespace-nowrap">${Helpers.escape(p.category)}</div>
-        <div class="text-[11px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">
-          ${p.no ? `<span class="text-slate-800 font-black">${Helpers.escape(p.no)}</span> / ` : ''}
-          ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - 
-          <span class="font-bold text-indigo-600">${p.meter}m</span>
+        <div class="font-bold text-slate-800 text-[13px] whitespace-nowrap">${Helpers.escape(p.category)}</div>
+        <div class="mt-1 flex items-center gap-1.5 whitespace-nowrap">
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-black text-[11px] border border-slate-200">
+            ${p.no ? `${Helpers.escape(p.no)}` : '—'}
+          </span>
+          <span class="text-[12px] font-black text-indigo-700 uppercase tracking-tight">
+            ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
+          </span>
+          <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+          <span class="text-[12px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 uppercase tracking-widest">
+            ${p.meter}m
+          </span>
         </div>
       </td>
       <td class="text-sm">${p.quantity||1}</td>

@@ -196,7 +196,10 @@ const LogsPage = {
       <td class="text-slate-400 text-xs">${rowStart+i+1}</td>
       <td class="text-xs whitespace-nowrap">${Helpers.formatDateTime(l.timestamp)}</td>
       <td class="text-sm">
-        <div class="font-semibold">${l.no ? `<span class="text-slate-400 font-bold mr-1">#${Helpers.escape(l.no)}</span>` : ''}${Helpers.escape(l.cableNo)}</div>
+        <div class="flex items-center gap-2">
+          ${l.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-black text-[10px] border border-slate-200">NO: ${Helpers.escape(l.no)}</span>` : ''}
+          <div class="font-black text-slate-800 text-[13px] tracking-tight">${Helpers.escape(l.cableNo)}</div>
+        </div>
       </td>
       <td>${UI.actionBadge(l.action)}</td>
       <td class="text-sm">${Helpers.escape(l.user||'—')}</td>
