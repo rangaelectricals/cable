@@ -46,7 +46,7 @@ const API = (() => {
 
   // ── PRODUCTS ──────────────────────────────────────────────────────────────
   async function getProducts(filters = {}) {
-    return _get('getProducts', filters, false);
+    return _get('getProducts', filters, true);
   }
 
   async function addProduct(data) {
@@ -75,7 +75,7 @@ const API = (() => {
   }
 
   async function getStats() {
-    return _get('getStats', {}, false);
+    return _get('getStats', {}, true);
   }
 
   // ── SCAN ──────────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ const API = (() => {
   async function getLogs(params = {}) {
     // Accept legacy numeric argument (old callers passing limit as number)
     if (typeof params === 'number') params = { pageSize: params, page: 1 };
-    return _get('getLogs', params);
+    return _get('getLogs', params, true);
   }
 
   // ── USERS ─────────────────────────────────────────────────────────────────
