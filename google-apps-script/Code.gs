@@ -507,6 +507,7 @@ function handleScanAction(p) {
 
     updates.status = 'IN_GODOWN';
     updates.dateIn = now.slice(0, 10);
+    updates.dateOut = '';
     updates.siteName = '';
     updates.personAssigned = '';
 
