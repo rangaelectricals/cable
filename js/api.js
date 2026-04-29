@@ -79,10 +79,10 @@ const API = (() => {
   }
 
   // ── SCAN ──────────────────────────────────────────────────────────────────
-  async function scanAction(action, barcode, extra = {}) {
+  async function scanAction(mode, barcode, extra = {}) {
     const user = Auth.getUser();
     const res  = await _get('scanAction', {
-      action,
+      mode,
       barcode,
       user: user?.username || 'unknown',
       ...extra,

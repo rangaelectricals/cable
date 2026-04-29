@@ -438,7 +438,7 @@ function handleBulkAddProducts(p) {
 
 // ── SCAN ACTION ───────────────────────────────────────────────────────────────
 function handleScanAction(p) {
-  var action  = p.action;
+  var action  = p.mode || p.action;
   var barcode = p.barcode;
   if (!action || !barcode) return _err('action and barcode are required.');
 

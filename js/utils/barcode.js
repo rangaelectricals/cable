@@ -63,12 +63,24 @@ const Barcode = (() => {
     if (!el) return false;
     try {
       Quagga.init({
-        inputStream: { name:'Live', type:'LiveStream', target: el,
-          constraints: { width:{min:320,ideal:640}, height:{min:240,ideal:480}, facingMode:'environment' }},
-        locator: { patchSize:'medium', halfSample:true },
-        numOfWorkers: Math.min(navigator.hardwareConcurrency||2, 4),
+        inputStream: {
+          name: 'Live',
+          type: 'LiveStream',
+          target: el,
+          constraints: {
+            width: { min: 640, ideal: 1280 },
+            height: { min: 480, ideal: 720 },
+            facingMode: 'environment',
+            aspectRatio: { min: 1, max: 2 }
+          }
+        },
+        locator: { patchSize: 'small', halfSample: false },
+        numOfWorkers: Math.min(navigator.hardwareConcurrency || 2, 4),
         frequency: 10,
-        decoder: { readers:['code_128_reader','ean_reader'] },
+        decoder: {
+          readers: ['code_128_reader', 'ean_reader'],
+          multiple: false
+        },
         locate: true,
       }, err => {
         if (err) { Toast.show('error','Camera Error','Could not access camera.'); return; }
