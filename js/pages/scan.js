@@ -15,7 +15,7 @@ const ScanPage = {
 
     container.innerHTML = `
     <div class="space-y-4 page-enter">
-      ${UI.pageHeader('Scan Operations', 'Godown ↔ Site barcode workflow')}
+      ${UI.pageHeader('Scan Operations', 'Godown ↔ Site QR workflow')}
 
       <!-- ── Mode selector (full-width on mobile) ── -->
       <div class="grid grid-cols-3 gap-2">
@@ -43,8 +43,8 @@ const ScanPage = {
           <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body gap-4 p-4">
               <div class="flex items-center gap-2">
-                <i data-lucide="scan-line" class="w-5 h-5 text-primary"></i>
-                <h2 class="font-bold text-base">Barcode Input</h2>
+                <i data-lucide="qr-code" class="w-5 h-5 text-primary"></i>
+                <h2 class="font-bold text-base">QR Input</h2>
               </div>
 
               <!-- Scan input + buttons -->
@@ -52,7 +52,7 @@ const ScanPage = {
                 <label class="input input-bordered flex items-center gap-2 flex-1 min-w-0">
                   <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
                   <input type="text" id="scan-input" class="grow min-w-0 text-sm"
-                    placeholder="Scan or type barcode…" autocomplete="off"
+                    placeholder="Scan or type QR code…" autocomplete="off"
                     inputmode="none" />
                 </label>
                 <button class="btn btn-primary gap-1.5" onclick="ScanPage.trigger()">
@@ -79,7 +79,7 @@ const ScanPage = {
                 </div>
                 <p class="text-center text-xs text-base-content/50 mt-2 flex items-center justify-center gap-1">
                   <i data-lucide="info" class="w-3 h-3"></i>
-                  Point camera at barcode to scan automatically
+                  Point camera at QR code to scan automatically
                 </p>
               </div>
 
@@ -131,7 +131,7 @@ const ScanPage = {
                 </div>
               </div>
               <div id="session-scans" class="divide-y divide-base-200 max-h-80 lg:max-h-none overflow-y-auto">
-                ${UI.emptyState('list', 'No scans yet', 'Scanned barcodes will appear here')}
+                ${UI.emptyState('list', 'No scans yet', 'Scanned QR codes will appear here')}
               </div>
             </div>
           </div>
@@ -180,17 +180,17 @@ const ScanPage = {
       ACTIVATE: {
         cls:'alert-info', icon:'check-circle',
         title:'Activation Scan',
-        desc:'Scan a newly registered cable barcode. It will be marked as <strong>In Godown</strong>. Each barcode can only be activated once.',
+        desc:'Scan a newly registered cable QR code. It will be marked as <strong>In Godown</strong>. Each code can only be activated once.',
       },
       SEND_TO_SITE: {
         cls:'alert-warning', icon:'truck',
         title:'Send to Site — Godown → Site',
-        desc:'Cable must be <strong>In Godown</strong>. Fill in site name and person assigned, then scan the barcode to dispatch.',
+        desc:'Cable must be <strong>In Godown</strong>. Fill in site name and person assigned, then scan the QR code to dispatch.',
       },
       RETURN_TO_GODOWN: {
         cls:'alert-success', icon:'warehouse',
         title:'Return to Godown — Site → Godown',
-        desc:'Cable must be <strong>Sent to Site</strong>. Scan barcode to record return. Optionally update remaining meter balance.',
+        desc:'Cable must be <strong>Sent to Site</strong>. Scan QR code to record return. Optionally update remaining meter balance.',
       },
     };
 
@@ -241,7 +241,7 @@ const ScanPage = {
 
   async trigger() {
     const barcode = (document.getElementById('scan-input')?.value || '').trim();
-    if (!barcode) { Toast.show('warning', 'Empty Scan', 'Please enter or scan a barcode.'); return; }
+    if (!barcode) { Toast.show('warning', 'Empty Scan', 'Please enter or scan a QR code.'); return; }
 
     const extra = {};
     if (this._mode === 'SEND_TO_SITE') {
@@ -336,7 +336,7 @@ const ScanPage = {
     const el = document.getElementById('session-scans');
     if (!el) return;
     if (!this._sessionScans.length) {
-      el.innerHTML = UI.emptyState('list', 'No scans yet', 'Scanned barcodes will appear here');
+      el.innerHTML = UI.emptyState('list', 'No scans yet', 'Scanned QR codes will appear here');
       if (window.lucide) lucide.createIcons({ nodes: [el] });
       return;
     }

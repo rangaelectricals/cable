@@ -64,7 +64,7 @@ const LogsPage = {
             <div class="grid grid-cols-2 sm:flex gap-2 flex-wrap">
               <label class="input input-bordered input-sm flex items-center gap-2 col-span-2 sm:flex-1">
                 <i data-lucide="search" class="w-3.5 h-3.5 text-base-content/35 shrink-0"></i>
-                <input type="text" id="log-cable" class="grow text-sm" placeholder="Search Cable No…"
+                <input type="text" id="log-cable" class="grow text-sm" placeholder="Search Cable No / QR…"
                   oninput="LogsPage._onFilter()" />
               </label>
               <select id="log-action"
@@ -133,7 +133,7 @@ const LogsPage = {
     if (!this._logs.length) {
       wrap.innerHTML = `
         <div class="col-span-2 bg-white border border-base-200 rounded-xl">
-          ${UI.emptyState('activity','No activity yet','Scan operations will appear here')}
+          ${UI.emptyState('activity','No activity yet','QR operations will appear here')}
         </div>`;
       if (window.lucide) lucide.createIcons({ nodes: [wrap] });
       return;
@@ -187,7 +187,7 @@ const LogsPage = {
     if (!body) return;
     const rowStart = (this._page - 1) * this._pageSize;
     if (!this._logs.length) {
-      body.innerHTML = `<tr><td colspan="6">${UI.emptyState('activity','No activity yet','Scan operations will appear here')}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="6">${UI.emptyState('activity','No activity yet','QR operations will appear here')}</td></tr>`;
       if (window.lucide) lucide.createIcons({ nodes: [body] });
       return;
     }

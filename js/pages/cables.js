@@ -73,7 +73,7 @@ const CablesPage = {
               <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
                 <i data-lucide="search" class="w-4 h-4 text-base-content/40 shrink-0"></i>
                 <input type="text" id="cable-search" class="grow min-w-0 text-sm"
-                  placeholder="Cable No / Barcode / Site…"
+                  placeholder="Cable No / QR / Site…"
                   value="${Helpers.escape(this._filters.search)}"
                   oninput="CablesPage._onFilter()" />
               </label>
@@ -331,9 +331,9 @@ const CablesPage = {
         :'<span class="badge badge-ghost badge-sm">No</span>'}</td>
       <td>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button class="btn btn-ghost btn-xs btn-square" title="Barcode"
+          <button class="btn btn-ghost btn-xs btn-square" title="QR Code"
             onclick="CablesPage.viewBarcode('${p.id}')">
-            <i data-lucide="barcode" class="w-4 h-4"></i>
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
           </button>
           ${Auth.canEdit() ? `<button class="btn btn-ghost btn-xs btn-square" title="Edit"
             onclick="CablesPage.openEdit('${p.id}')">
@@ -413,8 +413,8 @@ const CablesPage = {
         <div class="border-t border-base-100 grid grid-cols-3 divide-x divide-base-100">
           <button class="py-2 flex items-center justify-center text-base-content/50
             hover:bg-base-100 hover:text-primary transition-colors"
-            onclick="CablesPage.viewBarcode('${p.id}')" title="Barcode">
-            <i data-lucide="barcode" class="w-3.5 h-3.5"></i>
+            onclick="CablesPage.viewBarcode('${p.id}')" title="QR Code">
+            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
           </button>
           ${Auth.canEdit() ? `
           <button class="py-2 flex items-center justify-center text-base-content/50
@@ -614,7 +614,7 @@ const CablesPage = {
     const isActive = String(p.activated) === 'true' || p.activated === true;
     const fields = [
       { label:'Cable No',    value: p.cableNo,                 bold: true },
-      { label:'Barcode',     value: p.barcode,                  mono: true },
+      { label:'QR Code / ID',value: p.barcode,                  mono: true },
       { label:'Category',    value: p.category                             },
       { label:'Core',        value: p.core                                 },
       { label:'SQMM',        value: p.sqmm ? `${p.sqmm} mm²` : '—'       },
