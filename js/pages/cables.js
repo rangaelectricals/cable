@@ -117,7 +117,7 @@ const CablesPage = {
             <table class="table table-sm table-zebra">
               <thead class="bg-slate-100 text-xs uppercase tracking-wide">
                 <tr>
-                  <th>#</th><th>Cable No</th><th>Category</th>
+                  <th>#</th><th>NO</th><th>Cable No</th><th>Category</th>
                   <th>Qty</th>
                   <th>Status</th><th>Site</th><th>Person</th>
                   <th>Date Out</th><th>Active</th><th>Actions</th>
@@ -144,8 +144,13 @@ const CablesPage = {
           <h3 id="modal-cable-title" class="font-bold text-lg mb-5">Add Cable</h3>
           <form id="form-cable" onsubmit="CablesPage.save(event)">
             <input type="hidden" id="f-cable-id" />
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              ${UI.field('Cable No', `<input type="text" id="f-cableNo" class="input input-bordered w-full" placeholder="CBL-001" required />`, true)}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${UI.field('NO', `<input type="text" id="f-no" class="input input-bordered w-full" placeholder="e.g. 1" />`)}
+              <div class="sm:col-span-2">
+                ${UI.field('Cable No', `<input type="text" id="f-cableNo" class="input input-bordered w-full" placeholder="CBL-001" required />`, true)}
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               ${UI.field('Category', `<select id="f-category" class="select select-bordered w-full" required>
                 <option value="">Select…</option>
                 ${categories.map(c=>`<option value="${Helpers.escape(c)}">${Helpers.escape(c)}</option>`).join('')}
@@ -328,6 +333,7 @@ const CablesPage = {
     body.innerHTML = this._products.map((p, i) => `
     <tr class="hover group">
       <td class="text-slate-400 text-xs w-8">${rowStart+i+1}</td>
+      <td class="text-xs font-black text-slate-500">${Helpers.escape(p.no || '-')}</td>
       <td>
         <div class="font-semibold text-sm cursor-pointer hover:text-indigo-600 transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
@@ -412,9 +418,14 @@ const CablesPage = {
 
         <div class="flex items-center justify-between px-4 pt-3.5 pb-2 cursor-pointer"
              onclick="CablesPage.viewDetail('${p.id}')">
-          <div class="min-w-0 flex-1">
-            <div class="text-base font-black text-slate-800 leading-tight truncate">${Helpers.escape(p.cableNo)}</div>
-            <div class="text-[10px] font-mono text-slate-400 mt-0.5 truncate">${Helpers.escape(p.barcode || '')}</div>
+          <div class="min-w-0 flex-1 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+               <span class="text-[10px] font-black text-slate-500">${Helpers.escape(p.no || '-')}</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-base font-black text-slate-800 leading-tight truncate">${Helpers.escape(p.cableNo)}</div>
+              <div class="text-[10px] font-mono text-slate-400 mt-0.5 truncate">${Helpers.escape(p.barcode || '')}</div>
+            </div>
           </div>
           <span class="ml-3 shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusTextColor}">
             <i data-lucide="${statusIcon}" class="w-3.5 h-3.5"></i>
@@ -576,6 +587,7 @@ const CablesPage = {
     if (!p) return;
     document.getElementById('modal-cable-title').textContent = 'Edit Cable';
     document.getElementById('f-cable-id').value  = p.id;
+    document.getElementById('f-no').value        = p.no || '';
     document.getElementById('f-cableNo').value   = p.cableNo;
     document.getElementById('f-category').value  = p.category;
     document.getElementById('f-core').value      = p.core;
@@ -594,6 +606,7 @@ const CablesPage = {
     btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Saving…';
     const id   = document.getElementById('f-cable-id').value;
     const data = {
+      no:       document.getElementById('f-no').value.trim(),
       cableNo:  document.getElementById('f-cableNo').value.trim(),
       category: document.getElementById('f-category').value,
       core:     document.getElementById('f-core').value,
@@ -720,6 +733,7 @@ const CablesPage = {
     if (!p) return;
     const isActive = String(p.activated) === 'true' || p.activated === true;
     const fields = [
+      { label:'NO',          value: p.no || '—',               bold: true },
       { label:'Cable No',    value: p.cableNo,                 bold: true },
       { label:'QR Code / ID',value: p.barcode,                  mono: true },
       { label:'Category',    value: p.category                             },

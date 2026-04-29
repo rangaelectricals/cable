@@ -388,8 +388,8 @@ const ScanPage = {
 
             <div class="grid grid-cols-2 gap-3 bg-white rounded-xl p-3 shadow-sm border border-emerald-100/50">
               <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Cable No</span>
-                <span class="text-xs font-black text-slate-800">${Helpers.escape(p.cableNo)}</span>
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">NO / Cable No</span>
+                <span class="text-xs font-black text-slate-800">${p.no ? Helpers.escape(p.no) + ' - ' : ''}${Helpers.escape(p.cableNo)}</span>
               </div>
               <div class="text-left">
                 <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
