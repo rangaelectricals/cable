@@ -75,6 +75,7 @@ const API = (() => {
     if (filters.search) {
       const q = filters.search.toLowerCase();
       rows = rows.filter(r => 
+        (r.no && String(r.no).toLowerCase().includes(q)) ||
         (r.cableNo && r.cableNo.toLowerCase().includes(q)) ||
         (r.barcode && r.barcode.toLowerCase().includes(q)) ||
         (r.siteName && r.siteName.toLowerCase().includes(q))

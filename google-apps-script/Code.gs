@@ -31,10 +31,10 @@ var SHEET_NAMES = {
 // Order matters — it defines the column layout in the spreadsheet
 var SHEET_HEADERS = {
   USERS:        ['id','username','password','role','name'],
-  PRODUCTS:     ['id','cableNo','barcode','category','core','sqmm','meter','quantity',
+  PRODUCTS:     ['id','no','cableNo','barcode','category','core','sqmm','meter','quantity',
                  'status','siteName','personAssigned','dateOut','dateIn',
                  'remarks','activated','createdAt','updatedAt'],
-  TRANSACTIONS: ['id','barcode','action','cableNo','user','timestamp','note','siteName','personAssigned'],
+  TRANSACTIONS: ['id','no','barcode','action','cableNo','user','timestamp','note','siteName','personAssigned'],
   SCAN_LOG:     ['barcode','action','timestamp'],
   MASTERS:      ['id','type','value','sortOrder','createdAt'],
 };
@@ -56,17 +56,30 @@ function _err(message)     { return _json({ success: false, message: message });
 //     then returns the new sheet
 // ─────────────────────────────────────────────────────────────────────────────
 function getSheet(name) {
-  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(name);
 
+  // If exact match fails, try case-insensitive search to prevent duplicates
   if (!sheet) {
-    // Sheet does not exist — create it now
+    var sheets = ss.getSheets();
+    for (var i = 0; i < sheets.length; i++) {
+      if (sheets[i].getName().trim().toUpperCase() === name.toUpperCase()) {
+        return sheets[i];
+      }
+    }
+
+    // Truly missing? Create it and initialize
     sheet = ss.insertSheet(name);
     _initSheetHeaders(sheet, name);
 
-    // Seed default data when certain sheets are first created
     if (name === SHEET_NAMES.USERS)   _seedDefaultAdmin(sheet);
     if (name === SHEET_NAMES.MASTERS) _seedDefaultMasters(sheet);
+    
+    // Clean up: If we just created the first system sheet and "Sheet1" is empty, remove "Sheet1"
+    var sheet1 = ss.getSheetByName('Sheet1');
+    if (sheet1 && sheet1.getLastRow() === 0 && ss.getSheets().length > 1) {
+      ss.deleteSheet(sheet1);
+    }
   }
 
   return sheet;
@@ -287,7 +300,8 @@ function handleGetProducts(p) {
   if (p.search) {
     var q = String(p.search).toLowerCase();
     rows = rows.filter(function(r) {
-      return String(r.cableNo   || '').toLowerCase().indexOf(q) >= 0 ||
+      return String(r.no        || '').toLowerCase().indexOf(q) >= 0 ||
+             String(r.cableNo   || '').toLowerCase().indexOf(q) >= 0 ||
              String(r.barcode   || '').toLowerCase().indexOf(q) >= 0 ||
              String(r.siteName  || '').toLowerCase().indexOf(q) >= 0;
     });
@@ -325,6 +339,7 @@ function handleAddProduct(p) {
   var now = new Date().toISOString();
   var obj = {
     id:             p.id ? String(p.id) : String(Date.now()),
+    no:             p.no ? String(p.no).trim() : '',
     cableNo:        String(p.cableNo).trim(),
     barcode:        p.barcode ? String(p.barcode) : _generateBarcode(),
     category:       String(p.category),
@@ -349,7 +364,7 @@ function handleAddProduct(p) {
 
 function handleUpdateProduct(p) {
   if (!p.id) return _err('id is required.');
-  var allowed = ['cableNo','category','core','sqmm','meter','quantity','remarks'];
+  var allowed = ['no','cableNo','category','core','sqmm','meter','quantity','remarks'];
   var updates = { updatedAt: new Date().toISOString() };
   allowed.forEach(function(k) { if (p[k] !== undefined) updates[k] = p[k]; });
   if (!updateById(SHEET_NAMES.PRODUCTS, p.id, updates)) return _err('Product not found.');
@@ -409,6 +424,7 @@ function handleBulkAddProducts(p) {
     }
     var obj = {
       id:             String(Date.now() + idx),
+      no:             String(row.no || '').trim(),
       cableNo:        cableNo,
       barcode:        _generateBarcode(),
       category:       String(row.category).trim(),
@@ -542,6 +558,7 @@ function handleScanAction(p) {
   // Write transaction log
   var txn = {
     id:             String(Date.now()),
+    no:             product.no || '',
     barcode:        barcode,
     action:         action,
     cableNo:        product.cableNo,
@@ -570,10 +587,14 @@ function handleGetLogs(p) {
 
   // Filter by action
   if (p.action)   rows = rows.filter(function(r) { return r.action  === p.action; });
-  // Filter by cableNo (partial match)
-  if (p.cableNo)  rows = rows.filter(function(r) {
-    return String(r.cableNo||'').toLowerCase().indexOf(String(p.cableNo).toLowerCase()) >= 0;
-  });
+  // Filter by cableNo / NO (partial match)
+  if (p.cableNo) {
+    var q = String(p.cableNo).toLowerCase();
+    rows = rows.filter(function(r) {
+      return String(r.no      || '').toLowerCase().indexOf(q) >= 0 ||
+             String(r.cableNo || '').toLowerCase().indexOf(q) >= 0;
+    });
+  }
   // Filter by site (partial match)
   if (p.siteName) rows = rows.filter(function(r) {
     return String(r.siteName||'').toLowerCase().indexOf(String(p.siteName).toLowerCase()) >= 0;
@@ -606,7 +627,7 @@ function handleGetLogs(p) {
 function handleGetData() {
   return _ok({
     products: sheetToObjects(getSheet(SHEET_NAMES.PRODUCTS)),
-    logs:     sheetToObjects(getSheet(SHEET_NAMES.LOGS)),
+    logs:     sheetToObjects(getSheet(SHEET_NAMES.TRANSACTIONS)),
     users:    sheetToObjects(getSheet(SHEET_NAMES.USERS)),
     masters:  sheetToObjects(getSheet(SHEET_NAMES.MASTERS))
   });
