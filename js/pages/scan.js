@@ -4,6 +4,7 @@
  */
 const ScanPage = {
   _mode: 'ACTIVATE',
+  _inputMode: 'SCAN',
   _sessionScans: [],
 
   async render(container) {
@@ -43,22 +44,33 @@ const ScanPage = {
         <div class="lg:col-span-3 space-y-3">
           <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body gap-4 p-4">
-              <div class="flex items-center gap-2">
-                <i data-lucide="qr-code" class="w-5 h-5 text-primary"></i>
-                <h2 class="font-bold text-base">QR Input</h2>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="qr-code" class="w-5 h-5 text-primary"></i>
+                  <h2 class="font-bold text-base">Input</h2>
+                </div>
+                <div class="join">
+                  <button id="btn-mode-scan" class="btn btn-xs join-item btn-neutral" onclick="ScanPage.setInputMode('SCAN')">Scan / Type</button>
+                  <button id="btn-mode-select" class="btn btn-xs join-item btn-outline btn-neutral" onclick="ScanPage.setInputMode('SELECT')">Select List</button>
+                </div>
               </div>
 
               <!-- Scan input + buttons -->
               <div class="flex gap-2">
-                <label class="input input-bordered flex items-center gap-2 flex-1 min-w-0">
+                <label id="wrap-scan-input" class="input input-bordered flex items-center gap-2 flex-1 min-w-0">
                   <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
                   <input type="text" id="scan-input" class="grow min-w-0 text-sm"
                     placeholder="Scan QR or type Cable No…" autocomplete="off"
                     inputmode="text" />
                 </label>
+
+                <select id="scan-select" class="select select-bordered flex-1 min-w-0 hidden text-sm">
+                  <option value="">Select a cable...</option>
+                </select>
+
                 <button class="btn btn-primary gap-1.5" onclick="ScanPage.trigger()">
                   <i data-lucide="zap" class="w-4 h-4"></i>
-                  <span class="hidden sm:inline">Scan</span>
+                  <span class="hidden sm:inline" id="btn-action-text">Scan</span>
                 </button>
                 <button class="btn btn-outline btn-primary btn-square" id="btn-camera"
                   onclick="ScanPage.toggleCamera()" title="Toggle Camera">
@@ -154,8 +166,74 @@ const ScanPage = {
       if (e.key === 'Enter') ScanPage.trigger();
     });
 
+    this.setInputMode('SCAN');
     this.setMode('ACTIVATE');
     if (window.lucide) lucide.createIcons({ nodes: [container] });
+  },
+
+  async setInputMode(mode) {
+    this._inputMode = mode;
+    const btnScan = document.getElementById('btn-mode-scan');
+    const btnSelect = document.getElementById('btn-mode-select');
+    const wrapInput = document.getElementById('wrap-scan-input');
+    const select = document.getElementById('scan-select');
+    const btnCamera = document.getElementById('btn-camera');
+    const actionText = document.getElementById('btn-action-text');
+
+    if (!btnScan) return;
+
+    if (mode === 'SCAN') {
+      btnScan.className = 'btn btn-xs join-item btn-neutral';
+      btnSelect.className = 'btn btn-xs join-item btn-outline btn-neutral';
+      wrapInput.classList.remove('hidden');
+      select.classList.add('hidden');
+      btnCamera.classList.remove('hidden');
+      actionText.textContent = 'Scan';
+      document.getElementById('scan-input').focus();
+    } else {
+      btnScan.className = 'btn btn-xs join-item btn-outline btn-neutral';
+      btnSelect.className = 'btn btn-xs join-item btn-neutral';
+      wrapInput.classList.add('hidden');
+      select.classList.remove('hidden');
+      btnCamera.classList.add('hidden');
+      actionText.textContent = 'Process';
+
+      // Load eligible cables
+      await this.loadEligibleCables();
+    }
+  },
+
+  async loadEligibleCables() {
+    const select = document.getElementById('scan-select');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Loading cables...</option>';
+    select.disabled = true;
+
+    try {
+      let statusFilter = '';
+      if (this._mode === 'SEND_TO_SITE') statusFilter = 'IN_GODOWN';
+      else if (this._mode === 'SITE_TO_SITE' || this._mode === 'RETURN_TO_GODOWN') statusFilter = 'SENT_TO_SITE';
+      
+      const res = await API.getProducts({ pageSize: 2000, status: statusFilter });
+      let cables = res.data || [];
+      
+      if (this._mode === 'ACTIVATE') {
+        cables = cables.filter(c => String(c.activated) !== 'true' && c.activated !== true);
+      } else if (this._mode === 'SEND_TO_SITE') {
+        cables = cables.filter(c => String(c.activated) === 'true' || c.activated === true);
+      }
+
+      if (cables.length === 0) {
+        select.innerHTML = '<option value="">No eligible cables found</option>';
+      } else {
+        select.innerHTML = '<option value="">-- Select Cable --</option>' + 
+          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${Helpers.escape(c.cableNo)} (${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
+        select.disabled = false;
+      }
+    } catch(e) {
+      select.innerHTML = '<option value="">Error loading</option>';
+    }
   },
 
   setMode(mode) {
@@ -223,8 +301,15 @@ const ScanPage = {
     const res = document.getElementById('scan-result');
     if (res) { res.classList.add('hidden'); res.innerHTML = ''; }
 
-    // Focus input
-    setTimeout(() => document.getElementById('scan-input')?.focus(), 100);
+    // If in SELECT mode, refresh the list based on new mode
+    if (this._inputMode === 'SELECT') {
+      this.loadEligibleCables();
+    }
+
+    // Focus input if in SCAN mode
+    if (this._inputMode === 'SCAN') {
+      setTimeout(() => document.getElementById('scan-input')?.focus(), 100);
+    }
     if (window.lucide) lucide.createIcons();
   },
 
@@ -247,8 +332,17 @@ const ScanPage = {
   },
 
   async trigger() {
-    const barcode = (document.getElementById('scan-input')?.value || '').trim();
-    if (!barcode) { Toast.show('warning', 'Empty Scan', 'Please enter or scan a QR code.'); return; }
+    let barcode = '';
+    if (this._inputMode === 'SCAN') {
+      barcode = (document.getElementById('scan-input')?.value || '').trim();
+    } else {
+      barcode = (document.getElementById('scan-select')?.value || '').trim();
+    }
+
+    if (!barcode) { 
+      Toast.show('warning', 'Empty Input', this._inputMode === 'SCAN' ? 'Please enter or scan a QR code.' : 'Please select a cable.'); 
+      return; 
+    }
 
     const extra = {};
     if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
@@ -297,7 +391,9 @@ const ScanPage = {
         Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${this._mode.replace(/_/g,' ')}`);
         this._addSessionScan(barcode, true, p.cableNo);
         // Clear fields
-        document.getElementById('scan-input').value = '';
+        if (this._inputMode === 'SCAN') document.getElementById('scan-input').value = '';
+        else document.getElementById('scan-select').value = '';
+        
         if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
           document.getElementById('f-site-name').value   = '';
           document.getElementById('f-person').value      = '';
@@ -307,7 +403,8 @@ const ScanPage = {
           document.getElementById('f-meter-bal').value     = '';
           document.getElementById('f-return-remark').value = '';
         }
-        document.getElementById('scan-input').focus();
+        if (this._inputMode === 'SCAN') document.getElementById('scan-input').focus();
+        else this.loadEligibleCables(); // refresh list to remove the dispatched item
       } else {
         resultDiv.innerHTML = `
           <div class="alert alert-error shadow-sm">
