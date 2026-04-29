@@ -344,6 +344,10 @@ const ScanPage = {
       return; 
     }
 
+    if (Barcode.isCameraActive()) {
+      Barcode.pauseCamera();
+    }
+
     const extra = {};
     if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
       extra.siteName       = (document.getElementById('f-site-name')?.value || '').trim();
@@ -374,19 +378,26 @@ const ScanPage = {
       if (res.success) {
         const p = res.data;
         resultDiv.innerHTML = `
-          <div class="alert alert-success shadow-sm">
-            <i data-lucide="check-circle-2" class="w-6 h-6 shrink-0"></i>
-            <div class="w-full min-w-0">
-              <p class="font-bold text-sm">Scan Accepted — ${this._mode.replace(/_/g,' ')}</p>
-              <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2">
-                <div><span class="text-xs opacity-60 block">Cable No</span><strong class="text-sm">${Helpers.escape(p.cableNo)}</strong></div>
-                <div><span class="text-xs opacity-60 block">Status</span>${Helpers.statusBadge(p.status)}</div>
-                <div><span class="text-xs opacity-60 block">Category</span><span class="text-sm">${Helpers.escape(p.category)}</span></div>
-                <div><span class="text-xs opacity-60 block">Meter</span><span class="text-sm font-medium">${p.meter}m</span></div>
-                ${p.siteName ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Site</span><strong class="text-sm">${Helpers.escape(p.siteName)}</strong></div>` : ''}
-                ${p.personAssigned ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Person</span><span class="text-sm">${Helpers.escape(p.personAssigned)}</span></div>` : ''}
+          <div class="alert alert-success shadow-sm flex flex-col items-stretch">
+            <div class="flex items-start gap-3 w-full">
+              <i data-lucide="check-circle-2" class="w-6 h-6 shrink-0 mt-0.5 text-success"></i>
+              <div class="w-full min-w-0 flex-1">
+                <p class="font-bold text-sm">Scan Accepted — ${this._mode.replace(/_/g,' ')}</p>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2 mb-2">
+                  <div><span class="text-xs opacity-60 block">Cable No</span><strong class="text-sm">${Helpers.escape(p.cableNo)}</strong></div>
+                  <div><span class="text-xs opacity-60 block">Status</span>${Helpers.statusBadge(p.status)}</div>
+                  <div><span class="text-xs opacity-60 block">Category</span><span class="text-sm">${Helpers.escape(p.category)}</span></div>
+                  <div><span class="text-xs opacity-60 block">Meter</span><span class="text-sm font-medium">${p.meter}m</span></div>
+                  ${p.siteName ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Site</span><strong class="text-sm">${Helpers.escape(p.siteName)}</strong></div>` : ''}
+                  ${p.personAssigned ? `<div class="col-span-2"><span class="text-xs opacity-60 block">Person</span><span class="text-sm">${Helpers.escape(p.personAssigned)}</span></div>` : ''}
+                </div>
               </div>
             </div>
+            ${Barcode.isCameraActive() ? `
+            <button class="btn btn-sm btn-success w-full mt-2 gap-2" onclick="ScanPage.resumeScanning()">
+              <i data-lucide="scan-line" class="w-4 h-4"></i> Scan Next Cable
+            </button>
+            ` : ''}
           </div>`;
         Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${this._mode.replace(/_/g,' ')}`);
         this._addSessionScan(barcode, true, p.cableNo);
@@ -406,12 +417,19 @@ const ScanPage = {
         else this.loadEligibleCables(); // refresh list to remove the dispatched item
       } else {
         resultDiv.innerHTML = `
-          <div class="alert alert-error shadow-sm">
-            <i data-lucide="x-circle" class="w-6 h-6 shrink-0"></i>
-            <div>
-              <p class="font-bold text-sm">Scan Rejected</p>
-              <p class="text-xs mt-0.5">${Helpers.escape(res.message)}</p>
+          <div class="alert alert-error shadow-sm flex flex-col items-stretch">
+            <div class="flex gap-3 w-full">
+              <i data-lucide="x-circle" class="w-6 h-6 shrink-0"></i>
+              <div>
+                <p class="font-bold text-sm">Scan Rejected</p>
+                <p class="text-xs mt-0.5">${Helpers.escape(res.message)}</p>
+              </div>
             </div>
+            ${Barcode.isCameraActive() ? `
+            <button class="btn btn-sm btn-outline mt-3 w-full gap-2" onclick="ScanPage.resumeScanning()">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Try Again
+            </button>
+            ` : ''}
           </div>`;
         Toast.show('error', 'Scan Rejected', res.message);
         this._addSessionScan(barcode, false, barcode);
@@ -426,6 +444,20 @@ const ScanPage = {
     }
 
     if (window.lucide) lucide.createIcons({ nodes: [resultDiv] });
+  },
+
+  resumeScanning() {
+    const resultDiv = document.getElementById('scan-result');
+    if (resultDiv) { resultDiv.classList.add('hidden'); resultDiv.innerHTML = ''; }
+    
+    if (this._inputMode === 'SCAN') {
+      const inp = document.getElementById('scan-input');
+      if (inp) { inp.value = ''; inp.focus(); }
+    }
+    
+    if (Barcode.isCameraActive()) {
+      Barcode.resumeCamera();
+    }
   },
 
   _addSessionScan(barcode, ok, label) {

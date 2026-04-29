@@ -111,11 +111,13 @@ const Barcode = (() => {
         }
 
         if (count >= 2 && onScan) {
+          // Instead of a timer, we rely on the caller to pause/resume if they want,
+          // but we still debounce briefly to prevent instant double-fires
           debounce = true;
           onScan(decodedText);
           lastResult = null;
           count = 0;
-          setTimeout(() => { debounce = false; }, 2000);
+          setTimeout(() => { debounce = false; }, 1000);
         }
       });
       return true;
@@ -131,6 +133,18 @@ const Barcode = (() => {
       try { await _scanner.stop(); } catch(e){}
     }
     _scanner = null;
+  }
+
+  function pauseCamera() {
+    if (_scanner && _scanner.isScanning) {
+      _scanner.pause(true); // true = keep video feed on
+    }
+  }
+
+  function resumeCamera() {
+    if (_scanner) {
+      _scanner.resume();
+    }
   }
 
   function isCameraActive() {
@@ -162,5 +176,5 @@ const Barcode = (() => {
     }
   }
 
-  return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, isCameraActive };
+  return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, pauseCamera, resumeCamera, isCameraActive };
 })();
