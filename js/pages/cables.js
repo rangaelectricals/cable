@@ -368,9 +368,26 @@ const CablesPage = {
           </button>
           ${Auth.canEdit() ? `<button class="btn btn-ghost btn-xs btn-square" title="Edit"
             onclick="CablesPage.openEdit('${p.id}')">
-            <i data-lucide="pencil" c    if (!this._products.length) {
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>` : ''}
+          ${Auth.canDelete() ? `<button class="btn btn-ghost btn-xs btn-square text-error" title="Delete"
+            onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+    if (window.lucide) lucide.createIcons({ nodes: [body] });
+  },
+
+  // ── Mobile card view (full-width, premium) ───────────────────────────────
+  _renderCards() {
+    const wrap = document.getElementById('cables-cards');
+    if (!wrap) return;
+
+    if (!this._products.length) {
       wrap.innerHTML = `
-        <div class="col-span-2 rounded-2xl bg-white border border-slate-200 shadow-sm">
+        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm">
           ${UI.emptyState('package',
             this._total===0 ? 'No cables yet' : 'No match',
             this._total===0 ? 'Tap "+ Add Cable" to begin' : 'Try clearing filters')}
@@ -383,21 +400,16 @@ const CablesPage = {
       const isActive = String(p.activated)==='true' || p.activated===true;
       const isSite   = p.status === 'SENT_TO_SITE';
 
-      const statusBarColor = isSite
-        ? 'from-amber-500 to-orange-500'
-        : 'from-emerald-500 to-teal-500';
-
+      const statusBarColor = isSite ? 'from-amber-500 to-orange-500' : 'from-emerald-500 to-teal-500';
       const statusTextColor = isSite ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
       const statusLabel = isSite ? 'Sent to Site' : 'In Godown';
       const statusIcon  = isSite ? 'truck' : 'warehouse';
 
       return `
-      <div class="col-span-2 rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+      <div class="rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
 
-        <!-- Colored top strip + header row -->
         <div class="h-1 bg-gradient-to-r ${statusBarColor}"></div>
 
-        <!-- Cable No + Status -->
         <div class="flex items-center justify-between px-4 pt-3.5 pb-2 cursor-pointer"
              onclick="CablesPage.viewDetail('${p.id}')">
           <div class="min-w-0 flex-1">
@@ -410,11 +422,9 @@ const CablesPage = {
           </span>
         </div>
 
-        <!-- Divider -->
         <div class="mx-4 border-t border-slate-100"></div>
 
-        <!-- Details grid - all info properly shown -->
-        <div class="grid grid-cols-2 gap-0 px-4 py-3" onclick="CablesPage.viewDetail('${p.id}')">
+        <div class="grid grid-cols-2 gap-0 px-4 py-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
 
           <div class="py-1.5 pr-2 border-b border-slate-100">
             <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Category</div>
@@ -432,7 +442,7 @@ const CablesPage = {
           </div>
 
           <div class="py-1.5 pl-2 border-b border-slate-100 border-l">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Qty / Activated</div>
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Qty / Status</div>
             <div class="flex items-center gap-2 mt-0.5">
               <span class="text-sm font-semibold text-slate-700">${p.quantity || 1}</span>
               ${isActive
@@ -460,7 +470,6 @@ const CablesPage = {
           </div>` : ''}
         </div>
 
-        <!-- Action row -->
         <div class="border-t border-slate-100 bg-slate-50 px-4 py-2.5 flex items-center justify-between">
           <div class="flex gap-2 flex-wrap">
             ${p.status === 'IN_GODOWN' ? `
@@ -497,6 +506,7 @@ const CablesPage = {
         </div>
       </div>`;
     }).join('');
+
 
     if (window.lucide) lucide.createIcons({ nodes: [wrap] });
   },
