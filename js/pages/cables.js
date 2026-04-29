@@ -316,7 +316,8 @@ const CablesPage = {
       <td>
         <div class="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
-        <div class="text-xs font-mono text-base-content/35 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
+        <div class="text-[10px] text-base-content/50 font-medium leading-none mb-0.5">${Helpers.escape(p.core)} - ${Helpers.escape(p.sqmm)}mm²</div>
+        <div class="text-[10px] font-mono text-base-content/30 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
       </td>
       <td class="text-sm">${Helpers.escape(p.category)}</td>
       <td class="text-sm whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</td>
@@ -373,10 +374,13 @@ const CablesPage = {
       <div class="bg-white border border-base-200 rounded-xl overflow-hidden flex flex-col shadow-sm">
 
         <!-- Colour strip + cable no + status — click to view detail -->
-        <div class="${statusColor}/10 border-b border-base-200 px-2.5 py-2 flex items-center justify-between gap-1
+        <div class="${statusColor}/10 border-b border-base-200 px-2.5 py-2.5 flex items-center justify-between gap-2
           cursor-pointer hover:bg-base-200/30 transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">
-          <span class="font-bold text-sm truncate leading-tight">${Helpers.escape(p.cableNo)}</span>
+          <div class="min-w-0">
+            <div class="font-bold text-sm truncate leading-tight">${Helpers.escape(p.cableNo)}</div>
+            <div class="text-[10px] text-base-content/50 font-medium mt-0.5">${Helpers.escape(p.core)} - ${Helpers.escape(p.sqmm)}mm²</div>
+          </div>
           ${Helpers.statusBadge(p.status)}
         </div>
 
