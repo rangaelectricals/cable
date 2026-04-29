@@ -53,77 +53,81 @@ const Barcode = (() => {
     w.document.close();
   }
 
-  let _cameraActive = false;
+  let _scanner = null;
 
   async function startCamera(containerId, onScan) {
-    if (typeof Quagga === 'undefined') {
-      Toast.show('error', 'Scanner Unavailable', 'Camera library not loaded. Use manual input.'); return false;
+    if (typeof Html5Qrcode === 'undefined') {
+      Toast.show('error', 'Scanner Unavailable', 'Scanning library not loaded.'); return false;
     }
     const el = document.getElementById(containerId);
     if (!el) return false;
+
+    // Use a fresh instance
+    if (_scanner) { try { await _scanner.stop(); } catch(e){} }
+    _scanner = new Html5Qrcode(containerId);
+
+    const config = {
+      fps: 20, // High FPS for quick detection
+      qrbox: (viewWidth, viewHeight) => {
+        // Dynamic scan box: 80% width, 40% height (optimized for 1D barcodes)
+        const w = Math.floor(viewWidth * 0.8);
+        const h = Math.floor(viewHeight * 0.4);
+        return { width: w, height: h };
+      },
+      aspectRatio: 1.777778, // 16:9
+      videoConstraints: {
+        facingMode: 'environment',
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 },
+        focusMode: 'continuous'
+      }
+    };
+
+    let debounce = false;
+    let lastResult = null;
+    let count = 0;
+
     try {
-      Quagga.init({
-        inputStream: {
-          name: 'Live',
-          type: 'LiveStream',
-          target: el,
-          constraints: {
-            width: { min: 640, ideal: 1280 },
-            height: { min: 480, ideal: 720 },
-            facingMode: 'environment',
-            aspectRatio: { min: 1, max: 2 }
-          }
-        },
-        locator: { patchSize: 'small', halfSample: false },
-        numOfWorkers: Math.min(navigator.hardwareConcurrency || 2, 4),
-        frequency: 10,
-        decoder: {
-          readers: ['code_128_reader'],
-          multiple: false
-        },
-        locate: true,
-      }, err => {
-        if (err) { Toast.show('error','Camera Error','Could not access camera.'); return; }
-        Quagga.start(); _cameraActive = true;
-      });
-      let debounce = false;
-      let lastResult = null;
-      let count = 0;
-
-      Quagga.onDetected(result => {
+      await _scanner.start({ facingMode: 'environment' }, config, (decodedText) => {
         if (debounce) return;
-        const code = result.codeResult.code;
-        if (!code) return;
+        
+        // Pattern filter: Only accept system barcodes
+        if (!decodedText.startsWith('CBL-')) return;
 
-        // Pattern filter: Only accept barcodes starting with CBL-
-        if (!code.startsWith('CBL-')) return;
-
-        // Multiple confirmation logic: Must see the same code 3 times to be sure
-        if (code === lastResult) {
+        // Triple-read confirmation for 100% accuracy
+        if (decodedText === lastResult) {
           count++;
         } else {
-          lastResult = code;
+          lastResult = decodedText;
           count = 1;
         }
 
         if (count >= 3 && onScan) {
           debounce = true;
-          onScan(code);
+          onScan(decodedText);
           lastResult = null;
           count = 0;
-          setTimeout(() => { debounce = false; }, 3000); // 3s cooldown after successful scan
+          setTimeout(() => { debounce = false; }, 3000);
         }
       });
       return true;
-    } catch(e) { Toast.show('error','Camera Error', e.message); return false; }
+    } catch(err) {
+      console.error('Camera Start Error', err);
+      Toast.show('error', 'Camera Error', 'Could not access camera. Check permissions.');
+      return false;
+    }
   }
 
-  function stopCamera() {
-    if (typeof Quagga !== 'undefined') { try { Quagga.stop(); } catch {} }
-    _cameraActive = false;
+  async function stopCamera() {
+    if (_scanner && _scanner.isScanning) {
+      try { await _scanner.stop(); } catch(e){}
+    }
+    _scanner = null;
   }
 
-  function isCameraActive() { return _cameraActive; }
+  function isCameraActive() {
+    return _scanner && _scanner.isScanning;
+  }
 
   async function downloadPNG(product, options = {}) {
     const { width = 4, height = 100, fontSize = 16, margin = 10 } = options;
