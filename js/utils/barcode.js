@@ -91,5 +91,36 @@ const Barcode = (() => {
 
   function isCameraActive() { return _cameraActive; }
 
-  return { generate, toDataURL, printLabel, startCamera, stopCamera, isCameraActive };
+  async function downloadPNG(product, options = {}) {
+    const { width = 4, height = 100, fontSize = 16, margin = 10 } = options;
+    return new Promise(resolve => {
+      const c = document.createElement('canvas');
+      c.style.display = 'none';
+      document.body.appendChild(c);
+      try {
+        JsBarcode(c, product.barcode, {
+          format: 'CODE128',
+          width: width,
+          height: height,
+          displayValue: true,
+          fontSize: fontSize,
+          margin: margin,
+          background: '#ffffff',
+          lineColor: '#000000'
+        });
+        const link = document.createElement('a');
+        link.download = `barcode-${product.cableNo}-${width}x${height}.png`;
+        link.href = c.toDataURL('image/png');
+        link.click();
+        resolve(true);
+      } catch (e) {
+        console.error('Download PNG error', e);
+        resolve(false);
+      } finally {
+        document.body.removeChild(c);
+      }
+    });
+  }
+
+  return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, isCameraActive };
 })();

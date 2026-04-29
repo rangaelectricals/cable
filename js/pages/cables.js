@@ -554,19 +554,44 @@ const CablesPage = {
       <div class="bg-white p-4 rounded-xl border border-base-200 inline-block">
         <svg id="bc-svg" class="max-w-full"></svg>
       </div>
-      <div class="mt-3 text-sm text-base-content/60">
-        <strong>${Helpers.escape(p.cableNo)}</strong><br/>
-        <span class="text-xs">${Helpers.escape(p.category)} · ${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}mm²</span><br/>
-        <code class="text-xs text-base-content/35">${Helpers.escape(p.barcode)}</code>
+      <div class="mt-4 space-y-4">
+        <div class="text-sm text-base-content/60">
+          <strong>${Helpers.escape(p.cableNo)}</strong><br/>
+          <span class="text-xs">${Helpers.escape(p.category)} · ${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}mm²</span><br/>
+          <code class="text-xs text-base-content/35">${Helpers.escape(p.barcode)}</code>
+        </div>
+        <div class="divider text-[10px] uppercase tracking-widest opacity-30">Sticker Size</div>
+        <div class="flex flex-col gap-2">
+          <select id="bc-size-select" class="select select-bordered select-sm w-full">
+            <option value="2,60,12">Small (Compact)</option>
+            <option value="4,100,16" selected>Medium (Standard)</option>
+            <option value="6,150,20">Large (High Res)</option>
+            <option value="2,150,11">Vertical Slim</option>
+          </select>
+          <button class="btn btn-primary btn-sm w-full gap-2" onclick="CablesPage.downloadBarcode('${p.id}')">
+            <i data-lucide="download" class="w-4 h-4"></i> Download PNG
+          </button>
+        </div>
       </div>`;
     document.getElementById('barcode-actions').innerHTML =
       `<button class="btn btn-ghost btn-sm" onclick="Modal.close('modal-barcode')">Close</button>
-       <button class="btn btn-primary btn-sm gap-2" onclick="window.print()">
+       <button class="btn btn-outline btn-sm gap-2" onclick="window.print()">
          <i data-lucide="printer" class="w-4 h-4"></i> Print
        </button>`;
     Modal.open('modal-barcode');
     setTimeout(() => Barcode.generate('bc-svg', p.barcode), 100);
     if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('modal-barcode')] });
+  },
+
+  async downloadBarcode(id) {
+    const p = this._products.find(p => String(p.id) === String(id));
+    if (!p) return;
+    const select = document.getElementById('bc-size-select');
+    const [width, height, fontSize] = select.value.split(',').map(Number);
+    
+    Toast.show('info', 'Preparing...', 'Generating high quality PNG');
+    await Barcode.downloadPNG(p, { width, height, fontSize, margin: 15 });
+    Toast.show('success', 'Downloaded', 'Barcode PNG saved to your device.');
   },
 
   async exportCSV() {
