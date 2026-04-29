@@ -6,15 +6,17 @@ const Barcode = (() => {
     const img = document.getElementById(imgId);
     if (!img) return;
 
-    // Local library check
-    const qrlib = window.QRCode || window.qrcode;
-    
-    if (qrlib && qrlib.toDataURL) {
+    // Local library check (QRious)
+    if (window.QRious) {
       try {
-        const url = await qrlib.toDataURL(value, { width: 400, margin: 1 });
-        img.src = url;
+        const qr = new QRious({
+          value: value,
+          size: 400,
+          level: 'H'
+        });
+        img.src = qr.toDataURL();
         return;
-      } catch(e) { console.error('Local QR failed', e); }
+      } catch(e) { console.error('QRious failed', e); }
     }
 
     // Fallback to Remote API (QRServer) - Extremely reliable
@@ -22,10 +24,10 @@ const Barcode = (() => {
   }
 
   async function toDataURL(value) {
-    const qrlib = window.QRCode || window.qrcode;
-    if (qrlib && qrlib.toDataURL) {
+    if (window.QRious) {
       try {
-        return await qrlib.toDataURL(value, { width: 400, margin: 1 });
+        const qr = new QRious({ value: value, size: 400, level: 'H' });
+        return qr.toDataURL();
       } catch { }
     }
     // Fallback URL for printing
@@ -136,13 +138,22 @@ const Barcode = (() => {
   }
 
   async function downloadPNG(product, options = {}) {
-    const { size = 512, margin = 2 } = options;
-    if (typeof QRCode === 'undefined') return false;
+    const { size = 512 } = options;
+    const qrlib = window.QRious;
     try {
-      const dataUrl = await QRCode.toDataURL(product.barcode, { width: size, margin: margin });
+      let dataUrl = '';
+      if (qrlib) {
+        const qr = new qrlib({ value: product.barcode, size: size, level: 'H' });
+        dataUrl = qr.toDataURL();
+      } else {
+        // Fallback to QRServer for download
+        dataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(product.barcode)}`;
+      }
+
       const link = document.createElement('a');
       link.download = `qr-${product.cableNo}-${size}.png`;
       link.href = dataUrl;
+      link.target = '_blank';
       link.click();
       return true;
     } catch (e) {
