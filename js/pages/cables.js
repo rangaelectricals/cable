@@ -439,7 +439,12 @@ const CablesPage = {
           ${isSite && p.siteName ? `
           <div class="col-span-2">
             <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Site</div>
-            <div class="text-xs truncate mt-0.5 text-warning font-medium">${Helpers.escape(p.siteName)}</div>
+            <div class="text-xs mt-0.5 text-warning font-medium">${Helpers.escape(p.siteName)}</div>
+          </div>` : ''}
+          ${isSite && p.personAssigned ? `
+          <div class="col-span-2">
+            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Person</div>
+            <div class="text-xs mt-0.5 text-base-content/80 font-medium">${Helpers.escape(p.personAssigned)}</div>
           </div>` : ''}
         </div>
 
