@@ -68,44 +68,14 @@
     </div>
   </aside>
 
-  <!-- Mobile Drawer Overlay -->
-  <div id="mobile-drawer-overlay" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden md:hidden transition-all duration-300 opacity-0 pointer-events-none">
-    <aside id="mobile-drawer-aside" class="absolute top-0 left-0 h-full w-72 sidebar-pattern shadow-2xl text-white flex flex-col transform -translate-x-full transition-transform duration-300">
-      <div class="flex items-center justify-between px-6 py-6 border-b border-white/5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md p-1.5 flex items-center justify-center">
-             <i data-lucide="zap" class="w-6 h-6 text-white"></i>
-          </div>
-          <div>
-              <h1 class="text-lg font-black text-white tracking-tight leading-tight uppercase">CableTrack</h1>
-              <p class="text-[8px] text-indigo-400 font-black uppercase tracking-wider">RANGA ELECTRICALS</p>
-          </div>
-        </div>
-        <button class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded-full bg-white/5" id="drawer-close">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      
-      <nav class="mt-6 px-4 flex-1 overflow-y-auto custom-scrollbar" id="drawer-content">
-      </nav>
-      
-      <div class="p-4 sidebar-glass-footer mt-auto">
-        <div class="flex items-center gap-3 p-3">
-          <button onclick="Auth.logout()" class="btn btn-sm btn-outline text-white w-full border-white/20">
-             <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
-          </button>
-        </div>
-      </div>
-    </aside>
-  </div>
-
   <!-- Top Navigation Header -->
   <header class="fixed top-0 left-0 right-0 h-[64px] header-dark z-30 px-6 flex items-center justify-between shadow-sm" style="font-family: 'Inter', sans-serif;">
     <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full w-full basis-1/2">
-      <button class="flex items-center justify-center p-1.5 rounded-md text-gray-400 hover:bg-white/10 md:hidden transition-colors" id="sidebar-toggle" aria-label="Open sidebar">
-        <i data-lucide="menu" class="w-6 h-6"></i>
-      </button>
+      <!-- Hidden on mobile since we use bottom nav now -->
       <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md p-1.5 flex md:hidden items-center justify-center">
+             <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        </div>
         <span class="text-[17px] font-bold text-white tracking-tight" id="header-page-title">Dashboard</span>
       </div>
     </div>
@@ -123,13 +93,23 @@
   </header>
 
   <!-- Main Content Wrapper -->
-  <main id="main-wrapper" class="pt-[64px] md:pl-64 transition-all min-h-screen bg-[#f3f4f6]">
+  <main id="main-wrapper" class="pt-[64px] pb-[80px] md:pb-0 md:pl-64 transition-all min-h-screen bg-[#f3f4f6]">
     <div id="main-content" class="h-full p-4 md:p-8 w-full max-w-7xl mx-auto">
       <div class="flex items-center justify-center h-64">
         <span class="loading loading-spinner loading-lg text-primary"></span>
       </div>
     </div>
   </main>
+
+  <!-- Mobile Bottom Navigation (Super Premium Design) -->
+  <nav class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a] border-t border-indigo-500/20 shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.5)]">
+    <!-- Active Indicator Bar -->
+    <div id="bottom-nav-indicator" class="absolute top-0 h-[3px] bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all duration-300 ease-out" style="width: 20%; left: 0%; border-radius: 0 0 4px 4px;"></div>
+    
+    <div id="bottom-nav-content" class="flex items-center justify-around h-[70px] px-2 relative z-10">
+      <!-- Rendered by JS -->
+    </div>
+  </nav>
 
   <!-- Toasts & Modals container -->
   <div id="toast-wrap" class="toast toast-top toast-end z-[100]"></div>
@@ -182,39 +162,12 @@
     };
     const origNav = App.navigateTo.bind(App);
     App.navigateTo = async function(section) {
-      // Close mobile drawer
-      document.getElementById('mobile-drawer-overlay').classList.add('opacity-0', 'pointer-events-none');
-      document.getElementById('mobile-drawer-aside').classList.add('-translate-x-full');
-      
       const title = document.getElementById('header-page-title');
       if (title) title.textContent = PAGE_LABELS[section] || section;
       
       await origNav(section);
       if (window.lucide) lucide.createIcons();
     };
-
-    // Mobile menu handlers
-    const btnOpen = document.getElementById('sidebar-toggle');
-    const btnClose = document.getElementById('drawer-close');
-    const overlay = document.getElementById('mobile-drawer-overlay');
-    const aside = document.getElementById('mobile-drawer-aside');
-
-    btnOpen.addEventListener('click', () => {
-      overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-      // small delay to allow display:block to apply before animation
-      setTimeout(() => aside.classList.remove('-translate-x-full'), 10);
-    });
-
-    const closeDrawer = () => {
-      aside.classList.add('-translate-x-full');
-      overlay.classList.add('opacity-0', 'pointer-events-none');
-      setTimeout(() => overlay.classList.add('hidden'), 300);
-    };
-
-    btnClose.addEventListener('click', closeDrawer);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeDrawer();
-    });
 
     if (window.lucide) lucide.createIcons();
   });

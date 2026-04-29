@@ -43,8 +43,6 @@ const Nav = {
     
     // Render desktop sidebar
     this._renderContainer('sidebar-content', navItems, activeSection);
-    // Render mobile drawer
-    this._renderContainer('drawer-content', navItems, activeSection);
   },
 
   _renderContainer(containerId, navItems, activeSection) {
@@ -86,7 +84,60 @@ const Nav = {
 
   // ── Render mobile bottom nav ────────────────────────────────────────────────
   renderBottomNav(activeSection) {
-    // Disabled in vendor-outstanding layout as we use the mobile drawer instead
+    const user = Auth.getUser();
+    if (!user) return;
+    const navItems = this.items(user.role);
+    const container = document.getElementById('bottom-nav-content');
+    if (!container) return;
+
+    // Show max 5 items on bottom nav
+    const priority = ['dashboard','cables','scan','logs','masters'];
+    const visible  = priority.filter(id => navItems.find(i => i.id === id)).slice(0, 5);
+
+    // Calculate indicator position
+    const activeIdx = visible.indexOf(activeSection);
+    const indicator = document.getElementById('bottom-nav-indicator');
+    if (indicator) {
+      if (activeIdx >= 0) {
+        indicator.style.width = `${100 / visible.length}%`;
+        indicator.style.left = `${(100 / visible.length) * activeIdx}%`;
+        indicator.style.opacity = '1';
+      } else {
+        indicator.style.opacity = '0';
+      }
+    }
+
+    container.innerHTML = visible.map(id => {
+      const item     = navItems.find(i => i.id === id);
+      if (!item) return '';
+      const isActive = id === activeSection;
+      const shortLabels = {
+        dashboard: 'Home', cables: 'Cables', specs: 'Specs',
+        scan: 'Scan', masters: 'Masters', logs: 'Logs', users: 'Users',
+      };
+      
+      const activeClasses = isActive 
+        ? 'text-white scale-110 drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]' 
+        : 'text-slate-500 hover:text-slate-300';
+        
+      const textClasses = isActive
+        ? 'opacity-100 max-h-[20px] text-indigo-400 font-bold'
+        : 'opacity-0 max-h-0 overflow-hidden';
+
+      return `
+      <button onclick="App.navigateTo('${id}')"
+              class="relative flex flex-col items-center justify-center w-full h-full transition-all duration-300 group"
+              id="btn-${id}">
+        <div class="transition-all duration-300 transform ${activeClasses}">
+          ${this._icon(this.icons[id], 24)}
+        </div>
+        <span class="text-[10px] mt-1 transition-all duration-300 ${textClasses}">
+          ${shortLabels[id] || item.label}
+        </span>
+      </button>`;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons({ nodes: [container] });
   },
 
   // ── Update active state (without re-rendering) ──────────────────────────────
