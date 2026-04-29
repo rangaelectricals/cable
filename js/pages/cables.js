@@ -13,7 +13,7 @@ const CablesPage = {
 
   async render(container) {
     container.innerHTML = `<div class="flex items-center justify-center h-64">
-      <span class="loading loading-spinner loading-lg text-primary"></span></div>`;
+      <span class="loading loading-spinner loading-lg text-indigo-600"></span></div>`;
     await MastersCache.load();
     await this._fetchPage(container, true);
   },
@@ -71,7 +71,7 @@ const CablesPage = {
           <div class="py-3 px-4">
             <div class="flex flex-wrap gap-2">
               <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
-                <i data-lucide="search" class="w-4 h-4 text-base-content/40 shrink-0"></i>
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 shrink-0"></i>
                 <input type="text" id="cable-search" class="grow min-w-0 text-sm"
                   placeholder="Cable No / QR / Site…"
                   value="${Helpers.escape(this._filters.search)}"
@@ -101,7 +101,7 @@ const CablesPage = {
                 ${sqmms.map(s => `<option value="${Helpers.escape(s)}"
                   ${this._filters.sqmm===s?'selected':''}>${Helpers.escape(s)} mm²</option>`).join('')}
               </select>
-              <button class="btn btn-ghost btn-sm text-error gap-1 px-2" onclick="CablesPage.clearFilters()" title="Clear Filters">
+              <button class="btn btn-ghost btn-sm text-red-600 gap-1 px-2" onclick="CablesPage.clearFilters()" title="Clear Filters">
                 <i data-lucide="filter-x" class="w-4 h-4"></i>
               </button>
             </div>
@@ -112,10 +112,10 @@ const CablesPage = {
         <div id="cables-cards" class="lg:hidden flex flex-col gap-3"></div>
 
         <!-- ── DESKTOP TABLE VIEW (hidden on mobile) ──────────────────────── -->
-        <div class="hidden lg:block card bg-base-100 shadow-sm border border-base-200 overflow-hidden">
+        <div class="hidden lg:block card bg-white shadow-sm border border-slate-200 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="table table-sm table-zebra">
-              <thead class="bg-base-200/60 text-xs uppercase tracking-wide">
+              <thead class="bg-slate-100 text-xs uppercase tracking-wide">
                 <tr>
                   <th>#</th><th>Cable No</th><th>Category</th>
                   <th>Qty</th>
@@ -219,15 +219,15 @@ const CablesPage = {
             </button>
           </form>
           <h3 class="font-bold text-lg">Bulk Upload Cables</h3>
-          <p class="text-sm text-base-content/50 mt-1">Upload a CSV file with multiple cables at once (max 500 rows).</p>
+          <p class="text-sm text-slate-500 mt-1">Upload a CSV file with multiple cables at once (max 500 rows).</p>
 
           <!-- Step 1: Choose file -->
           <div id="bulk-step-1" class="mt-5 space-y-4">
-            <div class="bg-base-200/50 rounded-xl p-4 flex items-center gap-3">
-              <i data-lucide="file-spreadsheet" class="w-9 h-9 text-primary shrink-0"></i>
+            <div class="bg-slate-100 rounded-xl p-4 flex items-center gap-3">
+              <i data-lucide="file-spreadsheet" class="w-9 h-9 text-indigo-600 shrink-0"></i>
               <div class="flex-1 min-w-0">
                 <div class="font-semibold text-sm">Required columns</div>
-                <div class="font-mono text-xs text-base-content/45 mt-0.5 truncate">
+                <div class="font-mono text-xs text-slate-500 mt-0.5 truncate">
                   cableNo, category, core, sqmm, meter, quantity*, remarks*
                 </div>
               </div>
@@ -238,13 +238,13 @@ const CablesPage = {
 
             <!-- Drop zone -->
             <label id="bulk-dropzone"
-              class="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-base-300
-                     rounded-xl p-10 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+              class="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-300
+                     rounded-xl p-10 cursor-pointer hover:border-primary hover:bg-indigo-50 transition-colors"
               for="bulk-file-input">
-              <i data-lucide="upload-cloud" class="w-12 h-12 text-base-content/25"></i>
+              <i data-lucide="upload-cloud" class="w-12 h-12 text-slate-300"></i>
               <div class="text-center">
                 <div class="font-semibold text-sm">Drop CSV file here</div>
-                <div class="text-xs text-base-content/40 mt-0.5">or click to browse</div>
+                <div class="text-xs text-slate-400 mt-0.5">or click to browse</div>
               </div>
               <input type="file" id="bulk-file-input" accept=".csv,.txt"
                 class="hidden" onchange="CablesPage._onBulkFileSelect(this)" />
@@ -255,7 +255,7 @@ const CablesPage = {
           <div id="bulk-step-2" class="hidden mt-4">
             <div class="flex items-center justify-between mb-3">
               <div class="text-sm font-semibold">
-                Preview — <span id="bulk-valid-count" class="text-success">0</span> valid
+                Preview — <span id="bulk-valid-count" class="text-emerald-600">0</span> valid
                 <span id="bulk-skip-badge" class="badge badge-warning badge-xs ml-2 hidden">
                   <span id="bulk-skip-count">0</span> warnings
                 </span>
@@ -264,9 +264,9 @@ const CablesPage = {
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset
               </button>
             </div>
-            <div class="max-h-56 overflow-auto border border-base-200 rounded-xl">
+            <div class="max-h-56 overflow-auto border border-slate-200 rounded-xl">
               <table class="table table-xs table-zebra">
-                <thead class="bg-base-200 text-xs uppercase sticky top-0">
+                <thead class="bg-slate-100 text-xs uppercase sticky top-0">
                   <tr>
                     <th>#</th><th>Cable No</th><th>Category</th>
                     <th>Core</th><th>SQMM</th><th>Meter</th><th>Qty</th><th>Status</th>
@@ -276,16 +276,16 @@ const CablesPage = {
               </table>
             </div>
             <div id="bulk-error-list" class="mt-2 hidden">
-              <div class="text-xs font-bold text-error mb-1">Issues found:</div>
-              <ul id="bulk-errors" class="text-xs text-error list-disc list-inside space-y-0.5 max-h-20 overflow-auto"></ul>
+              <div class="text-xs font-bold text-red-600 mb-1">Issues found:</div>
+              <ul id="bulk-errors" class="text-xs text-red-600 list-disc list-inside space-y-0.5 max-h-20 overflow-auto"></ul>
             </div>
           </div>
 
           <!-- Step 3: Result -->
           <div id="bulk-step-3" class="hidden mt-4">
             <div class="flex flex-col items-center gap-3 py-4">
-              <div class="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center">
-                <i data-lucide="check-circle-2" class="w-9 h-9 text-success"></i>
+              <div class="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                <i data-lucide="check-circle-2" class="w-9 h-9 text-emerald-600"></i>
               </div>
               <div id="bulk-result-text" class="text-sm text-center"></div>
             </div>
@@ -327,20 +327,20 @@ const CablesPage = {
     }
     body.innerHTML = this._products.map((p, i) => `
     <tr class="hover group">
-      <td class="text-base-content/35 text-xs w-8">${rowStart+i+1}</td>
+      <td class="text-slate-400 text-xs w-8">${rowStart+i+1}</td>
       <td>
-        <div class="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
+        <div class="font-semibold text-sm cursor-pointer hover:text-indigo-600 transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
-        <div class="text-[10px] font-mono text-base-content/30 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
+        <div class="text-[10px] font-mono text-slate-400 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
       </td>
       <td class="text-sm">
         <div class="font-medium whitespace-nowrap">${Helpers.escape(p.category)}</div>
-        <div class="text-[11px] text-base-content/50 font-medium mt-0.5 whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - <span class="font-bold text-primary">${p.meter}m</span></div>
+        <div class="text-[11px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - <span class="font-bold text-indigo-600">${p.meter}m</span></div>
       </td>
       <td class="text-sm">${p.quantity||1}</td>
       <td>${Helpers.statusBadge(p.status)}</td>
-      <td class="text-sm">${p.siteName?Helpers.escape(p.siteName):'<span class="text-base-content/25">—</span>'}</td>
-      <td class="text-sm">${p.personAssigned?Helpers.escape(p.personAssigned):'<span class="text-base-content/25">—</span>'}</td>
+      <td class="text-sm">${p.siteName?Helpers.escape(p.siteName):'<span class="text-slate-300">—</span>'}</td>
+      <td class="text-sm">${p.personAssigned?Helpers.escape(p.personAssigned):'<span class="text-slate-300">—</span>'}</td>
       <td class="text-xs whitespace-nowrap">${Helpers.formatDate(p.dateOut)}</td>
       <td>${(String(p.activated)==='true'||p.activated===true)
         ?'<span class="badge badge-success badge-sm">Active</span>'
@@ -348,16 +348,16 @@ const CablesPage = {
       <td>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           ${p.status === 'IN_GODOWN' ? `
-          <button class="btn btn-ghost btn-xs btn-square text-warning" title="Send to Site"
+          <button class="btn btn-ghost btn-xs btn-square text-amber-600" title="Send to Site"
             onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
             <i data-lucide="truck" class="w-4 h-4"></i>
           </button>` : ''}
           ${p.status === 'SENT_TO_SITE' ? `
-          <button class="btn btn-ghost btn-xs btn-square text-info" title="Site to Site Transfer"
+          <button class="btn btn-ghost btn-xs btn-square text-blue-600" title="Site to Site Transfer"
             onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
             <i data-lucide="repeat" class="w-4 h-4"></i>
           </button>
-          <button class="btn btn-ghost btn-xs btn-square text-success" title="Return to Godown (Close)"
+          <button class="btn btn-ghost btn-xs btn-square text-emerald-600" title="Return to Godown (Close)"
             onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
             <i data-lucide="warehouse" class="w-4 h-4"></i>
           </button>` : ''}
@@ -370,7 +370,7 @@ const CablesPage = {
             onclick="CablesPage.openEdit('${p.id}')">
             <i data-lucide="pencil" class="w-4 h-4"></i>
           </button>` : ''}
-          ${Auth.canDelete() ? `<button class="btn btn-ghost btn-xs btn-square text-error" title="Delete"
+          ${Auth.canDelete() ? `<button class="btn btn-ghost btn-xs btn-square text-red-600" title="Delete"
             onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>` : ''}
@@ -637,15 +637,15 @@ const CablesPage = {
     const p = this._products.find(p => String(p.id) === String(id));
     if (!p) return;
     document.getElementById('barcode-content').innerHTML = `
-      <div class="bg-white p-4 rounded-2xl border border-base-200 inline-flex items-center justify-center shadow-sm min-h-[200px] min-w-[200px]">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 inline-flex items-center justify-center shadow-sm min-h-[200px] min-w-[200px]">
         <img id="bc-img" class="max-w-full rounded-lg" style="width:200px; height:200px;" 
              alt="QR Code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
       </div>
       <div class="mt-4 space-y-4">
-        <div class="text-sm text-base-content/60">
+        <div class="text-sm text-slate-500">
           <strong>${Helpers.escape(p.cableNo)}</strong><br/>
           <span class="text-xs">${Helpers.escape(p.category)} · ${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}mm²</span><br/>
-          <code class="text-xs text-base-content/35">${Helpers.escape(p.barcode)}</code>
+          <code class="text-xs text-slate-400">${Helpers.escape(p.barcode)}</code>
         </div>
         <div class="divider text-[10px] uppercase tracking-widest opacity-30">QR Size</div>
         <div class="flex flex-col gap-2">
@@ -738,10 +738,10 @@ const CablesPage = {
       { label:'Updated',     value: Helpers.formatDateTime(p.updatedAt)    },
     ];
     document.getElementById('cable-detail-content').innerHTML = `
-      <div class="divide-y divide-base-200">
+      <div class="divide-y divide-slate-200">
         ${fields.map(f => `
         <div class="flex items-start gap-3 py-2">
-          <span class="text-xs text-base-content/40 w-24 shrink-0 pt-0.5 font-medium">${f.label}</span>
+          <span class="text-xs text-slate-400 w-24 shrink-0 pt-0.5 font-medium">${f.label}</span>
           <span class="${f.bold?'font-bold':''} ${f.mono?'font-mono text-xs':''} text-sm flex-1">
             ${f.html ? f.value : Helpers.escape(String(f.value))}
           </span>
@@ -828,7 +828,7 @@ const CablesPage = {
         if (body) {
           body.innerHTML = valid.map((r,i) => `
           <tr>
-            <td class="text-base-content/35">${i+1}</td>
+            <td class="text-slate-400">${i+1}</td>
             <td class="font-semibold">${Helpers.escape(r.cableNo)}</td>
             <td>${Helpers.escape(r.category)}</td>
             <td>${Helpers.escape(r.core)}</td>
@@ -885,10 +885,10 @@ const CablesPage = {
         document.getElementById('bulk-step-3').classList.remove('hidden');
         btn.classList.add('hidden');
 
-        const errNote = errors?.length ? `<div class="text-xs text-error mt-2">${errors.length} item(s) skipped</div>` : '';
+        const errNote = errors?.length ? `<div class="text-xs text-red-600 mt-2">${errors.length} item(s) skipped</div>` : '';
         document.getElementById('bulk-result-text').innerHTML = `
-          <div class="text-lg font-bold text-success">${inserted} cables added!</div>
-          ${skipped ? `<div class="text-sm text-base-content/50 mt-1">${skipped} duplicate(s) skipped</div>` : ''}
+          <div class="text-lg font-bold text-emerald-600">${inserted} cables added!</div>
+          ${skipped ? `<div class="text-sm text-slate-500 mt-1">${skipped} duplicate(s) skipped</div>` : ''}
           ${errNote}`;
         Toast.show('success','Bulk Upload Done', `${inserted} cables inserted.`);
         this._bulkRows = [];

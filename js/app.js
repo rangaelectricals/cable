@@ -25,7 +25,7 @@ const App = {
     const container = document.getElementById('main-content');
     container.innerHTML = `
       <div class="flex items-center justify-center h-64">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span class="loading loading-spinner loading-lg text-indigo-600"></span>
       </div>`;
 
     try {

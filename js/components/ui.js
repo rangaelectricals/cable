@@ -11,19 +11,29 @@ function icon(name, cls = '') {
 const UI = {
   /** Stat card for dashboard */
   statCard({ icon: iconName, label, value, delta, color = 'primary', onclick = '' }) {
+    const colorMap = {
+      primary:   { bg: 'bg-indigo-100',  text: 'text-indigo-600' },
+      success:   { bg: 'bg-emerald-100', text: 'text-emerald-600' },
+      warning:   { bg: 'bg-amber-100',   text: 'text-amber-600' },
+      error:     { bg: 'bg-red-100',     text: 'text-red-600' },
+      info:      { bg: 'bg-blue-100',    text: 'text-blue-600' },
+      neutral:   { bg: 'bg-slate-100',   text: 'text-slate-600' },
+      secondary: { bg: 'bg-violet-100',  text: 'text-violet-600' },
+    };
+    const c = colorMap[color] || colorMap.primary;
     return `
-    <div class="stat bg-base-100 rounded-xl shadow-sm border border-base-200
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200
                 cursor-pointer hover:shadow-md hover:-translate-y-0.5
-                transition-all duration-150 min-w-0"
+                transition-all duration-150 min-w-0 p-4 flex items-center gap-4"
          ${onclick ? `onclick="${onclick}"` : ''}>
-      <div class="stat-figure text-${color}">
-        <div class="w-11 h-11 rounded-xl bg-${color}/10 flex items-center justify-center">
-          <i data-lucide="${iconName}" class="w-5 h-5 text-${color}"></i>
-        </div>
+      <div class="w-12 h-12 rounded-xl ${c.bg} flex items-center justify-center shrink-0">
+        <i data-lucide="${iconName}" class="w-6 h-6 ${c.text}"></i>
       </div>
-      <div class="stat-title text-xs font-semibold uppercase tracking-wide truncate">${label}</div>
-      <div class="stat-value text-${color}" style="font-size:1.75rem">${value}</div>
-      ${delta !== undefined ? `<div class="stat-desc text-xs mt-0.5">${delta}</div>` : ''}
+      <div class="min-w-0">
+        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">${label}</div>
+        <div class="text-2xl font-black ${c.text} leading-tight mt-0.5">${value}</div>
+        ${delta !== undefined ? `<div class="text-xs text-slate-400 mt-0.5">${delta}</div>` : ''}
+      </div>
     </div>`;
   },
 
@@ -33,11 +43,11 @@ const UI = {
     const isEmoji = /\p{Emoji}/u.test(iconName);
     const iconEl = isEmoji
       ? `<span class="text-5xl">${iconName}</span>`
-      : `<i data-lucide="${iconName}" class="w-14 h-14 text-base-content/20"></i>`;
+      : `<i data-lucide="${iconName}" class="w-14 h-14 text-slate-300"></i>`;
     return `
-    <div class="flex flex-col items-center justify-center py-16 gap-3 text-base-content/40">
+    <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
       ${iconEl}
-      <p class="font-semibold text-base-content/50 text-base">${title}</p>
+      <p class="font-semibold text-slate-500 text-base">${title}</p>
       ${desc ? `<p class="text-sm text-center max-w-xs">${desc}</p>` : ''}
     </div>`;
   },
@@ -47,8 +57,8 @@ const UI = {
     return `
     <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
       <div class="min-w-0">
-        <h1 class="text-xl sm:text-2xl font-bold text-base-content leading-tight">${title}</h1>
-        ${subtitle ? `<p class="text-sm text-base-content/50 mt-0.5">${subtitle}</p>` : ''}
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-800 leading-tight">${title}</h1>
+        ${subtitle ? `<p class="text-sm text-slate-500 mt-0.5">${subtitle}</p>` : ''}
       </div>
       ${actionHtml ? `<div class="flex gap-2 flex-wrap shrink-0">${actionHtml}</div>` : ''}
     </div>`;
@@ -56,7 +66,7 @@ const UI = {
 
   /** Section card wrapper */
   card(content, extraClass = '') {
-    return `<div class="card bg-base-100 shadow-sm border border-base-200 ${extraClass}">${content}</div>`;
+    return `<div class="card bg-white shadow-sm border border-slate-200 ${extraClass}">${content}</div>`;
   },
 
   /** Table loading skeleton */
@@ -67,13 +77,13 @@ const UI = {
   },
 
   /** Progress bar row */
-  progressRow(label, val, total, colorClass = 'bg-primary') {
+  progressRow(label, val, total, colorClass = 'progress-primary') {
     const pct = total ? Math.round((val / total) * 100) : 0;
     return `
     <div class="mb-3">
       <div class="flex justify-between text-sm mb-1">
-        <span class="text-base-content/70">${label}</span>
-        <span class="text-base-content/50">${val} &nbsp;(${pct}%)</span>
+        <span class="text-slate-600 font-medium">${label}</span>
+        <span class="text-slate-400">${val}&nbsp;(${pct}%)</span>
       </div>
       <progress class="progress ${colorClass} h-2" value="${val}" max="${total || 1}"></progress>
     </div>`;
@@ -95,7 +105,7 @@ const UI = {
     return `
     <div class="form-control w-full">
       <label class="label pb-1">
-        <span class="label-text font-medium text-xs uppercase tracking-wide">${label}${required ? ' <span class="text-error">*</span>' : ''}</span>
+        <span class="label-text font-medium text-xs uppercase tracking-wide">${label}${required ? ' <span class="text-red-600">*</span>' : ''}</span>
       </label>
       ${inputHtml}
     </div>`;
@@ -114,7 +124,7 @@ const UI = {
   pagination({ current, totalPages, total, pageSize, onPage, onSize }) {
     if (!total || totalPages <= 1) {
       // Still show "Showing X of Y" even when no pages
-      return `<div class="flex items-center justify-between mt-3 text-xs text-base-content/50">
+      return `<div class="flex items-center justify-between mt-3 text-xs text-slate-500">
         <span>Showing ${total} record${total !== 1 ? 's' : ''}</span>
         ${onSize ? `<select class="select select-bordered select-xs" onchange="${onSize}(parseInt(this.value))">
           ${[10,20,50,100].map(n => `<option value="${n}"${n===pageSize?' selected':''}>${n}/page</option>`).join('')}
@@ -139,8 +149,8 @@ const UI = {
     for (let p = lo; p <= hi; p++) pages.push(p);
 
     return `
-    <div class="flex flex-wrap items-center justify-between gap-3 mt-4 border-t border-base-200 pt-3">
-      <p class="text-xs text-base-content/50">Showing <strong>${from}–${to}</strong> of <strong>${total}</strong></p>
+    <div class="flex flex-wrap items-center justify-between gap-3 mt-4 border-t border-slate-200 pt-3">
+      <p class="text-xs text-slate-500">Showing <strong>${from}–${to}</strong> of <strong>${total}</strong></p>
       <div class="flex items-center gap-2">
         <div class="join">
           <button class="join-item btn btn-xs btn-ghost"

@@ -42,11 +42,11 @@ const ScanPage = {
 
         <!-- Input panel (3/5 on desktop) -->
         <div class="lg:col-span-3 space-y-3">
-          <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card bg-white shadow-sm border border-slate-200">
             <div class="card-body gap-4 p-4">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <i data-lucide="qr-code" class="w-5 h-5 text-primary"></i>
+                  <i data-lucide="qr-code" class="w-5 h-5 text-indigo-600"></i>
                   <h2 class="font-bold text-base">Input</h2>
                 </div>
                 <div class="join">
@@ -59,7 +59,7 @@ const ScanPage = {
               <div class="grid grid-cols-4 sm:flex gap-2">
                 <div id="input-container" class="col-span-3 sm:flex-1">
                   <label id="wrap-scan-input" class="input input-bordered flex items-center gap-2 w-full">
-                    <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
+                    <i data-lucide="hash" class="w-4 h-4 text-slate-400 shrink-0"></i>
                     <input type="text" id="scan-input" class="grow min-w-0 text-[16px] sm:text-sm"
                       placeholder="QR or Cable No" autocomplete="off" inputmode="text" />
                   </label>
@@ -87,12 +87,12 @@ const ScanPage = {
                   style="height:220px; max-width:400px; margin:0 auto">
                   <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                     <div class="w-48 h-24 border-2 border-primary rounded relative">
-                      <div class="absolute left-0 right-0 h-0.5 bg-primary/80"
+                      <div class="absolute left-0 right-0 h-0.5 bg-indigo-1000"
                         style="animation:scanLine 2s linear infinite;top:0"></div>
                     </div>
                   </div>
                 </div>
-                <p class="text-center text-xs text-base-content/50 mt-2 flex items-center justify-center gap-1">
+                <p class="text-center text-xs text-slate-500 mt-2 flex items-center justify-center gap-1">
                   <i data-lucide="info" class="w-3 h-3"></i>
                   Point camera at QR code to scan automatically
                 </p>
@@ -130,22 +130,22 @@ const ScanPage = {
 
         <!-- Session log (2/5 on desktop, full width below on mobile) -->
         <div class="lg:col-span-2">
-          <div class="card bg-base-100 shadow-sm border border-base-200 h-full">
+          <div class="card bg-white shadow-sm border border-slate-200 h-full">
             <div class="card-body p-4">
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <i data-lucide="list-checks" class="w-4 h-4 text-base-content/50"></i>
+                  <i data-lucide="list-checks" class="w-4 h-4 text-slate-500"></i>
                   <h2 class="font-bold text-sm">Session Scans</h2>
                 </div>
                 <div class="flex items-center gap-2">
                   <span id="session-count" class="badge badge-neutral badge-sm">0</span>
-                  <button class="btn btn-ghost btn-xs text-error" onclick="ScanPage.clearSession()"
+                  <button class="btn btn-ghost btn-xs text-red-600" onclick="ScanPage.clearSession()"
                     title="Clear session">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
               </div>
-              <div id="session-scans" class="divide-y divide-base-200 max-h-80 lg:max-h-none overflow-y-auto">
+              <div id="session-scans" class="divide-y divide-slate-200 max-h-80 lg:max-h-none overflow-y-auto">
                 ${UI.emptyState('list', 'No scans yet', 'Scanned QR codes will appear here')}
               </div>
             </div>
@@ -370,10 +370,10 @@ const ScanPage = {
 
     const resultDiv = document.getElementById('scan-result');
     resultDiv.innerHTML = `
-      <div class="card bg-base-100 border border-base-200 shadow-sm">
+      <div class="card bg-white border border-slate-200 shadow-sm">
         <div class="card-body flex-row items-center gap-3 py-4">
-          <span class="loading loading-spinner loading-md text-primary"></span>
-          <span class="text-sm text-base-content/60">Processing scan…</span>
+          <span class="loading loading-spinner loading-md text-indigo-600"></span>
+          <span class="text-sm text-slate-500">Processing scan…</span>
         </div>
       </div>`;
     resultDiv.classList.remove('hidden');
@@ -386,7 +386,7 @@ const ScanPage = {
         resultDiv.innerHTML = `
           <div class="alert alert-success shadow-sm flex flex-col items-stretch">
             <div class="flex items-start gap-3 w-full">
-              <i data-lucide="check-circle-2" class="w-6 h-6 shrink-0 mt-0.5 text-success"></i>
+              <i data-lucide="check-circle-2" class="w-6 h-6 shrink-0 mt-0.5 text-emerald-600"></i>
               <div class="w-full min-w-0 flex-1">
                 <p class="font-bold text-sm">Scan Accepted — ${this._mode.replace(/_/g,' ')}</p>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2 mb-2">
@@ -484,12 +484,12 @@ const ScanPage = {
     el.innerHTML = this._sessionScans.slice(0, 20).map(s => `
     <div class="flex items-center gap-3 py-2.5">
       <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-        ${s.ok ? 'bg-success/10' : 'bg-error/10'}">
-        <i data-lucide="${s.ok ? 'check' : 'x'}" class="w-3.5 h-3.5 ${s.ok ? 'text-success' : 'text-error'}"></i>
+        ${s.ok ? 'bg-emerald-100' : 'bg-red-100'}">
+        <i data-lucide="${s.ok ? 'check' : 'x'}" class="w-3.5 h-3.5 ${s.ok ? 'text-emerald-600' : 'text-red-600'}"></i>
       </div>
       <div class="flex-1 min-w-0">
         <div class="text-sm font-semibold truncate">${Helpers.escape(s.label)}</div>
-        <div class="text-xs text-base-content/45">${s.mode.replace(/_/g,' ')} · ${Helpers.timeAgo(s.time)}</div>
+        <div class="text-xs text-slate-500">${s.mode.replace(/_/g,' ')} · ${Helpers.timeAgo(s.time)}</div>
       </div>
       <span class="badge ${s.ok ? 'badge-success' : 'badge-error'} badge-xs font-medium shrink-0">
         ${s.ok ? 'OK' : 'FAIL'}
