@@ -248,6 +248,7 @@ function dispatch(action, p) {
     case 'deleteProduct':       return handleDeleteProduct(p);
     case 'scanAction':          return handleScanAction(p);
     case 'getLogs':             return handleGetLogs(p);
+    case 'getData':             return handleGetData();
     case 'getStats':            return handleGetStats(p);
     case 'getUsers':            return handleGetUsers(p);
     case 'addUser':             return handleAddUser(p);
@@ -323,9 +324,9 @@ function handleAddProduct(p) {
 
   var now = new Date().toISOString();
   var obj = {
-    id:             String(Date.now()),
+    id:             p.id ? String(p.id) : String(Date.now()),
     cableNo:        String(p.cableNo).trim(),
-    barcode:        _generateBarcode(),
+    barcode:        p.barcode ? String(p.barcode) : _generateBarcode(),
     category:       String(p.category),
     core:           String(p.core),
     sqmm:           String(p.sqmm),
@@ -599,6 +600,16 @@ function handleGetLogs(p) {
   var paged = rows.slice(start, start + pageSize);
 
   return _ok(paged, { total: total, page: page, pageSize: pageSize, totalPages: totalPages });
+}
+
+// ── GET ALL DATA (Local In-Memory Architecture) ──────────────────────────────
+function handleGetData() {
+  return _ok({
+    products: sheetToObjects(getSheet(SHEET_NAMES.PRODUCTS)),
+    logs:     sheetToObjects(getSheet(SHEET_NAMES.LOGS)),
+    users:    sheetToObjects(getSheet(SHEET_NAMES.USERS)),
+    masters:  sheetToObjects(getSheet(SHEET_NAMES.MASTERS))
+  });
 }
 
 // ── STATS (for Dashboard refresh) ─────────────────────────────────────────────

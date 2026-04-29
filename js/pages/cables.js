@@ -109,7 +109,7 @@ const CablesPage = {
         </div>
 
         <!-- ── MOBILE GRID VIEW (hidden on lg+) ────────────────────────── -->
-        <div id="cables-cards" class="lg:hidden flex flex-col gap-3"></div>
+        <div id="cables-cards" class="lg:hidden grid grid-cols-2 gap-3"></div>
 
         <!-- ── DESKTOP TABLE VIEW (hidden on mobile) ──────────────────────── -->
         <div class="hidden lg:block card bg-base-100 shadow-sm border border-base-200 overflow-hidden">
@@ -387,7 +387,7 @@ const CablesPage = {
 
     if (!this._products.length) {
       wrap.innerHTML = `
-        <div class="bg-white border border-base-200 rounded-xl">
+        <div class="col-span-2 bg-white border border-base-200 rounded-xl">
           ${UI.emptyState('package',
             this._total===0 ? 'No cables yet' : 'No match',
             this._total===0 ? 'Tap “+ Add Cable” to begin' : 'Try clearing filters')}
