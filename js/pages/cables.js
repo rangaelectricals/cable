@@ -347,6 +347,21 @@ const CablesPage = {
         :'<span class="badge badge-ghost badge-sm">No</span>'}</td>
       <td>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          ${p.status === 'IN_GODOWN' ? `
+          <button class="btn btn-ghost btn-xs btn-square text-warning" title="Send to Site"
+            onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+            <i data-lucide="truck" class="w-4 h-4"></i>
+          </button>` : ''}
+          ${p.status === 'SENT_TO_SITE' ? `
+          <button class="btn btn-ghost btn-xs btn-square text-info" title="Site to Site Transfer"
+            onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+            <i data-lucide="repeat" class="w-4 h-4"></i>
+          </button>
+          <button class="btn btn-ghost btn-xs btn-square text-success" title="Return to Godown (Close)"
+            onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
+            <i data-lucide="warehouse" class="w-4 h-4"></i>
+          </button>` : ''}
+          <div class="divider divider-horizontal mx-0 w-1"></div>
           <button class="btn btn-ghost btn-xs btn-square" title="QR Code"
             onclick="CablesPage.viewBarcode('${p.id}')">
             <i data-lucide="qr-code" class="w-4 h-4"></i>
@@ -429,24 +444,33 @@ const CablesPage = {
         </div>
 
         <!-- Action row -->
-        <div class="border-t border-base-100 grid grid-cols-3 divide-x divide-base-100">
-          <button class="py-2 flex items-center justify-center text-base-content/50
-            hover:bg-base-100 hover:text-primary transition-colors"
-            onclick="CablesPage.viewBarcode('${p.id}')" title="QR Code">
-            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
-          </button>
-          ${Auth.canEdit() ? `
-          <button class="py-2 flex items-center justify-center text-base-content/50
-            hover:bg-base-100 hover:text-primary transition-colors"
-            onclick="CablesPage.openEdit('${p.id}')" title="Edit">
-            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-          </button>` : '<div class="py-2"></div>'}
-          ${Auth.canDelete() ? `
-          <button class="py-2 flex items-center justify-center text-base-content/50
-            hover:bg-base-100 hover:text-error transition-colors"
-            onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')" title="Delete">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>` : '<div class="py-2"></div>'}
+        <div class="border-t border-base-200 px-2.5 py-2 flex items-center justify-between bg-base-100/50">
+          <div class="flex gap-1.5 flex-wrap">
+            ${p.status === 'IN_GODOWN' ? `
+            <button class="btn btn-xs btn-warning btn-outline gap-1" onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="truck" class="w-3.5 h-3.5"></i> Send
+            </button>` : ''}
+            ${p.status === 'SENT_TO_SITE' ? `
+            <button class="btn btn-xs btn-info btn-outline gap-1" onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="repeat" class="w-3.5 h-3.5"></i> Transfer
+            </button>
+            <button class="btn btn-xs btn-success btn-outline gap-1" onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="warehouse" class="w-3.5 h-3.5"></i> Close
+            </button>` : ''}
+          </div>
+          <div class="flex gap-1 shrink-0">
+            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-primary" onclick="CablesPage.viewBarcode('${p.id}')" title="QR Code">
+              <i data-lucide="qr-code" class="w-4 h-4"></i>
+            </button>
+            ${Auth.canEdit() ? `
+            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-primary" onclick="CablesPage.openEdit('${p.id}')" title="Edit">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>` : ''}
+            ${Auth.canDelete() ? `
+            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-error" onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')" title="Delete">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>` : ''}
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -637,6 +661,23 @@ const CablesPage = {
         Toast.show('success','Exported',`${res.data.length} cables downloaded.`);
       }
     } catch(err) { Loading.hide(); Toast.show('error','Export Error', err.message); }
+  },
+
+  quickAction(mode, cableNo) {
+    App.navigateTo('scan').then(() => {
+      setTimeout(() => {
+        if (window.ScanPage) {
+          ScanPage.setMode(mode);
+          ScanPage.setInputMode('SCAN');
+          const inp = document.getElementById('scan-input');
+          if (inp) {
+            inp.value = cableNo;
+            inp.focus();
+            Toast.show('info', mode.replace(/_/g,' '), 'Fill in the details and click Scan to process.');
+          }
+        }
+      }, 150);
+    });
   },
 
   // ── Cable detail view ─────────────────────────────────────────────────────
