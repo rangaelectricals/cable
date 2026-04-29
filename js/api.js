@@ -64,7 +64,6 @@ const API = (() => {
     await initDatabase();
     const user = window.AppDB.users.find(u => u.username === username && u.password === password);
     if (!user) return { success: false, message: 'Invalid credentials' };
-    if (!user.active) return { success: false, message: 'User account is inactive' };
     return { success: true, data: user };
   }
 
