@@ -118,7 +118,7 @@ const CablesPage = {
               <thead class="bg-base-200/60 text-xs uppercase tracking-wide">
                 <tr>
                   <th>#</th><th>Cable No</th><th>Category</th>
-                  <th>Core/SQMM</th><th>Meter</th><th>Qty</th>
+                  <th>Qty</th>
                   <th>Status</th><th>Site</th><th>Person</th>
                   <th>Date Out</th><th>Active</th><th>Actions</th>
                 </tr>
@@ -331,12 +331,12 @@ const CablesPage = {
       <td>
         <div class="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
-        <div class="text-[10px] text-base-content/50 font-medium leading-none mb-0.5">${Helpers.escape(p.core)} - ${Helpers.escape(p.sqmm)}mm²</div>
         <div class="text-[10px] font-mono text-base-content/30 truncate max-w-[110px]">${Helpers.escape(p.barcode)}</div>
       </td>
-      <td class="text-sm">${Helpers.escape(p.category)}</td>
-      <td class="text-sm whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</td>
-      <td class="text-sm">${p.meter}m</td>
+      <td class="text-sm">
+        <div class="font-medium whitespace-nowrap">${Helpers.escape(p.category)}</div>
+        <div class="text-[11px] text-base-content/50 font-medium mt-0.5 whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - <span class="font-bold text-primary">${p.meter}m</span></div>
+      </td>
       <td class="text-sm">${p.quantity||1}</td>
       <td>${Helpers.statusBadge(p.status)}</td>
       <td class="text-sm max-w-[100px] truncate">${p.siteName?Helpers.escape(p.siteName):'<span class="text-base-content/25">—</span>'}</td>
