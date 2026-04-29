@@ -17,11 +17,12 @@ const ScanPage = {
     <div class="space-y-4 page-enter">
       ${UI.pageHeader('Scan Operations', 'Godown ↔ Site QR workflow')}
 
-      <!-- ── Mode selector (full-width on mobile) ── -->
-      <div class="grid grid-cols-3 gap-2">
+      <!-- ── Mode selector ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
         ${[
           { id:'ACTIVATE',         icon:'check-circle', label:'Activate',       short:'Activate',  color:'primary' },
-          { id:'SEND_TO_SITE',     icon:'truck',        label:'Send to Site',   short:'Send',       color:'warning' },
+          { id:'SEND_TO_SITE',     icon:'truck',        label:'Send to Site',   short:'Send',      color:'warning' },
+          { id:'SITE_TO_SITE',     icon:'repeat',       label:'Site to Site',   short:'Transfer',  color:'info' },
           { id:'RETURN_TO_GODOWN', icon:'warehouse',    label:'Return to Godown',short:'Return',   color:'success' },
         ].map(m => `
         <button id="tab-${m.id}"
@@ -52,8 +53,8 @@ const ScanPage = {
                 <label class="input input-bordered flex items-center gap-2 flex-1 min-w-0">
                   <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
                   <input type="text" id="scan-input" class="grow min-w-0 text-sm"
-                    placeholder="Scan or type QR code…" autocomplete="off"
-                    inputmode="none" />
+                    placeholder="Scan QR or type Cable No…" autocomplete="off"
+                    inputmode="text" />
                 </label>
                 <button class="btn btn-primary gap-1.5" onclick="ScanPage.trigger()">
                   <i data-lucide="zap" class="w-4 h-4"></i>
@@ -163,11 +164,12 @@ const ScanPage = {
     const modeConfig = {
       ACTIVATE:         { color:'primary', icon:'check-circle' },
       SEND_TO_SITE:     { color:'warning', icon:'truck'        },
+      SITE_TO_SITE:     { color:'info',    icon:'repeat'       },
       RETURN_TO_GODOWN: { color:'success', icon:'warehouse'    },
     };
 
     // Update tab buttons
-    ['ACTIVATE','SEND_TO_SITE','RETURN_TO_GODOWN'].forEach(m => {
+    ['ACTIVATE','SEND_TO_SITE','SITE_TO_SITE','RETURN_TO_GODOWN'].forEach(m => {
       const btn = document.getElementById(`tab-${m}`);
       if (!btn) return;
       const mc = modeConfig[m];
@@ -185,12 +187,17 @@ const ScanPage = {
       SEND_TO_SITE: {
         cls:'alert-warning', icon:'truck',
         title:'Send to Site — Godown → Site',
-        desc:'Cable must be <strong>In Godown</strong>. Fill in site name and person assigned, then scan the QR code to dispatch.',
+        desc:'Cable must be <strong>In Godown</strong>. Fill in site name and person assigned, then scan the QR or type Cable No to dispatch.',
+      },
+      SITE_TO_SITE: {
+        cls:'alert-info', icon:'repeat',
+        title:'Site to Site Transfer',
+        desc:'Cable must be <strong>at a Site</strong>. Enter the new destination site and person, then scan or type Cable No.',
       },
       RETURN_TO_GODOWN: {
         cls:'alert-success', icon:'warehouse',
         title:'Return to Godown — Site → Godown',
-        desc:'Cable must be <strong>Sent to Site</strong>. Scan QR code to record return. Optionally update remaining meter balance.',
+        desc:'Cable must be <strong>at a Site</strong>. Scan QR or type Cable No to record return. Optionally update remaining meter balance.',
       },
     };
 
@@ -209,7 +216,7 @@ const ScanPage = {
     // Show/hide extra fields
     const siteEl   = document.getElementById('extra-site');
     const returnEl = document.getElementById('extra-return');
-    if (siteEl)   siteEl.classList.toggle('hidden',   mode !== 'SEND_TO_SITE');
+    if (siteEl)   siteEl.classList.toggle('hidden',   mode !== 'SEND_TO_SITE' && mode !== 'SITE_TO_SITE');
     if (returnEl) returnEl.classList.toggle('hidden', mode !== 'RETURN_TO_GODOWN');
 
     // Clear result
@@ -244,7 +251,7 @@ const ScanPage = {
     if (!barcode) { Toast.show('warning', 'Empty Scan', 'Please enter or scan a QR code.'); return; }
 
     const extra = {};
-    if (this._mode === 'SEND_TO_SITE') {
+    if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
       extra.siteName       = (document.getElementById('f-site-name')?.value || '').trim();
       extra.personAssigned = (document.getElementById('f-person')?.value    || '').trim();
       extra.note           = (document.getElementById('f-scan-remark')?.value || '').trim();
@@ -291,7 +298,7 @@ const ScanPage = {
         this._addSessionScan(barcode, true, p.cableNo);
         // Clear fields
         document.getElementById('scan-input').value = '';
-        if (this._mode === 'SEND_TO_SITE') {
+        if (this._mode === 'SEND_TO_SITE' || this._mode === 'SITE_TO_SITE') {
           document.getElementById('f-site-name').value   = '';
           document.getElementById('f-person').value      = '';
           document.getElementById('f-scan-remark').value = '';

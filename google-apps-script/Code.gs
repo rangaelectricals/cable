@@ -443,8 +443,16 @@ function handleScanAction(p) {
   if (!action || !barcode) return _err('action and barcode are required.');
 
   var products = sheetToObjects(getSheet(SHEET_NAMES.PRODUCTS));
-  var product  = products.filter(function(x) { return x.barcode === barcode; })[0];
-  if (!product) return _err('Barcode "' + barcode + '" not found. Register the cable first.');
+  var searchKey = String(barcode).trim().toLowerCase();
+  var product  = products.filter(function(x) {
+    return String(x.barcode).toLowerCase() === searchKey ||
+           String(x.cableNo).toLowerCase() === searchKey;
+  })[0];
+  
+  if (!product) return _err('ID / Cable No "' + barcode + '" not found. Register the cable first.');
+
+  // Always use the true barcode for logs
+  barcode = product.barcode;
 
   var now     = new Date().toISOString();
   var updates = { updatedAt: now };
@@ -475,6 +483,21 @@ function handleScanAction(p) {
     updates.personAssigned = String(p.personAssigned).trim();
     updates.dateOut        = now.slice(0, 10);
     updates.dateIn         = '';
+  }
+
+  // ── SITE TO SITE (SENT_TO_SITE → SENT_TO_SITE) ──────────────────────────
+  else if (action === 'SITE_TO_SITE') {
+    if (product.status !== 'SENT_TO_SITE')
+      return _err('Cannot transfer. Cable status is "' + product.status + '". Must be at a site.');
+    if (!p.siteName || !String(p.siteName).trim())
+      return _err('New Site name is required for SITE_TO_SITE.');
+    if (!p.personAssigned || !String(p.personAssigned).trim())
+      return _err('New Person assigned is required for SITE_TO_SITE.');
+
+    updates.siteName       = String(p.siteName).trim();
+    updates.personAssigned = String(p.personAssigned).trim();
+    updates.dateOut        = now.slice(0, 10);
+    // status remains 'SENT_TO_SITE'
   }
 
   // ── RETURN TO GODOWN  (SENT_TO_SITE → IN_GODOWN) ──────────────────────────

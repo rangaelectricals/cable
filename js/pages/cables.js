@@ -89,6 +89,21 @@ const CablesPage = {
                 ${categories.map(c => `<option value="${Helpers.escape(c)}"
                   ${this._filters.category===c?'selected':''}>${Helpers.escape(c)}</option>`).join('')}
               </select>
+              <select id="cable-core" class="select select-bordered select-sm min-w-24"
+                      onchange="CablesPage._onFilter()">
+                <option value="">All Cores</option>
+                ${cores.map(c => `<option value="${Helpers.escape(c)}"
+                  ${this._filters.core===c?'selected':''}>${Helpers.escape(c)}</option>`).join('')}
+              </select>
+              <select id="cable-sqmm" class="select select-bordered select-sm min-w-24"
+                      onchange="CablesPage._onFilter()">
+                <option value="">All SQMM</option>
+                ${sqmms.map(s => `<option value="${Helpers.escape(s)}"
+                  ${this._filters.sqmm===s?'selected':''}>${Helpers.escape(s)} mm²</option>`).join('')}
+              </select>
+              <button class="btn btn-ghost btn-sm text-error gap-1 px-2" onclick="CablesPage.clearFilters()" title="Clear Filters">
+                <i data-lucide="filter-x" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -460,6 +475,8 @@ const CablesPage = {
         search:   (document.getElementById('cable-search')?.value  || '').trim(),
         status:   document.getElementById('cable-status')?.value   || '',
         category: document.getElementById('cable-cat')?.value      || '',
+        core:     document.getElementById('cable-core')?.value     || '',
+        sqmm:     document.getElementById('cable-sqmm')?.value     || '',
       };
       this._page = 1;
       this._fetchPage(null, false);
@@ -479,6 +496,13 @@ const CablesPage = {
     Loading.show();
     await this._fetchPage(null, false);
     Loading.hide();
+  },
+
+  async clearFilters() {
+    this._filters = { search:'', status:'', category:'', core:'', sqmm:'' };
+    this._page = 1;
+    const container = document.getElementById('main-content');
+    if (container) await this.render(container);
   },
 
   openAdd() {

@@ -8,6 +8,7 @@ const Nav = {
   icons: {
     dashboard: 'layout-dashboard',
     cables:    'package',
+    specs:     'layers',
     scan:      'scan-line',
     masters:   'settings-2',
     logs:      'activity',
@@ -21,6 +22,7 @@ const Nav = {
     return [
       { id:'dashboard', label:'Dashboard',       group:'Main'     },
       { id:'cables',    label:'Cable Inventory',  group:'Main'     },
+      { id:'specs',     label:'Inventory by Spec',group:'Main'     },
       { id:'scan',      label:'Scan Operations',  group:'Main',    show: isAdmin },
       { id:'masters',   label:'Masters',           group:'Settings',show: isAdmin },
       { id:'logs',      label:'Activity Logs',     group:'Reports'  },
@@ -99,8 +101,8 @@ const Nav = {
       if (!item) return '';
       const isActive = id === activeSection;
       const shortLabels = {
-        dashboard:'Home', cables:'Cables', scan:'Scan',
-        masters:'Masters', logs:'Logs', users:'Users',
+        dashboard: 'Home', cables: 'Cables', specs: 'Specs',
+        scan: 'Scan', masters: 'Masters', logs: 'Logs', users: 'Users',
       };
       return `
       <button onclick="App.navigateTo('${id}')"
