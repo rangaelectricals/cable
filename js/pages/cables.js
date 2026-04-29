@@ -339,8 +339,8 @@ const CablesPage = {
       </td>
       <td class="text-sm">${p.quantity||1}</td>
       <td>${Helpers.statusBadge(p.status)}</td>
-      <td class="text-sm max-w-[100px] truncate">${p.siteName?Helpers.escape(p.siteName):'<span class="text-base-content/25">—</span>'}</td>
-      <td class="text-sm max-w-[100px] truncate">${p.personAssigned?Helpers.escape(p.personAssigned):'<span class="text-base-content/25">—</span>'}</td>
+      <td class="text-sm">${p.siteName?Helpers.escape(p.siteName):'<span class="text-base-content/25">—</span>'}</td>
+      <td class="text-sm">${p.personAssigned?Helpers.escape(p.personAssigned):'<span class="text-base-content/25">—</span>'}</td>
       <td class="text-xs whitespace-nowrap">${Helpers.formatDate(p.dateOut)}</td>
       <td>${(String(p.activated)==='true'||p.activated===true)
         ?'<span class="badge badge-success badge-sm">Active</span>'
