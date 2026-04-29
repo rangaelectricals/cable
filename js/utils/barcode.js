@@ -48,7 +48,7 @@ const Barcode = (() => {
     span{font-weight:700;color:#111;}
     @media print{body{margin:0;}.wrap{border:none;}}</style></head>
     <body><div class="wrap">
-      <div class="title">CableTrack Pro</div>
+      <div class="title">RE CABLETRACK</div>
       <div class="sub">${product.cableNo} — ${product.category}</div>
       ${dataUrl ? `<img src="${dataUrl}" />` : ''}
       <div class="grid">

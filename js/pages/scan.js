@@ -56,25 +56,27 @@ const ScanPage = {
               </div>
 
               <!-- Scan input + buttons -->
-              <div class="flex gap-2">
-                <label id="wrap-scan-input" class="input input-bordered flex items-center gap-2 flex-1 min-w-0">
-                  <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
-                  <input type="text" id="scan-input" class="grow min-w-0 text-sm"
-                    placeholder="Scan QR or type Cable No…" autocomplete="off"
-                    inputmode="text" />
-                </label>
+              <div class="grid grid-cols-4 sm:flex gap-2">
+                <div id="input-container" class="col-span-3 sm:flex-1">
+                  <label id="wrap-scan-input" class="input input-bordered flex items-center gap-2 w-full">
+                    <i data-lucide="hash" class="w-4 h-4 text-base-content/40 shrink-0"></i>
+                    <input type="text" id="scan-input" class="grow min-w-0 text-[16px] sm:text-sm"
+                      placeholder="QR or Cable No" autocomplete="off" inputmode="text" />
+                  </label>
 
-                <select id="scan-select" class="select select-bordered flex-1 min-w-0 hidden text-sm">
-                  <option value="">Select a cable...</option>
-                </select>
+                  <select id="scan-select" class="select select-bordered w-full hidden text-[16px] sm:text-sm">
+                    <option value="">Select a cable...</option>
+                  </select>
+                </div>
 
-                <button class="btn btn-primary gap-1.5" onclick="ScanPage.trigger()">
-                  <i data-lucide="zap" class="w-4 h-4"></i>
-                  <span class="hidden sm:inline" id="btn-action-text">Scan</span>
-                </button>
-                <button class="btn btn-outline btn-primary btn-square" id="btn-camera"
+                <button class="btn btn-outline btn-primary btn-square col-span-1 w-full sm:w-12" id="btn-camera"
                   onclick="ScanPage.toggleCamera()" title="Toggle Camera">
                   <i data-lucide="camera" class="w-5 h-5"></i>
+                </button>
+
+                <button class="btn btn-primary col-span-4 sm:w-auto sm:px-6 gap-1.5" onclick="ScanPage.trigger()">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                  <span id="btn-action-text">Scan</span>
                 </button>
               </div>
 
@@ -180,6 +182,8 @@ const ScanPage = {
     const btnCamera = document.getElementById('btn-camera');
     const actionText = document.getElementById('btn-action-text');
 
+    const inputContainer = document.getElementById('input-container');
+
     if (!btnScan) return;
 
     if (mode === 'SCAN') {
@@ -188,6 +192,7 @@ const ScanPage = {
       wrapInput.classList.remove('hidden');
       select.classList.add('hidden');
       btnCamera.classList.remove('hidden');
+      if (inputContainer) inputContainer.className = 'col-span-3 sm:flex-1';
       actionText.textContent = 'Scan';
       document.getElementById('scan-input').focus();
     } else {
@@ -196,6 +201,7 @@ const ScanPage = {
       wrapInput.classList.add('hidden');
       select.classList.remove('hidden');
       btnCamera.classList.add('hidden');
+      if (inputContainer) inputContainer.className = 'col-span-4 sm:flex-1';
       actionText.textContent = 'Process';
 
       // Load eligible cables

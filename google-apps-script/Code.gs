@@ -762,7 +762,7 @@ function setupSheets() {
   });
 
   SpreadsheetApp.getUi().alert(
-    '✅ CableTrack Pro — All sheets are ready!\n\n' +
+    '✅ RE CABLETRACK — All sheets are ready!\n\n' +
     'Sheets: USERS · PRODUCTS · TRANSACTIONS · SCAN_LOG · MASTERS\n\n' +
     'Default admin account: admin / admin123\n' +
     'Masters seeded: Categories, Core options, SQMM options\n' +

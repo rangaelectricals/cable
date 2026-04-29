@@ -7,7 +7,7 @@
 // Replace this URL with your deployed Google Apps Script Web App URL
 const CONFIG = {
   API_BASE_URL: 'https://script.google.com/macros/s/AKfycbwRzr6yDKrIOVP6FrytM0l9V8BSVwZqbEbEtfPzajfwJACli60WfnDMFazoClvWwLNT/exec',
-  APP_NAME: 'CableTrack Pro',
+  APP_NAME: 'RE CABLETRACK',
   VERSION: '2.0.0',
   CACHE_TTL: 5 * 60 * 1000,     // 5 minutes cache
   SESSION_KEY: 'cabletrack_session',
