@@ -551,8 +551,9 @@ const CablesPage = {
     const p = this._products.find(p => String(p.id) === String(id));
     if (!p) return;
     document.getElementById('barcode-content').innerHTML = `
-      <div class="bg-white p-4 rounded-2xl border border-base-200 inline-block shadow-sm">
-        <canvas id="bc-canvas" class="max-w-full rounded-lg"></canvas>
+      <div class="bg-white p-4 rounded-2xl border border-base-200 inline-flex items-center justify-center shadow-sm min-h-[200px] min-w-[200px]">
+        <img id="bc-img" class="max-w-full rounded-lg" style="width:200px; height:200px;" 
+             alt="QR Code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
       </div>
       <div class="mt-4 space-y-4">
         <div class="text-sm text-base-content/60">
@@ -578,7 +579,10 @@ const CablesPage = {
          <i data-lucide="printer" class="w-4 h-4"></i> Print Label
        </button>`;
     Modal.open('modal-barcode');
-    setTimeout(() => Barcode.generate('bc-canvas', p.barcode), 100);
+    
+    // Generate QR and update img src
+    Barcode.generate('bc-img', p.barcode);
+    
     if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('modal-barcode')] });
   },
 

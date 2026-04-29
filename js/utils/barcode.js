@@ -2,16 +2,18 @@
  * Barcode generation (JsBarcode) and camera scanning (Quagga)
  */
 const Barcode = (() => {
-  function generate(canvasId, value) {
-    if (typeof QRCode === 'undefined') { console.warn('QRCode not loaded'); return; }
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+  async function generate(imgId, value) {
+    const qrlib = window.QRCode;
+    if (typeof qrlib === 'undefined') { console.warn('QRCode library not loaded'); return; }
+    const img = document.getElementById(imgId);
+    if (!img) return;
     try {
-      QRCode.toCanvas(canvas, value, {
-        width: 180,
+      const url = await qrlib.toDataURL(value, {
+        width: 256,
         margin: 2,
         color: { dark: '#000000', light: '#ffffff' }
       });
+      img.src = url;
     } catch(e) { console.error('QR gen error', e); }
   }
 
