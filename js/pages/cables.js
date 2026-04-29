@@ -67,8 +67,8 @@ const CablesPage = {
         )}
 
         <!-- Filters -->
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-          <div class="card-body py-3 px-4">
+        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <div class="py-3 px-4">
             <div class="flex flex-wrap gap-2">
               <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
                 <i data-lucide="search" class="w-4 h-4 text-base-content/40 shrink-0"></i>
@@ -108,8 +108,8 @@ const CablesPage = {
           </div>
         </div>
 
-        <!-- ── MOBILE GRID VIEW (hidden on lg+) ────────────────────────── -->
-        <div id="cables-cards" class="lg:hidden grid grid-cols-2 gap-3"></div>
+        <!-- ── MOBILE CARD VIEW (hidden on lg+) ────────────────────────── -->
+        <div id="cables-cards" class="lg:hidden flex flex-col gap-3"></div>
 
         <!-- ── DESKTOP TABLE VIEW (hidden on mobile) ──────────────────────── -->
         <div class="hidden lg:block card bg-base-100 shadow-sm border border-base-200 overflow-hidden">
@@ -368,29 +368,12 @@ const CablesPage = {
           </button>
           ${Auth.canEdit() ? `<button class="btn btn-ghost btn-xs btn-square" title="Edit"
             onclick="CablesPage.openEdit('${p.id}')">
-            <i data-lucide="pencil" class="w-4 h-4"></i>
-          </button>` : ''}
-          ${Auth.canDelete() ? `<button class="btn btn-ghost btn-xs btn-square text-error" title="Delete"
-            onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>` : ''}
-        </div>
-      </td>
-    </tr>`).join('');
-    if (window.lucide) lucide.createIcons({ nodes: [body] });
-  },
-
-  // ── Mobile rectangular grid (2-col) ──────────────────────────────────────
-  _renderCards() {
-    const wrap = document.getElementById('cables-cards');
-    if (!wrap) return;
-
-    if (!this._products.length) {
+            <i data-lucide="pencil" c    if (!this._products.length) {
       wrap.innerHTML = `
-        <div class="col-span-2 bg-white border border-base-200 rounded-xl">
+        <div class="col-span-2 rounded-2xl bg-white border border-slate-200 shadow-sm">
           ${UI.emptyState('package',
             this._total===0 ? 'No cables yet' : 'No match',
-            this._total===0 ? 'Tap “+ Add Cable” to begin' : 'Try clearing filters')}
+            this._total===0 ? 'Tap "+ Add Cable" to begin' : 'Try clearing filters')}
         </div>`;
       if (window.lucide) lucide.createIcons({ nodes: [wrap] });
       return;
@@ -399,80 +382,115 @@ const CablesPage = {
     wrap.innerHTML = this._products.map(p => {
       const isActive = String(p.activated)==='true' || p.activated===true;
       const isSite   = p.status === 'SENT_TO_SITE';
-      const statusColor = isSite ? 'bg-warning' : 'bg-success';
-      return `
-      <div class="bg-white border border-base-200 rounded-xl overflow-hidden flex flex-col shadow-sm">
 
-        <!-- Colour strip + cable no + status — click to view detail -->
-        <div class="${statusColor}/10 border-b border-base-200 px-2.5 py-2.5 flex items-center justify-between gap-2
-          cursor-pointer hover:bg-base-200/30 transition-colors"
-          onclick="CablesPage.viewDetail('${p.id}')">
-          <div class="min-w-0">
-            <div class="font-bold text-sm truncate leading-tight">${Helpers.escape(p.cableNo)}</div>
-            <div class="text-[10px] text-base-content/50 font-medium mt-0.5">${Helpers.escape(p.core)} - ${Helpers.escape(p.sqmm)}mm²</div>
+      const statusBarColor = isSite
+        ? 'from-amber-500 to-orange-500'
+        : 'from-emerald-500 to-teal-500';
+
+      const statusTextColor = isSite ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      const statusLabel = isSite ? 'Sent to Site' : 'In Godown';
+      const statusIcon  = isSite ? 'truck' : 'warehouse';
+
+      return `
+      <div class="col-span-2 rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+
+        <!-- Colored top strip + header row -->
+        <div class="h-1 bg-gradient-to-r ${statusBarColor}"></div>
+
+        <!-- Cable No + Status -->
+        <div class="flex items-center justify-between px-4 pt-3.5 pb-2 cursor-pointer"
+             onclick="CablesPage.viewDetail('${p.id}')">
+          <div class="min-w-0 flex-1">
+            <div class="text-base font-black text-slate-800 leading-tight truncate">${Helpers.escape(p.cableNo)}</div>
+            <div class="text-[10px] font-mono text-slate-400 mt-0.5 truncate">${Helpers.escape(p.barcode || '')}</div>
           </div>
-          ${Helpers.statusBadge(p.status)}
+          <span class="ml-3 shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusTextColor}">
+            <i data-lucide="${statusIcon}" class="w-3.5 h-3.5"></i>
+            ${statusLabel}
+          </span>
         </div>
 
-        <!-- Specs 2×2 grid -->
-        <div class="grid grid-cols-2 gap-x-2 gap-y-2 px-2.5 py-2.5 flex-1">
-          <div>
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Category</div>
-            <div class="text-xs font-semibold truncate mt-0.5">${Helpers.escape(p.category)}</div>
+        <!-- Divider -->
+        <div class="mx-4 border-t border-slate-100"></div>
+
+        <!-- Details grid - all info properly shown -->
+        <div class="grid grid-cols-2 gap-0 px-4 py-3" onclick="CablesPage.viewDetail('${p.id}')">
+
+          <div class="py-1.5 pr-2 border-b border-slate-100">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Category</div>
+            <div class="text-sm font-semibold text-slate-700 mt-0.5 truncate">${Helpers.escape(p.category)}</div>
           </div>
-          <div>
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Core/SQMM</div>
-            <div class="text-xs font-mono mt-0.5">${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}</div>
+
+          <div class="py-1.5 pl-2 border-b border-slate-100 border-l">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Core / SQMM</div>
+            <div class="text-sm font-semibold text-slate-700 mt-0.5 font-mono">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)} mm²</div>
           </div>
-          <div>
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Meter</div>
-            <div class="text-xs font-bold text-primary mt-0.5">${p.meter}m</div>
+
+          <div class="py-1.5 pr-2 border-b border-slate-100">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Length</div>
+            <div class="text-sm font-black text-indigo-600 mt-0.5">${p.meter} m</div>
           </div>
-          <div>
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Active</div>
-            <div class="mt-0.5">
+
+          <div class="py-1.5 pl-2 border-b border-slate-100 border-l">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Qty / Activated</div>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-sm font-semibold text-slate-700">${p.quantity || 1}</span>
               ${isActive
-                ? '<span class="badge badge-success badge-xs">Yes</span>'
-                : '<span class="badge badge-ghost badge-xs">No</span>'}
+                ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200"><i data-lucide="zap" class="w-3 h-3"></i>Active</span>'
+                : '<span class="inline-flex items-center text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">Inactive</span>'}
             </div>
           </div>
+
           ${isSite && p.siteName ? `
-          <div class="col-span-2">
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Site</div>
-            <div class="text-xs mt-0.5 text-warning font-medium">${Helpers.escape(p.siteName)}</div>
+          <div class="py-1.5 pr-2 border-b border-slate-100 col-span-2">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Site Name</div>
+            <div class="text-sm font-semibold text-amber-600 mt-0.5">${Helpers.escape(p.siteName)}</div>
           </div>` : ''}
+
           ${isSite && p.personAssigned ? `
-          <div class="col-span-2">
-            <div class="text-[9px] font-bold uppercase tracking-wider text-base-content/30">Person</div>
-            <div class="text-xs mt-0.5 text-base-content/80 font-medium">${Helpers.escape(p.personAssigned)}</div>
+          <div class="py-1.5 pr-2 border-b border-slate-100 col-span-2">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Person Assigned</div>
+            <div class="text-sm font-semibold text-slate-700 mt-0.5">${Helpers.escape(p.personAssigned)}</div>
+          </div>` : ''}
+
+          ${p.dateOut ? `
+          <div class="py-1.5 col-span-2">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Date Out</div>
+            <div class="text-xs font-medium text-slate-500 mt-0.5">${Helpers.formatDate(p.dateOut)}</div>
           </div>` : ''}
         </div>
 
         <!-- Action row -->
-        <div class="border-t border-base-200 px-2.5 py-2 flex items-center justify-between bg-base-100/50">
-          <div class="flex gap-1.5 flex-wrap">
+        <div class="border-t border-slate-100 bg-slate-50 px-4 py-2.5 flex items-center justify-between">
+          <div class="flex gap-2 flex-wrap">
             ${p.status === 'IN_GODOWN' ? `
-            <button class="btn btn-xs btn-warning btn-outline gap-1" onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="truck" class="w-3.5 h-3.5"></i> Send
+            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors"
+              onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="truck" class="w-3.5 h-3.5"></i> Send to Site
             </button>` : ''}
             ${p.status === 'SENT_TO_SITE' ? `
-            <button class="btn btn-xs btn-info btn-outline gap-1" onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors"
+              onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
               <i data-lucide="repeat" class="w-3.5 h-3.5"></i> Transfer
             </button>
-            <button class="btn btn-xs btn-success btn-outline gap-1" onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="warehouse" class="w-3.5 h-3.5"></i> Close
+            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-colors"
+              onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="warehouse" class="w-3.5 h-3.5"></i> Return
             </button>` : ''}
           </div>
-          <div class="flex gap-1 shrink-0">
-            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-primary" onclick="CablesPage.viewBarcode('${p.id}')" title="QR Code">
+          <div class="flex gap-1 shrink-0 ml-2">
+            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
+              onclick="CablesPage.viewBarcode('${p.id}')">
               <i data-lucide="qr-code" class="w-4 h-4"></i>
             </button>
             ${Auth.canEdit() ? `
-            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-primary" onclick="CablesPage.openEdit('${p.id}')" title="Edit">
+            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
+              onclick="CablesPage.openEdit('${p.id}')">
               <i data-lucide="pencil" class="w-4 h-4"></i>
             </button>` : ''}
             ${Auth.canDelete() ? `
-            <button class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-error" onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')" title="Delete">
+            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 flex items-center justify-center transition-colors"
+              onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>` : ''}
           </div>
@@ -484,6 +502,7 @@ const CablesPage = {
   },
 
   // ── Pagination ────────────────────────────────────────────────────────────
+
   _renderPagination() {
     const opts = {
       current: this._page, totalPages: this._totalPages,
