@@ -98,7 +98,6 @@ const LogsPage = {
               <thead class="bg-slate-100 text-xs uppercase tracking-wide">
                 <tr>
                   <th>#</th>
-                  <th>NO</th>
                   <th>Date / Time</th>
                   <th>Cable No</th>
                   <th>Action</th>
@@ -195,9 +194,10 @@ const LogsPage = {
     body.innerHTML = this._logs.map((l, i) => `
     <tr class="hover">
       <td class="text-slate-400 text-xs">${rowStart+i+1}</td>
-      <td class="text-xs font-black text-slate-400">${Helpers.escape(l.no || '-')}</td>
       <td class="text-xs whitespace-nowrap">${Helpers.formatDateTime(l.timestamp)}</td>
-      <td class="font-semibold text-sm">${Helpers.escape(l.cableNo)}</td>
+      <td class="text-sm">
+        <div class="font-semibold">${l.no ? `<span class="text-slate-400 font-bold mr-1">#${Helpers.escape(l.no)}</span>` : ''}${Helpers.escape(l.cableNo)}</div>
+      </td>
       <td>${UI.actionBadge(l.action)}</td>
       <td class="text-sm">${Helpers.escape(l.user||'—')}</td>
       <td class="text-sm text-slate-500 max-w-[160px] truncate">

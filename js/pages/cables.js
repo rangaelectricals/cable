@@ -117,7 +117,7 @@ const CablesPage = {
             <table class="table table-sm table-zebra">
               <thead class="bg-slate-100 text-xs uppercase tracking-wide">
                 <tr>
-                  <th>#</th><th>NO</th><th>Cable No</th><th>Category</th>
+                  <th>#</th><th>Cable No</th><th>Category / Specs</th>
                   <th>Qty</th>
                   <th>Status</th><th>Site</th><th>Person</th>
                   <th>Date Out</th><th>Active</th><th>Actions</th>
@@ -333,7 +333,6 @@ const CablesPage = {
     body.innerHTML = this._products.map((p, i) => `
     <tr class="hover group">
       <td class="text-slate-400 text-xs w-8">${rowStart+i+1}</td>
-      <td class="text-xs font-black text-slate-500">${Helpers.escape(p.no || '-')}</td>
       <td>
         <div class="font-semibold text-sm cursor-pointer hover:text-indigo-600 transition-colors"
           onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
@@ -341,7 +340,11 @@ const CablesPage = {
       </td>
       <td class="text-sm">
         <div class="font-medium whitespace-nowrap">${Helpers.escape(p.category)}</div>
-        <div class="text-[11px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - <span class="font-bold text-indigo-600">${p.meter}m</span></div>
+        <div class="text-[11px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">
+          ${p.no ? `<span class="text-slate-800 font-black">${Helpers.escape(p.no)}</span> / ` : ''}
+          ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - 
+          <span class="font-bold text-indigo-600">${p.meter}m</span>
+        </div>
       </td>
       <td class="text-sm">${p.quantity||1}</td>
       <td>${Helpers.statusBadge(p.status)}</td>
