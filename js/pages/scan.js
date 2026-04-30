@@ -11,12 +11,9 @@ const ScanPage = {
     if (!Auth.canScan()) {
       container.innerHTML = UI.emptyState('lock', 'Access Denied', 'Admin role required to perform scanning.');
       if (window.lucide) lucide.createIcons({ nodes: [container] });
-      return;
-    }
-
-    container.innerHTML = `
+      return;    container.innerHTML = `
     <div class="space-y-4 page-enter pb-16 lg:pb-0 max-w-6xl mx-auto">
-      ${UI.pageHeader('Scan Operations', 'Efficient QR workflow')}
+      ${UI.pageHeader('Scan Operations', 'Smart QR Workflow')}
 
       <!-- ── Compact Stepped Workflow ── -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -25,101 +22,104 @@ const ScanPage = {
         <div class="lg:col-span-7 space-y-4">
           
           <!-- Compact Mode Selector -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-1 flex gap-1">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-1.5 flex gap-1.5">
             ${[
-              { id:'ACTIVATE',         icon:'zap',      short:'Activate',  color:'indigo' },
-              { id:'SEND_TO_SITE',     icon:'truck',    short:'Send',      color:'amber'  },
-              { id:'SITE_TO_SITE',     icon:'repeat',   short:'Transfer',  color:'blue'   },
-              { id:'RETURN_TO_GODOWN', icon:'warehouse', short:'Return',    color:'emerald'}
+              { id:'ACTIVATE',         icon:'zap',       short:'Activate',  color:'indigo' },
+              { id:'SEND_TO_SITE',     icon:'truck',     short:'Send',      color:'amber'  },
+              { id:'SITE_TO_SITE',     icon:'repeat',    short:'Transfer',  color:'blue'   },
+              { id:'RETURN_TO_GODOWN', icon:'warehouse',  short:'Return',    color:'emerald'}
             ].map(m => `
             <button id="tab-${m.id}"
               onclick="ScanPage.setMode('${m.id}')"
-              class="flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all duration-300 gap-1 group">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-50 group-hover:bg-white transition-colors border border-transparent">
-                <i data-lucide="${m.icon}" class="w-4 h-4 text-slate-400 group-active:scale-90 transition-transform"></i>
+              class="flex-1 flex flex-col items-center justify-center py-2.5 rounded-xl transition-all duration-300 gap-1.5 group border border-transparent">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 group-hover:bg-white transition-all shadow-sm group-hover:shadow border border-slate-100">
+                <i data-lucide="${m.icon}" class="w-5 h-5 text-slate-400 group-active:scale-90 transition-transform"></i>
               </div>
-              <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-600">${m.short}</span>
+              <span class="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400 group-hover:text-slate-600 transition-colors">${m.short}</span>
             </button>`).join('')}
           </div>
 
           <!-- Compact Input Area -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden transition-all duration-300">
             <!-- Tighter Header -->
-            <div id="mode-header" class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
-              <div class="flex items-center gap-3">
-                <div id="mode-icon-box" class="w-9 h-9 rounded-lg flex items-center justify-center text-white shadow-md">
-                  <i id="mode-icon" data-lucide="zap" class="w-4 h-4"></i>
+            <div id="mode-header" class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/40">
+              <div class="flex items-center gap-4">
+                <div id="mode-icon-box" class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-lg transition-all duration-500">
+                  <i id="mode-icon" data-lucide="zap" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <h2 id="mode-title" class="text-xs font-black text-slate-800 uppercase tracking-tight">Activate Cable</h2>
-                  <p id="mode-desc" class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Registration</p>
+                  <h2 id="mode-title" class="text-sm font-black text-slate-800 uppercase tracking-tight">Activate Cable</h2>
+                  <p id="mode-desc" class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1 opacity-70">Registration</p>
                 </div>
               </div>
-              <div class="flex bg-slate-100 p-0.5 rounded-lg">
-                <button id="btn-mode-scan" class="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SCAN')">Scan</button>
-                <button id="btn-mode-select" class="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SELECT')">List</button>
+              <div class="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
+                <button id="btn-mode-scan" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SCAN')">Scan</button>
+                <button id="btn-mode-select" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all" onclick="ScanPage.setInputMode('SELECT')">List</button>
               </div>
             </div>
 
-            <div class="p-4 space-y-4">
+            <div class="p-6 space-y-5">
               <!-- Compact Extra Fields -->
-              <div id="extra-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
-                <div id="extra-site" class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
-                  <div class="space-y-1">
-                    <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Site Name</label>
-                    <input type="text" id="f-site-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="e.g. Site Alpha" />
+              <div id="extra-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                <div id="extra-site" class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                  <div class="space-y-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Destination Site</label>
+                    <input type="text" id="f-site-name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-xs font-black text-slate-800 focus:border-indigo-500 focus:bg-white transition-all outline-none placeholder:text-slate-300" placeholder="Enter Site Name" />
                   </div>
-                  <div class="space-y-1">
-                    <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Person Assigned</label>
-                    <input type="text" id="f-person" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="e.g. Ravi Kumar" />
+                  <div class="space-y-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Person In-Charge</label>
+                    <input type="text" id="f-person" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-xs font-black text-slate-800 focus:border-indigo-500 focus:bg-white transition-all outline-none placeholder:text-slate-300" placeholder="Enter Person Name" />
                   </div>
                 </div>
                 <div id="extra-return" class="col-span-2 hidden">
-                   <div class="space-y-1">
-                    <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Meter Balance</label>
-                    <input type="number" id="f-meter-bal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="Keep current if empty" />
+                   <div class="space-y-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Returned Meter Balance</label>
+                    <div class="relative">
+                      <input type="number" id="f-meter-bal" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-4 pr-10 py-3 text-sm font-black text-slate-800 focus:border-indigo-500 focus:bg-white transition-all outline-none placeholder:text-slate-300" placeholder="Keep empty to maintain current" />
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">MTRS</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- Main Input Row -->
               <div class="relative group">
-                <div id="camera-wrap" class="hidden mb-4">
-                  <div id="scan-viewport" class="w-full aspect-video rounded-2xl overflow-hidden bg-black border-2 border-slate-100 shadow-inner relative max-w-md mx-auto">
+                <div id="camera-wrap" class="hidden mb-5">
+                  <div id="scan-viewport" class="w-full aspect-video rounded-3xl overflow-hidden bg-black border-4 border-white shadow-2xl relative max-w-md mx-auto">
                      <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-                        <div class="w-48 h-24 border border-white/30 rounded-xl relative overflow-hidden">
-                           <div class="absolute inset-x-0 h-0.5 bg-white/70 shadow-[0_0_10px_rgba(255,255,255,1)] animate-scan"></div>
+                        <div class="w-64 h-32 border-2 border-white/40 rounded-2xl relative overflow-hidden">
+                           <div class="absolute inset-x-0 h-1 bg-white/90 shadow-[0_0_20px_rgba(255,255,255,1)] animate-scan"></div>
                         </div>
                      </div>
                   </div>
-                  <button class="mt-2 w-full py-2 bg-slate-50 rounded-xl text-slate-500 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-colors" onclick="ScanPage.toggleCamera()">
+                  <button class="mt-4 w-full py-3 bg-rose-50 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-rose-100 transition-all border border-rose-100" onclick="ScanPage.toggleCamera()">
                     Stop Camera
                   </button>
                 </div>
 
-                <div class="flex items-stretch gap-2">
+                <div class="flex items-stretch gap-3">
                   <div id="input-container" class="flex-1 relative">
                     <div id="wrap-scan-input" class="relative">
-                      <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        <i data-lucide="hash" class="w-4 h-4"></i>
+                      <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i data-lucide="qr-code" class="w-5 h-5 opacity-60"></i>
                       </div>
                       <input type="text" id="scan-input" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 transition-all outline-none"
-                        placeholder="QR or Cable No..." autocomplete="off" />
+                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-black text-slate-800 placeholder:text-slate-300 focus:bg-white focus:border-indigo-500 transition-all outline-none shadow-sm"
+                        placeholder="Scan QR or Type Cable ID..." autocomplete="off" />
                     </div>
-                    <select id="scan-select" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none appearance-none">
-                      <option value="">Select a cable...</option>
+                    <select id="scan-select" class="hidden w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none appearance-none shadow-sm">
+                      <option value="">Select from list...</option>
                     </select>
                   </div>
                   
                   <button id="btn-camera" onclick="ScanPage.toggleCamera()" 
-                    class="w-11 shrink-0 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all">
-                    <i data-lucide="camera" class="w-5 h-5"></i>
+                    class="w-14 shrink-0 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm hover:shadow active:scale-95">
+                    <i data-lucide="camera" class="w-6 h-6"></i>
                   </button>
 
                   <button onclick="ScanPage.trigger()" 
-                    class="px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-md transition-all active:scale-95">
-                    Run
+                    class="px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-indigo-200 transition-all active:scale-95 hover:-translate-y-0.5">
+                    Process
                   </button>
                 </div>
               </div>
@@ -132,21 +132,23 @@ const ScanPage = {
 
         <!-- Right Column: Recent Activity (5/12) -->
         <div class="lg:col-span-5">
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
-               <div class="flex items-center gap-2">
-                <i data-lucide="history" class="w-4 h-4 text-slate-400"></i>
-                <h2 class="text-[11px] font-black text-slate-700 uppercase tracking-tight">Activity Log</h2>
+          <div class="bg-white rounded-3xl shadow-lg border border-slate-200 h-full flex flex-col overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+               <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center border border-indigo-100 shadow-sm">
+                  <i data-lucide="history" class="w-4 h-4"></i>
+                </div>
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-tight">Activity Log</h2>
               </div>
               <div class="flex items-center gap-2">
-                <span id="session-count" class="px-1.5 py-0.5 rounded-md bg-slate-100 text-[9px] font-black text-slate-500">0</span>
-                <button class="w-6 h-6 rounded flex items-center justify-center text-slate-300 hover:text-red-500 transition-all" onclick="ScanPage.clearSession()">
-                  <i data-lucide="trash-2" class="w-3 h-3"></i>
+                <span id="session-count" class="px-2 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-black text-indigo-600 shadow-sm">0</span>
+                <button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition-all" onclick="ScanPage.clearSession()">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
             </div>
-            <div id="session-scans" class="flex-1 overflow-y-auto p-3 space-y-1.5 max-h-[300px] lg:max-h-none">
-              ${UI.emptyState('list', 'No Activity', 'Scans will appear here.')}
+            <div id="session-scans" class="flex-1 overflow-y-auto p-4 space-y-2.5 max-h-[350px] lg:max-h-none custom-scrollbar">
+              ${UI.emptyState('list', 'No Activity', 'Recent session scans will appear here.')}
             </div>
           </div>
         </div>
@@ -246,7 +248,7 @@ const ScanPage = {
         select.innerHTML = '<option value="">No eligible cables found</option>';
       } else {
         select.innerHTML = '<option value="">-- Select Cable --</option>' + 
-          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${Helpers.escape(c.cableNo)} (${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
+          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${c.no ? `[${Helpers.escape(c.no)}] ` : ''}${Helpers.escape(c.cableNo)} (${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
         select.disabled = false;
       }
     } catch(e) {
@@ -388,25 +390,33 @@ const ScanPage = {
 
             <div class="grid grid-cols-2 gap-3 bg-white rounded-xl p-3 shadow-sm border border-emerald-100/50">
               <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">NO / Cable No</span>
-                <span class="text-xs font-black text-slate-800">${p.no ? Helpers.escape(p.no) + ' - ' : ''}${Helpers.escape(p.cableNo)}</span>
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Cable Identity</span>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  ${p.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-black text-[9px] border border-slate-200">${Helpers.escape(p.no)}</span>` : ''}
+                  <span class="text-[13px] font-black text-slate-800 tracking-tight uppercase">${Helpers.escape(p.cableNo)}</span>
+                </div>
               </div>
               <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-[9px] font-black text-slate-600 uppercase tracking-tight">${p.status}</span>
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Current Status</span>
+                <div class="mt-0.5">${Helpers.statusBadge(p.status)}</div>
               </div>
               <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Category</span>
-                <span class="text-[10px] font-bold text-slate-600">${Helpers.escape(p.category)}</span>
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Specification</span>
+                <span class="text-[11px] font-black text-indigo-700 uppercase tracking-tighter">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</span>
               </div>
               <div class="text-left">
                 <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Length</span>
-                <span class="text-[10px] font-black text-indigo-600">${p.meter}m</span>
+                <span class="text-[11px] font-black text-emerald-600 uppercase tracking-widest">${p.meter}m</span>
               </div>
               ${p.siteName ? `
-              <div class="text-left col-span-2 border-t border-slate-50 pt-1.5">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Site</span>
-                <span class="text-[10px] font-black text-amber-600">${Helpers.escape(p.siteName)}</span>
+              <div class="text-left col-span-2 border-t border-slate-50 pt-2 mt-1">
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Assigned Location</span>
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-[11px] font-black text-amber-700 uppercase tracking-tight">${Helpers.escape(p.siteName)}</span>
+                  <span class="text-[9px] text-slate-500 font-bold flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 shadow-xs shrink-0">
+                    <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
+                  </span>
+                </div>
               </div>` : ''}
             </div>
 
