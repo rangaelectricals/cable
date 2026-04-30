@@ -461,47 +461,44 @@ const CablesPage = {
           </div>
         </div>
 
+        <div class="px-4 pl-6 pb-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
+          <div class="font-black text-slate-400 text-[10px] uppercase tracking-widest mb-1">${Helpers.escape(p.category)}</div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white text-slate-800 font-black text-[10px] border border-slate-200 shadow-sm">
+              ${p.no ? `${Helpers.escape(p.no)}` : '—'}
+            </span>
+            <span class="text-[11px] font-black text-indigo-700 uppercase tracking-tighter opacity-80">
+              ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
+            </span>
+            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+            <span class="text-[11px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm uppercase tracking-widest">
+              ${p.meter}m
+            </span>
+          </div>
+        </div>
+
         <div class="mx-4 ml-6 border-t border-slate-100/50"></div>
 
-        <div class="grid grid-cols-2 gap-0 px-4 pl-6 py-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
-          <div class="py-2 pr-2 border-b border-slate-100/50">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Category</div>
-            <div class="text-[13px] font-black text-slate-800 mt-1 truncate uppercase">${Helpers.escape(p.category)}</div>
+        <div class="px-4 pl-6 py-3 flex items-center justify-between gap-4 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
+          <div class="min-w-0 flex-1">
+            ${p.siteName ? `
+              <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Site Details</div>
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-black text-amber-700 uppercase tracking-tight truncate">${Helpers.escape(p.siteName)}</div>
+                <div class="text-[10px] text-slate-500 font-bold flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-xs shrink-0">
+                  <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
+                </div>
+              </div>
+            ` : `
+              <div class="text-[9px] font-black uppercase tracking-widest text-emerald-500 opacity-60">Status</div>
+              <div class="text-xs font-bold text-slate-400 mt-0.5 italic">GODOWN INVENTORY</div>
+            `}
           </div>
-
-          <div class="py-2 pl-3 border-b border-slate-100/50 border-l border-slate-100/50">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Core / SQMM</div>
-            <div class="text-[13px] font-black text-indigo-700 mt-1 font-mono">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</div>
-          </div>
-
-          <div class="py-2 pr-2 border-b border-slate-100/50">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Length</div>
-            <div class="text-sm font-black text-emerald-600 mt-1 uppercase tracking-widest">${p.meter}m</div>
-          </div>
-
-          <div class="py-2 pl-3 border-b border-slate-100/50 border-l border-slate-100/50">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Active Status</div>
-            <div class="mt-1">
-              ${isActive
+          <div class="shrink-0">
+             ${isActive
                 ? `<span class="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-black uppercase tracking-widest shadow-sm">Active</span>`
                 : `<span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-50 text-slate-400 border border-slate-100 text-[9px] font-black uppercase tracking-widest">Inactive</span>`}
-            </div>
           </div>
-
-          ${p.siteName ? `
-          <div class="py-2 pr-2 col-span-2">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Assignment Details</div>
-            <div class="flex items-center justify-between mt-1">
-              <div class="text-sm font-black text-amber-700 uppercase tracking-tight truncate">${Helpers.escape(p.siteName)}</div>
-              <div class="text-[10px] text-slate-500 font-bold flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-xs">
-                <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
-              </div>
-            </div>
-          </div>` : `
-          <div class="py-2 pr-2 col-span-2">
-            <div class="text-[9px] font-black uppercase tracking-widest text-emerald-500 opacity-60">Ready for dispatch</div>
-            <div class="text-xs font-bold text-slate-400 mt-0.5 italic">GODOWN INVENTORY</div>
-          </div>`}
         </div>
 
         <div class="flex items-center justify-between gap-2 p-3 pl-6 bg-slate-50/50 border-t border-slate-100">
