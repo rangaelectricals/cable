@@ -447,14 +447,9 @@ const CablesPage = {
 
         <div class="flex items-center justify-between px-4 pl-6 pt-4 pb-2 cursor-pointer"
              onclick="CablesPage.viewDetail('${p.id}')">
-          <div class="min-w-0 flex-1 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center shrink-0">
-               <span class="text-[10px] font-black text-slate-800">${Helpers.escape(p.no || '-')}</span>
-            </div>
-            <div class="min-w-0">
-              <div class="text-base font-black text-slate-900 leading-tight truncate uppercase tracking-tighter">${Helpers.escape(p.cableNo)}</div>
-              <div class="text-[10px] font-mono text-slate-400 mt-1 truncate opacity-70">${Helpers.escape(p.barcode || '')}</div>
-            </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-base font-black text-slate-900 leading-tight truncate uppercase tracking-tighter">${Helpers.escape(p.cableNo)}</div>
+            <div class="text-[10px] font-mono text-slate-400 mt-1 truncate opacity-70">${Helpers.escape(p.barcode || '')}</div>
           </div>
           <div class="shrink-0 scale-90 origin-right">
             ${Helpers.statusBadge(p.status)}
