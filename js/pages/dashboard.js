@@ -138,19 +138,21 @@ const DashboardPage = {
     };
     const m = map[log.action] || { icon:'circle', cls:'badge-ghost', color:'text-slate-400' };
     return `
-    <div class="flex items-center gap-3 py-2.5">
-      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-        <i data-lucide="${m.icon}" class="w-4 h-4 ${m.color}"></i>
+    <div class="flex items-center gap-3 py-3 px-1 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors rounded-lg">
+      <div class="w-10 h-10 rounded-xl ${m.cls.replace('badge-','bg-').replace('success','emerald-50').replace('warning','amber-50').replace('info','indigo-50').replace('error','rose-50')} flex items-center justify-center shrink-0 border border-slate-100 shadow-sm">
+        <i data-lucide="${m.icon}" class="w-5 h-5 ${m.color}"></i>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-sm font-semibold truncate">${log.no ? Helpers.escape(log.no) + ' - ' : ''}${Helpers.escape(log.cableNo)}</div>
-        <div class="text-xs text-slate-500 truncate">
+        <div class="text-[13px] font-black text-slate-800 tracking-tight truncate uppercase leading-tight">${log.no ? `<span class="text-slate-400 mr-1">${Helpers.escape(log.no)}</span>` : ''}${Helpers.escape(log.cableNo)}</div>
+        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-70">
           ${Helpers.escape(log.note || log.siteName || '—')} · ${Helpers.timeAgo(log.timestamp)}
         </div>
       </div>
-      <span class="badge ${m.cls} badge-sm shrink-0 font-medium hidden sm:inline-flex">
-        ${log.action.replace(/_/g,' ')}
-      </span>
+      <div class="hidden sm:block">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full ${m.cls.replace('badge-','bg-').replace('success','emerald-50 text-emerald-600 border-emerald-100').replace('warning','amber-50 text-amber-600 border-amber-100').replace('info','indigo-50 text-indigo-600 border-indigo-100').replace('error','rose-50 text-rose-600 border-rose-100')} border text-[9px] font-black uppercase tracking-widest shadow-sm">
+          ${log.action.replace(/_/g,' ')}
+        </span>
+      </div>
     </div>`;
   },
 };

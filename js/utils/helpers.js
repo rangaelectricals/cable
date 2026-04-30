@@ -27,11 +27,23 @@ const Helpers = {
    */
   statusBadge(status) {
     const map = {
-      IN_GODOWN:    { cls:'badge-success', label:'In Godown'    },
-      SENT_TO_SITE: { cls:'badge-warning', label:'Sent to Site' },
+      IN_GODOWN:    { 
+        cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', 
+        label: 'In Godown',
+        dot: 'bg-emerald-500'
+      },
+      SENT_TO_SITE: { 
+        cls: 'bg-amber-50 text-amber-700 border-amber-200', 
+        label: 'Sent to Site',
+        dot: 'bg-amber-500'
+      },
     };
-    const s = map[status] || { cls:'badge-ghost', label: status || '—' };
-    return `<span class="badge ${s.cls} badge-sm font-medium">${s.label}</span>`;
+    const s = map[status] || { cls: 'bg-slate-50 text-slate-600 border-slate-200', label: status || '—', dot: 'bg-slate-400' };
+    return `
+      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${s.cls} text-[10px] font-black uppercase tracking-tight shadow-sm">
+        <span class="w-1 h-1 rounded-full ${s.dot} animate-pulse"></span>
+        ${s.label}
+      </span>`;
   },
 
   roleBadge(role) {

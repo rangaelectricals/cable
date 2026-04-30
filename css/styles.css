@@ -98,6 +98,51 @@ input, select, textarea {
 	background: #fff;
 	transition: border 0.2s, box-shadow 0.2s;
 }
+
+/* ── Modern Table Row Highlighting ────────────────────────── */
+.row-status-godown {
+  background-color: #ffffff;
+}
+.row-status-site {
+  background-color: #fffbeb; /* Very subtle amber */
+}
+.row-status-godown:hover {
+  background-color: #f8fafc;
+}
+.row-status-site:hover {
+  background-color: #fef3c7;
+}
+
+.table-row-accent {
+  position: relative;
+}
+.table-row-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  transition: all 0.3s ease;
+}
+.row-status-godown.table-row-accent::before {
+  background-color: #10b981;
+}
+.row-status-site.table-row-accent::before {
+  background-color: #f59e0b;
+}
+
+.premium-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.65rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--color-primary);
