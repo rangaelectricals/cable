@@ -197,8 +197,8 @@ const LogsPage = {
       <td class="text-xs whitespace-nowrap">${Helpers.formatDateTime(l.timestamp)}</td>
       <td class="text-sm">
         <div class="flex items-center gap-2">
-          ${l.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-black text-[10px] border border-slate-200">NO: ${Helpers.escape(l.no)}</span>` : ''}
-          <div class="font-black text-slate-800 text-[13px] tracking-tight">${Helpers.escape(l.cableNo)}</div>
+          ${l.no ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">${Helpers.escape(l.no)}</span>` : ''}
+          <div class="font-black text-slate-800 text-[14px] tracking-tight uppercase">${Helpers.escape(l.cableNo)}</div>
         </div>
       </td>
       <td>${UI.actionBadge(l.action)}</td>

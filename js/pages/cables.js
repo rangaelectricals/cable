@@ -351,15 +351,15 @@ const CablesPage = {
       </td>
       <td>
         <div class="font-black text-slate-900 text-[12px] uppercase tracking-tight">${Helpers.escape(p.category)}</div>
-        <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
-          <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white text-slate-800 font-black text-[10px] border border-slate-200 shadow-sm">
+        <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
             ${p.no ? `${Helpers.escape(p.no)}` : '—'}
           </span>
-          <span class="text-[11px] font-black text-indigo-700 uppercase tracking-tighter opacity-80">
+          <span class="text-[13px] font-black text-indigo-700 uppercase tracking-tighter">
             ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
           </span>
           <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-          <span class="text-[11px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm uppercase tracking-widest">
+          <span class="text-[13px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-md border border-emerald-100 shadow-sm uppercase tracking-widest">
             ${p.meter}m
           </span>
         </div>
