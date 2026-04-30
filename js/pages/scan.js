@@ -112,7 +112,7 @@ const ScanPage = {
                         class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-black text-slate-800 placeholder:text-slate-300 focus:bg-white focus:border-indigo-500 transition-all outline-none shadow-sm"
                         placeholder="Scan QR or Type Cable ID..." autocomplete="off" />
                     </div>
-                    <div id="wrap-scan-select" class="hidden relative group">
+                    <div id="wrap-scan-select" class="hidden relative group z-[60]">
                       <button onclick="ScanPage.toggleMultiSelect()" id="btn-multi-select"
                         class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none text-left flex items-center justify-between shadow-sm">
                         <span id="multi-select-label">Select Cables...</span>
