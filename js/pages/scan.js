@@ -314,10 +314,12 @@ const ScanPage = {
           <i data-lucide="check" class="w-3 h-3 text-white ${isSelected ? '' : 'hidden'}"></i>
         </div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(c.cableNo)}</span>
-            ${c.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(c.no)}</span>` : ''}
-            <span class="text-[9px] font-black text-indigo-600 opacity-80">(${Helpers.escape(c.core)} / ${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[12px] font-black text-slate-900 uppercase tracking-tight truncate">${Helpers.escape(c.cableNo)}</span>
+            ${c.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-800 font-black text-[9px] border border-slate-100 shadow-xs">${Helpers.escape(c.no)}</span>` : ''}
+            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/30">
+              (${Helpers.escape(c.core)} / ${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)
+            </span>
           </div>
         </div>
       </div>`;
