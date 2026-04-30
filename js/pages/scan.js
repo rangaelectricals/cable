@@ -87,15 +87,15 @@ const ScanPage = {
 
               <!-- Main Input Row -->
               <div class="relative group">
-                <div id="camera-wrap" class="hidden mb-5">
-                  <div id="scan-viewport" class="w-full aspect-video rounded-3xl overflow-hidden bg-black border-4 border-white shadow-2xl relative max-w-md mx-auto">
+                <div id="camera-wrap" class="hidden mb-4">
+                  <div id="scan-viewport" class="w-full aspect-square max-w-[280px] mx-auto rounded-3xl overflow-hidden bg-black border-4 border-white shadow-2xl relative">
                      <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-                        <div class="w-64 h-32 border-2 border-white/40 rounded-2xl relative overflow-hidden">
+                        <div class="w-40 h-40 border-2 border-white/40 rounded-2xl relative overflow-hidden">
                            <div class="absolute inset-x-0 h-1 bg-white/90 shadow-[0_0_20px_rgba(255,255,255,1)] animate-scan"></div>
                         </div>
                      </div>
                   </div>
-                  <button class="mt-4 w-full py-3 bg-rose-50 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-rose-100 transition-all border border-rose-100" onclick="ScanPage.toggleCamera()">
+                  <button class="mt-3 w-full py-2.5 bg-rose-50 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-rose-100 transition-all border border-rose-100" onclick="ScanPage.toggleCamera()">
                     Stop Camera
                   </button>
                 </div>
@@ -377,7 +377,7 @@ const ScanPage = {
       const res = await API.scanAction(this._mode, barcode, extra);
 
       if (res.success) {
-        const p = res.data;
+        const p = res.data.product;
         const modeLabel = this._mode.replace(/_/g,' ');
         resultDiv.innerHTML = `
           <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 animate-fadeIn">
