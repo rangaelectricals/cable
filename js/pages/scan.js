@@ -6,6 +6,8 @@ const ScanPage = {
   _mode: 'ACTIVATE',
   _inputMode: 'SCAN',
   _sessionScans: [],
+  _selectedCables: [], // For bulk selection
+  _allCables: [],      // Cache for multi-select search
 
   async render(container) {
     if (!Auth.canScan()) {
@@ -110,9 +112,32 @@ const ScanPage = {
                         class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-black text-slate-800 placeholder:text-slate-300 focus:bg-white focus:border-indigo-500 transition-all outline-none shadow-sm"
                         placeholder="Scan QR or Type Cable ID..." autocomplete="off" />
                     </div>
-                    <select id="scan-select" class="hidden w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none appearance-none shadow-sm">
-                      <option value="">Select from list...</option>
-                    </select>
+                    <div id="wrap-scan-select" class="hidden relative group">
+                      <button onclick="ScanPage.toggleMultiSelect()" id="btn-multi-select"
+                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 transition-all outline-none text-left flex items-center justify-between shadow-sm">
+                        <span id="multi-select-label">Select Cables...</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                      </button>
+                      
+                      <!-- Dropdown Menu -->
+                      <div id="multi-select-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-[100] overflow-hidden animate-slideUp">
+                        <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+                          <div class="relative">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                            <input type="text" id="multi-search" oninput="ScanPage.renderMultiSelectList(this.value)"
+                              class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-[11px] font-black text-slate-700 outline-none focus:border-indigo-500 transition-all"
+                              placeholder="Search by ID, NO or Specs..." />
+                          </div>
+                        </div>
+                        <div id="multi-select-list" class="max-h-[300px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                          <!-- Items will be injected here -->
+                        </div>
+                        <div class="p-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                           <button onclick="ScanPage.clearMultiSelection()" class="text-[9px] font-black text-rose-500 uppercase px-3 py-1.5 hover:bg-rose-50 rounded-lg transition-all">Clear All</button>
+                           <button onclick="ScanPage.toggleMultiSelect()" class="bg-slate-800 text-white text-[9px] font-black uppercase px-4 py-1.5 rounded-lg shadow-sm">Done</button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
                   <button id="btn-camera" onclick="ScanPage.toggleCamera()" 
@@ -203,7 +228,7 @@ const ScanPage = {
     const btnScan = document.getElementById('btn-mode-scan');
     const btnSelect = document.getElementById('btn-mode-select');
     const wrapInput = document.getElementById('wrap-scan-input');
-    const select = document.getElementById('scan-select');
+    const wrapSelect = document.getElementById('wrap-scan-select');
     const btnCamera = document.getElementById('btn-camera');
 
     if (!btnScan) return;
@@ -212,26 +237,24 @@ const ScanPage = {
       btnScan.className = 'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider bg-white text-slate-800 shadow-sm border border-slate-200';
       btnSelect.className = 'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600';
       wrapInput.classList.remove('hidden');
-      select.classList.add('hidden');
+      wrapSelect.classList.add('hidden');
       btnCamera?.classList.remove('hidden');
       document.getElementById('scan-input').focus();
     } else {
       btnScan.className = 'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600';
       btnSelect.className = 'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider bg-white text-slate-800 shadow-sm border border-slate-200';
       wrapInput.classList.add('hidden');
-      select.classList.remove('hidden');
+      wrapSelect.classList.remove('hidden');
       btnCamera?.classList.add('hidden');
-
-      await this.loadEligibleCables();
+      this.loadEligibleCables();
     }
   },
 
   async loadEligibleCables() {
-    const select = document.getElementById('scan-select');
-    if (!select) return;
+    const listEl = document.getElementById('multi-select-list');
+    if (!listEl) return;
     
-    select.innerHTML = '<option value="">Loading cables...</option>';
-    select.disabled = true;
+    listEl.innerHTML = '<div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase animate-pulse">Loading cables...</div>';
 
     try {
       let statusFilter = '';
@@ -239,23 +262,92 @@ const ScanPage = {
       else if (this._mode === 'SITE_TO_SITE' || this._mode === 'RETURN_TO_GODOWN') statusFilter = 'SENT_TO_SITE';
       
       const res = await API.getProducts({ pageSize: 2000, status: statusFilter });
-      let cables = res.data || [];
+      this._allCables = res.data || [];
       
       if (this._mode === 'ACTIVATE') {
-        cables = cables.filter(c => String(c.activated) !== 'true' && c.activated !== true);
+        this._allCables = this._allCables.filter(c => String(c.activated) !== 'true' && c.activated !== true);
       } else if (this._mode === 'SEND_TO_SITE') {
-        cables = cables.filter(c => String(c.activated) === 'true' || c.activated === true);
+        this._allCables = this._allCables.filter(c => String(c.activated) === 'true' || c.activated === true);
       }
 
-      if (cables.length === 0) {
-        select.innerHTML = '<option value="">No eligible cables found</option>';
-      } else {
-        select.innerHTML = '<option value="">-- Select Cable --</option>' + 
-          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${Helpers.escape(c.cableNo)} ${c.no ? `[${Helpers.escape(c.no)}] ` : ''}(${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
-        select.disabled = false;
-      }
+      this._selectedCables = [];
+      this.updateMultiSelectLabel();
+      this.renderMultiSelectList();
     } catch(e) {
-      select.innerHTML = '<option value="">Error loading</option>';
+      listEl.innerHTML = '<div class="p-4 text-center text-[10px] font-black text-rose-500 uppercase">Error loading</div>';
+    }
+  },
+
+  toggleMultiSelect() {
+    const dd = document.getElementById('multi-select-dropdown');
+    if (dd) {
+      dd.classList.toggle('hidden');
+      if (!dd.classList.contains('hidden')) {
+        document.getElementById('multi-search')?.focus();
+      }
+    }
+  },
+
+  renderMultiSelectList(query = '') {
+    const listEl = document.getElementById('multi-select-list');
+    if (!listEl) return;
+
+    const q = query.toLowerCase();
+    const filtered = this._allCables.filter(c => 
+      c.cableNo.toLowerCase().includes(q) || 
+      (c.no && String(c.no).toLowerCase().includes(q)) ||
+      c.core.toLowerCase().includes(q) ||
+      c.sqmm.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="p-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">No cables found</div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(c => {
+      const isSelected = this._selectedCables.includes(c.barcode);
+      return `
+      <div onclick="ScanPage.toggleCableSelection('${c.barcode}')" 
+        class="flex items-center gap-3 p-2.5 rounded-xl transition-all cursor-pointer group ${isSelected ? 'bg-indigo-50 border border-indigo-100' : 'hover:bg-slate-50'}">
+        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-slate-200 bg-white'}">
+          <i data-lucide="check" class="w-3 h-3 text-white ${isSelected ? '' : 'hidden'}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(c.cableNo)}</span>
+            ${c.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(c.no)}</span>` : ''}
+            <span class="text-[9px] font-black text-indigo-600 opacity-80">(${Helpers.escape(c.core)} / ${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    if (window.lucide) lucide.createIcons({ nodes: [listEl] });
+  },
+
+  toggleCableSelection(barcode) {
+    const idx = this._selectedCables.indexOf(barcode);
+    if (idx > -1) this._selectedCables.splice(idx, 1);
+    else this._selectedCables.push(barcode);
+    this.updateMultiSelectLabel();
+    this.renderMultiSelectList(document.getElementById('multi-search')?.value || '');
+  },
+
+  clearMultiSelection() {
+    this._selectedCables = [];
+    this.updateMultiSelectLabel();
+    this.renderMultiSelectList();
+  },
+
+  updateMultiSelectLabel() {
+    const label = document.getElementById('multi-select-label');
+    if (!label) return;
+    if (this._selectedCables.length === 0) {
+      label.textContent = 'Select Cables...';
+      label.classList.remove('text-indigo-600');
+    } else {
+      label.textContent = `${this._selectedCables.length} Selected`;
+      label.classList.add('text-indigo-600');
     }
   },
 
@@ -330,15 +422,16 @@ const ScanPage = {
   },
 
   async trigger() {
-    let barcode = '';
+    let barcodes = [];
     if (this._inputMode === 'SCAN') {
-      barcode = (document.getElementById('scan-input')?.value || '').trim();
+      const val = (document.getElementById('scan-input')?.value || '').trim();
+      if (val) barcodes = [val];
     } else {
-      barcode = (document.getElementById('scan-select')?.value || '').trim();
+      barcodes = [...this._selectedCables];
     }
 
-    if (!barcode) { 
-      Toast.show('warning', 'Empty Input', this._inputMode === 'SCAN' ? 'Please enter or scan a QR code.' : 'Please select a cable.'); 
+    if (barcodes.length === 0) { 
+      Toast.show('warning', 'Empty Input', this._inputMode === 'SCAN' ? 'Please scan or enter a QR code.' : 'Please select cables from the list.'); 
       return; 
     }
 
@@ -362,120 +455,102 @@ const ScanPage = {
 
     const resultDiv = document.getElementById('scan-result');
     resultDiv.innerHTML = `
-      <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 text-center">
-        <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-          <span class="loading loading-spinner loading-md text-indigo-600"></span>
-        </div>
+      <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 text-center">
+        <div class="loading loading-spinner loading-lg text-indigo-600"></div>
         <div>
-          <h3 class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Processing</h3>
-          <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Validating...</p>
+          <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">Bulk Processing</h3>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Applying changes to ${barcodes.length} items...</p>
         </div>
       </div>`;
     resultDiv.classList.remove('hidden');
 
-    try {
-      const res = await API.scanAction(this._mode, barcode, extra);
+    let successCount = 0;
+    let lastProduct = null;
+    let failMessages = [];
 
-      if (res.success) {
-        const p = res.data.product;
-        const modeLabel = this._mode.replace(/_/g,' ');
-        resultDiv.innerHTML = `
-          <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 animate-fadeIn">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md">
-                <i data-lucide="check" class="w-5 h-5"></i>
-              </div>
-              <div class="text-left">
-                <h3 class="text-xs font-black text-emerald-900 uppercase tracking-tight leading-tight">Accepted</h3>
-                <p class="text-[9px] text-emerald-600 font-black uppercase tracking-widest">${modeLabel}</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 bg-white rounded-xl p-4 shadow-sm border border-emerald-100/50">
-              <div class="text-left col-span-2">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Cable Details</span>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-[14px] font-black text-slate-900 uppercase tracking-tighter">
-                    ${Helpers.escape(p.cableNo)}
-                  </span>
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
-                    ${p.no ? `${Helpers.escape(p.no)}` : '—'}
-                  </span>
-                  <span class="text-[14px] font-black text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
-                    (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
-                  </span>
-                </div>
-              </div>
-
-              <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Cable No</span>
-                <span class="text-xs font-black text-slate-800 uppercase">${Helpers.escape(p.cableNo)}</span>
-              </div>
-              <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Current Status</span>
-                <div class="mt-0.5">${Helpers.statusBadge(p.status)}</div>
-              </div>
-
-              ${p.siteName ? `
-              <div class="text-left col-span-2 border-t border-slate-50 pt-3 mt-1">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Assigned Location</span>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-black text-amber-700 uppercase tracking-tight">${Helpers.escape(p.siteName)}</span>
-                  <span class="text-[10px] text-slate-500 font-bold flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shadow-xs shrink-0">
-                    <i data-lucide="user" class="w-3 h-3"></i> ${Helpers.escape(p.personAssigned || '—')}
-                  </span>
-                </div>
-              </div>` : ''}
-            </div>
-
-            ${Barcode.isCameraActive() ? `
-            <button class="w-full mt-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md" onclick="ScanPage.resumeScanning()">
-              Next Scan
-            </button>` : ''}
-          </div>`;
-        
-        Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${modeLabel}`);
-        this._addSessionScan(barcode, true, p);
-        
-        if (this._inputMode === 'SCAN') document.getElementById('scan-input').value = '';
-        else document.getElementById('scan-select').value = '';
-        
-        if (this._mode === 'RETURN_TO_GODOWN') {
-          document.getElementById('f-meter-bal').value     = '';
+    for (const barcode of barcodes) {
+      try {
+        const res = await API.scanAction(this._mode, barcode, extra);
+        if (res.success) {
+          successCount++;
+          lastProduct = res.data.product;
+          this._addSessionScan(barcode, true, res.data.product);
+        } else {
+          failMessages.push(`${barcode}: ${res.message}`);
+          this._addSessionScan(barcode, false, barcode);
         }
-        if (this._inputMode === 'SCAN') document.getElementById('scan-input').focus();
-        else this.loadEligibleCables();
-      } else {
-        resultDiv.innerHTML = `
-          <div class="bg-red-50 border border-red-100 rounded-2xl p-4 animate-fadeIn">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center shadow-md">
-                <i data-lucide="x" class="w-5 h-5"></i>
-              </div>
-              <div class="text-left">
-                <h3 class="text-xs font-black text-red-900 uppercase tracking-tight leading-tight">Rejected</h3>
-                <p class="text-[9px] text-red-600 font-black uppercase tracking-widest">Validation Error</p>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-3 shadow-sm border border-red-100/50 text-left">
-               <p class="text-[10px] font-bold text-slate-600 italic">"${Helpers.escape(res.message)}"</p>
-            </div>
-            ${Barcode.isCameraActive() ? `
-            <button class="w-full mt-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md" onclick="ScanPage.resumeScanning()">
-              Try Again
-            </button>` : ''}
-          </div>`;
-        Toast.show('error', 'Scan Rejected', res.message);
+      } catch(err) {
+        failMessages.push(`${barcode}: ${err.message}`);
         this._addSessionScan(barcode, false, barcode);
       }
-    } catch(err) {
-      resultDiv.innerHTML = `
-        <div class="bg-slate-100 rounded-3xl p-6 text-center">
-          <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Network Error</p>
-          <p class="text-sm font-bold text-slate-700 mt-2">${Helpers.escape(err.message)}</p>
-        </div>`;
-      Toast.show('error', 'Network Error', err.message);
     }
+
+    if (successCount === 0) {
+      resultDiv.innerHTML = `
+        <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 text-center animate-fadeIn">
+          <div class="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center mx-auto mb-4 shadow-lg">
+             <i data-lucide="alert-circle" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xs font-black text-rose-800 uppercase tracking-tight">Operation Failed</h3>
+          <p class="text-[10px] text-rose-600 font-bold mt-1 uppercase tracking-widest">All ${barcodes.length} items failed to process.</p>
+          <div class="mt-4 p-3 bg-white rounded-xl border border-rose-100 text-left space-y-1">
+             ${failMessages.slice(0,3).map(m => `<p class="text-[9px] font-bold text-slate-500 truncate">• ${Helpers.escape(m)}</p>`).join('')}
+             ${failMessages.length > 3 ? `<p class="text-[8px] text-slate-400 italic mt-1">+ ${failMessages.length - 3} more errors</p>` : ''}
+          </div>
+          <button class="w-full mt-4 py-3 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-widest" onclick="ScanPage.resumeScanning()">Try Again</button>
+        </div>`;
+    } else {
+      const modeLabel = this._mode.replace(/_/g,' ');
+      const p = lastProduct;
+      resultDiv.innerHTML = `
+        <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 animate-fadeIn shadow-lg">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg">
+              <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+            </div>
+            <div class="text-left">
+              <h3 class="text-lg font-black text-emerald-900 uppercase tracking-tight leading-none">${successCount > 1 ? 'Bulk Success' : 'Accepted'}</h3>
+              <p class="text-[11px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-1">${successCount} items ${modeLabel}d</p>
+            </div>
+          </div>
+
+          ${successCount === 1 && p ? `
+          <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm space-y-4">
+             <div class="flex items-center gap-2 flex-wrap pb-3 border-b border-slate-50">
+                <span class="text-[16px] font-black text-slate-900 uppercase tracking-tighter">${Helpers.escape(p.cableNo)}</span>
+                ${p.no ? `<span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-50 text-slate-900 font-black text-[12px] border border-slate-200">${Helpers.escape(p.no)}</span>` : ''}
+                <span class="text-[14px] font-black text-indigo-600 bg-indigo-50/50 px-2.5 py-1 rounded-xl border border-indigo-100/50">
+                  (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
+                </span>
+             </div>
+             <div class="grid grid-cols-2 gap-4">
+                <div>
+                   <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">New Status</span>
+                   ${Helpers.statusBadge(p.status)}
+                </div>
+                ${p.siteName ? `
+                <div>
+                   <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Location</span>
+                   <span class="text-xs font-black text-amber-700 uppercase truncate block">${Helpers.escape(p.siteName)}</span>
+                </div>` : ''}
+             </div>
+          </div>` : `
+          <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm text-center">
+             <div class="flex items-center justify-center gap-2 mb-2">
+                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest">${successCount} Successful</span>
+                ${failMessages.length > 0 ? `<span class="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg text-[10px] font-black uppercase tracking-widest">${failMessages.length} Failed</span>` : ''}
+             </div>
+             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Check activity log for specific details</p>
+          </div>`}
+
+          <button class="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-100 active:scale-95" onclick="ScanPage.resumeScanning()">
+            Next Operation
+          </button>
+        </div>`;
+    }
+
+    if (this._inputMode === 'SCAN') document.getElementById('scan-input').value = '';
+    else this.clearMultiSelection();
 
     if (window.lucide) lucide.createIcons({ nodes: [resultDiv] });
   },
