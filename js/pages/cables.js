@@ -438,113 +438,90 @@ const CablesPage = {
       const isActive = String(p.activated)==='true' || p.activated===true;
       const isSite   = p.status === 'SENT_TO_SITE';
 
-      const statusBarColor = isSite ? 'from-amber-500 to-orange-500' : 'from-emerald-500 to-teal-500';
-      const statusTextColor = isSite ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
-      const statusLabel = isSite ? 'Sent to Site' : 'In Godown';
-      const statusIcon  = isSite ? 'truck' : 'warehouse';
+      const cardBg = isSite ? 'bg-amber-50/70 border-amber-200' : 'bg-white border-slate-200';
+      const statusBarColor = isSite ? 'from-amber-400 to-orange-500' : 'from-emerald-400 to-teal-500';
 
       return `
-      <div class="rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+      <div class="rounded-2xl overflow-hidden shadow-sm border ${cardBg} transition-all duration-300 relative">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b ${statusBarColor}"></div>
 
-        <div class="h-1 bg-gradient-to-r ${statusBarColor}"></div>
-
-        <div class="flex items-center justify-between px-4 pt-3.5 pb-2 cursor-pointer"
+        <div class="flex items-center justify-between px-4 pl-6 pt-4 pb-2 cursor-pointer"
              onclick="CablesPage.viewDetail('${p.id}')">
           <div class="min-w-0 flex-1 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-               <span class="text-[10px] font-black text-slate-500">${Helpers.escape(p.no || '-')}</span>
+            <div class="w-9 h-9 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center shrink-0">
+               <span class="text-[10px] font-black text-slate-800">${Helpers.escape(p.no || '-')}</span>
             </div>
             <div class="min-w-0">
-              <div class="text-base font-black text-slate-800 leading-tight truncate">${Helpers.escape(p.cableNo)}</div>
-              <div class="text-[10px] font-mono text-slate-400 mt-0.5 truncate">${Helpers.escape(p.barcode || '')}</div>
+              <div class="text-base font-black text-slate-900 leading-tight truncate uppercase tracking-tighter">${Helpers.escape(p.cableNo)}</div>
+              <div class="text-[10px] font-mono text-slate-400 mt-1 truncate opacity-70">${Helpers.escape(p.barcode || '')}</div>
             </div>
           </div>
-          <span class="ml-3 shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusTextColor}">
-            <i data-lucide="${statusIcon}" class="w-3.5 h-3.5"></i>
-            ${statusLabel}
-          </span>
+          <div class="shrink-0 scale-90 origin-right">
+            ${Helpers.statusBadge(p.status)}
+          </div>
         </div>
 
-        <div class="mx-4 border-t border-slate-100"></div>
+        <div class="mx-4 ml-6 border-t border-slate-100/50"></div>
 
-        <div class="grid grid-cols-2 gap-0 px-4 py-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
-
-          <div class="py-1.5 pr-2 border-b border-slate-100">
+        <div class="grid grid-cols-2 gap-0 px-4 pl-6 py-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
+          <div class="py-2 pr-2 border-b border-slate-100/50">
             <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Category</div>
-            <div class="text-sm font-semibold text-slate-700 mt-0.5 truncate">${Helpers.escape(p.category)}</div>
+            <div class="text-[13px] font-black text-slate-800 mt-1 truncate uppercase">${Helpers.escape(p.category)}</div>
           </div>
 
-          <div class="py-1.5 pl-2 border-b border-slate-100 border-l">
+          <div class="py-2 pl-3 border-b border-slate-100/50 border-l border-slate-100/50">
             <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Core / SQMM</div>
-            <div class="text-sm font-semibold text-slate-700 mt-0.5 font-mono">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)} mm²</div>
+            <div class="text-[13px] font-black text-indigo-700 mt-1 font-mono">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</div>
           </div>
 
-          <div class="py-1.5 pr-2 border-b border-slate-100">
+          <div class="py-2 pr-2 border-b border-slate-100/50">
             <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Length</div>
-            <div class="text-sm font-black text-indigo-600 mt-0.5">${p.meter} m</div>
+            <div class="text-sm font-black text-emerald-600 mt-1 uppercase tracking-widest">${p.meter}m</div>
           </div>
 
-          <div class="py-1.5 pl-2 border-b border-slate-100 border-l">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Qty / Status</div>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-sm font-semibold text-slate-700">${p.quantity || 1}</span>
+          <div class="py-2 pl-3 border-b border-slate-100/50 border-l border-slate-100/50">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Active Status</div>
+            <div class="mt-1">
               ${isActive
-                ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200"><i data-lucide="zap" class="w-3 h-3"></i>Active</span>'
-                : '<span class="inline-flex items-center text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">Inactive</span>'}
+                ? `<span class="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-black uppercase tracking-widest shadow-sm">Active</span>`
+                : `<span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-50 text-slate-400 border border-slate-100 text-[9px] font-black uppercase tracking-widest">Inactive</span>`}
             </div>
           </div>
 
-          ${isSite && p.siteName ? `
-          <div class="py-1.5 pr-2 border-b border-slate-100 col-span-2">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Site Name</div>
-            <div class="text-sm font-semibold text-amber-600 mt-0.5">${Helpers.escape(p.siteName)}</div>
-          </div>` : ''}
-
-          ${isSite && p.personAssigned ? `
-          <div class="py-1.5 pr-2 border-b border-slate-100 col-span-2">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Person Assigned</div>
-            <div class="text-sm font-semibold text-slate-700 mt-0.5">${Helpers.escape(p.personAssigned)}</div>
-          </div>` : ''}
-
-          ${p.dateOut ? `
-          <div class="py-1.5 col-span-2">
-            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Date Out</div>
-            <div class="text-xs font-medium text-slate-500 mt-0.5">${Helpers.formatDate(p.dateOut)}</div>
-          </div>` : ''}
+          ${p.siteName ? `
+          <div class="py-2 pr-2 col-span-2">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Assignment Details</div>
+            <div class="flex items-center justify-between mt-1">
+              <div class="text-sm font-black text-amber-700 uppercase tracking-tight truncate">${Helpers.escape(p.siteName)}</div>
+              <div class="text-[10px] text-slate-500 font-bold flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-xs">
+                <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
+              </div>
+            </div>
+          </div>` : `
+          <div class="py-2 pr-2 col-span-2">
+            <div class="text-[9px] font-black uppercase tracking-widest text-emerald-500 opacity-60">Ready for dispatch</div>
+            <div class="text-xs font-bold text-slate-400 mt-0.5 italic">GODOWN INVENTORY</div>
+          </div>`}
         </div>
 
-        <div class="border-t border-slate-100 bg-slate-50 px-4 py-2.5 flex items-center justify-between">
-          <div class="flex gap-2 flex-wrap">
-            ${p.status === 'IN_GODOWN' ? `
-            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors"
-              onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="truck" class="w-3.5 h-3.5"></i> Send to Site
-            </button>` : ''}
-            ${p.status === 'SENT_TO_SITE' ? `
-            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors"
-              onclick="CablesPage.quickAction('SITE_TO_SITE', '${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="repeat" class="w-3.5 h-3.5"></i> Transfer
-            </button>
-            <button class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-colors"
-              onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="warehouse" class="w-3.5 h-3.5"></i> Return
-            </button>` : ''}
+        <div class="flex items-center justify-between gap-2 p-3 pl-6 bg-slate-50/50 border-t border-slate-100">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+            ${p.dateOut ? `Out: ${Helpers.formatDate(p.dateOut)}` : 'In Godown'}
           </div>
-          <div class="flex gap-1 shrink-0 ml-2">
-            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
-              onclick="CablesPage.viewBarcode('${p.id}')">
-              <i data-lucide="qr-code" class="w-4 h-4"></i>
+          <div class="flex gap-2">
+            ${p.status === 'IN_GODOWN' ? `
+            <button class="btn btn-ghost btn-xs bg-white shadow-sm border-slate-200 text-amber-600"
+              onclick="CablesPage.quickAction('SEND_TO_SITE', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="truck" class="w-3.5 h-3.5"></i> <span class="ml-1 text-[10px] font-black uppercase">Send</span>
+            </button>` : `
+            <button class="btn btn-ghost btn-xs bg-white shadow-sm border-slate-200 text-emerald-600"
+              onclick="CablesPage.quickAction('RETURN_TO_GODOWN', '${Helpers.escape(p.cableNo)}')">
+              <i data-lucide="warehouse" class="w-3.5 h-3.5"></i> <span class="ml-1 text-[10px] font-black uppercase">Return</span>
+            </button>`}
+            <button class="btn btn-ghost btn-xs bg-white shadow-sm border-slate-200"
+              onclick="CablesPage.viewDetail('${p.id}')">
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
             </button>
-            ${Auth.canEdit() ? `
-            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
-              onclick="CablesPage.openEdit('${p.id}')">
-              <i data-lucide="pencil" class="w-4 h-4"></i>
-            </button>` : ''}
-            ${Auth.canDelete() ? `
-            <button class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 flex items-center justify-center transition-colors"
-              onclick="CablesPage.delete('${p.id}','${Helpers.escape(p.cableNo)}')">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>` : ''}
           </div>
         </div>
       </div>`;
