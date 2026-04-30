@@ -391,33 +391,39 @@ const ScanPage = {
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 bg-white rounded-xl p-3 shadow-sm border border-emerald-100/50">
-              <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Cable Identity</span>
-                <div class="flex items-center gap-1.5 mt-0.5">
-                  ${p.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-black text-[9px] border border-slate-200">${Helpers.escape(p.no)}</span>` : ''}
-                  <span class="text-[13px] font-black text-slate-800 tracking-tight uppercase">${Helpers.escape(p.cableNo)}</span>
+            <div class="grid grid-cols-2 gap-3 bg-white rounded-xl p-4 shadow-sm border border-emerald-100/50">
+              <div class="text-left col-span-2">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Cable Details</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
+                    ${p.no ? `${Helpers.escape(p.no)}` : '—'}
+                  </span>
+                  <span class="text-[14px] font-black text-indigo-700 uppercase tracking-tighter">
+                    ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
+                  </span>
+                  <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                  <span class="text-[14px] font-black text-emerald-600 bg-emerald-50/30 px-2 py-0.5 rounded-md border border-emerald-100/50 shadow-sm uppercase tracking-tight">
+                    ${p.meter}m
+                  </span>
                 </div>
+              </div>
+
+              <div class="text-left">
+                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Cable No</span>
+                <span class="text-xs font-black text-slate-800 uppercase">${Helpers.escape(p.cableNo)}</span>
               </div>
               <div class="text-left">
                 <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Current Status</span>
                 <div class="mt-0.5">${Helpers.statusBadge(p.status)}</div>
               </div>
-              <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Specification</span>
-                <span class="text-[11px] font-black text-indigo-700 uppercase tracking-tighter">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</span>
-              </div>
-              <div class="text-left">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Length</span>
-                <span class="text-[11px] font-black text-emerald-600 uppercase tracking-widest">${p.meter}m</span>
-              </div>
+
               ${p.siteName ? `
-              <div class="text-left col-span-2 border-t border-slate-50 pt-2 mt-1">
-                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Assigned Location</span>
-                <div class="flex items-center justify-between mt-1">
-                  <span class="text-[11px] font-black text-amber-700 uppercase tracking-tight">${Helpers.escape(p.siteName)}</span>
-                  <span class="text-[9px] text-slate-500 font-bold flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 shadow-xs shrink-0">
-                    <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
+              <div class="text-left col-span-2 border-t border-slate-50 pt-3 mt-1">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Assigned Location</span>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-black text-amber-700 uppercase tracking-tight">${Helpers.escape(p.siteName)}</span>
+                  <span class="text-[10px] text-slate-500 font-bold flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shadow-xs shrink-0">
+                    <i data-lucide="user" class="w-3 h-3"></i> ${Helpers.escape(p.personAssigned || '—')}
                   </span>
                 </div>
               </div>` : ''}
