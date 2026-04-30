@@ -251,7 +251,7 @@ const ScanPage = {
         select.innerHTML = '<option value="">No eligible cables found</option>';
       } else {
         select.innerHTML = '<option value="">-- Select Cable --</option>' + 
-          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${c.no ? `[${Helpers.escape(c.no)}] ` : ''}${Helpers.escape(c.cableNo)} (${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
+          cables.map(c => `<option value="${Helpers.escape(c.cableNo)}">${Helpers.escape(c.cableNo)} ${c.no ? `[${Helpers.escape(c.no)}] ` : ''}(${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)</option>`).join('');
         select.disabled = false;
       }
     } catch(e) {
@@ -395,11 +395,11 @@ const ScanPage = {
               <div class="text-left col-span-2">
                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Cable Details</span>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
-                    ${p.no ? `${Helpers.escape(p.no)}` : '—'}
-                  </span>
                   <span class="text-[14px] font-black text-slate-900 uppercase tracking-tighter">
                     ${Helpers.escape(p.cableNo)}
+                  </span>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
+                    ${p.no ? `${Helpers.escape(p.no)}` : '—'}
                   </span>
                   <span class="text-[14px] font-black text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
                     (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
@@ -531,17 +531,16 @@ const ScanPage = {
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-2 mb-1">
-            <div class="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(s.label)}</div>
+            <div class="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+               <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(s.label)}</span>
+               ${p && p.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(p.no)}</span>` : ''}
+               ${p ? `
+               <span class="text-[9px] font-black text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/30">
+                 (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
+               </span>` : ''}
+            </div>
             <div class="text-[9px] font-black uppercase ${text} shrink-0 opacity-80">${s.ok ? 'SUCCESS' : 'FAILED'}</div>
           </div>
-          
-          ${p ? `
-          <div class="flex items-center gap-1.5 flex-wrap mb-1">
-            ${p.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(p.no)}</span>` : ''}
-            <span class="text-[9px] font-black text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/30">
-              (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
-            </span>
-          </div>` : ''}
 
           <div class="text-[8px] font-black uppercase tracking-widest text-slate-400 opacity-70">${modeLabel} · ${Helpers.timeAgo(s.time)}</div>
         </div>
