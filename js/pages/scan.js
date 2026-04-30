@@ -11,7 +11,10 @@ const ScanPage = {
     if (!Auth.canScan()) {
       container.innerHTML = UI.emptyState('lock', 'Access Denied', 'Admin role required to perform scanning.');
       if (window.lucide) lucide.createIcons({ nodes: [container] });
-      return;    container.innerHTML = `
+      return;
+    }
+
+    container.innerHTML = `
     <div class="space-y-4 page-enter pb-16 lg:pb-0 max-w-6xl mx-auto">
       ${UI.pageHeader('Scan Operations', 'Smart QR Workflow')}
 
