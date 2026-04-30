@@ -456,17 +456,17 @@ const CablesPage = {
           </div>
         </div>
 
-        <div class="px-4 pl-6 pb-3 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
-          <div class="font-black text-slate-400 text-[10px] uppercase tracking-widest mb-1">${Helpers.escape(p.category)}</div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white text-slate-800 font-black text-[10px] border border-slate-200 shadow-sm">
+        <div class="px-4 pl-6 pb-4 cursor-pointer" onclick="CablesPage.viewDetail('${p.id}')">
+          <div class="font-black text-slate-400 text-[10px] uppercase tracking-[0.2em] mb-2 opacity-60">${Helpers.escape(p.category)}</div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="inline-flex items-center px-2 py-1 rounded-lg bg-white text-slate-900 font-black text-[13px] border-2 border-slate-100 shadow-sm min-w-[28px] justify-center">
               ${p.no ? `${Helpers.escape(p.no)}` : '—'}
             </span>
-            <span class="text-[11px] font-black text-indigo-700 uppercase tracking-tighter opacity-80">
+            <span class="text-[15px] font-black text-indigo-700 uppercase tracking-tighter">
               ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
             </span>
-            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-            <span class="text-[11px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm uppercase tracking-widest">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-200 mx-0.5"></span>
+            <span class="text-[15px] font-black text-emerald-600 bg-emerald-50/50 px-2.5 py-1 rounded-lg border-2 border-emerald-100/50 shadow-sm uppercase tracking-tight">
               ${p.meter}m
             </span>
           </div>
