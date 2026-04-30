@@ -292,12 +292,13 @@ const ScanPage = {
     const listEl = document.getElementById('multi-select-list');
     if (!listEl) return;
 
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
     const filtered = this._allCables.filter(c => 
-      c.cableNo.toLowerCase().includes(q) || 
+      (c.cableNo || '').toLowerCase().includes(q) || 
       (c.no && String(c.no).toLowerCase().includes(q)) ||
-      c.core.toLowerCase().includes(q) ||
-      c.sqmm.toLowerCase().includes(q)
+      (c.core && String(c.core).toLowerCase().includes(q)) ||
+      (c.sqmm && String(c.sqmm).toLowerCase().includes(q)) ||
+      (c.meter && String(c.meter).toLowerCase().includes(q))
     );
 
     if (filtered.length === 0) {
@@ -314,10 +315,10 @@ const ScanPage = {
           <i data-lucide="check" class="w-3 h-3 text-white ${isSelected ? '' : 'hidden'}"></i>
         </div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-[12px] font-black text-slate-900 uppercase tracking-tight truncate">${Helpers.escape(c.cableNo)}</span>
-            ${c.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-800 font-black text-[9px] border border-slate-100 shadow-xs">${Helpers.escape(c.no)}</span>` : ''}
-            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/30">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="text-[14px] font-black text-slate-900 uppercase tracking-tighter truncate">${Helpers.escape(c.cableNo)}</span>
+            ${c.no ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-white text-slate-800 font-black text-[10px] border border-slate-200 shadow-sm min-w-[24px] justify-center">${Helpers.escape(c.no)}</span>` : ''}
+            <span class="text-[12px] font-black text-indigo-600 bg-indigo-50/50 px-2.5 py-1 rounded-xl border border-indigo-100/30">
               (${Helpers.escape(c.core)} / ${Helpers.escape(c.sqmm)}mm² - ${c.meter}m)
             </span>
           </div>
