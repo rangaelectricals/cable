@@ -398,12 +398,11 @@ const ScanPage = {
                   <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
                     ${p.no ? `${Helpers.escape(p.no)}` : '—'}
                   </span>
-                  <span class="text-[14px] font-black text-indigo-700 uppercase tracking-tighter">
-                    ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
+                  <span class="text-[14px] font-black text-slate-900 uppercase tracking-tighter">
+                    ${Helpers.escape(p.cableNo)}
                   </span>
-                  <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                  <span class="text-[14px] font-black text-emerald-600 bg-emerald-50/30 px-2 py-0.5 rounded-md border border-emerald-100/50 shadow-sm uppercase tracking-tight">
-                    ${p.meter}m
+                  <span class="text-[14px] font-black text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
+                    (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
                   </span>
                 </div>
               </div>
@@ -539,9 +538,9 @@ const ScanPage = {
           ${p ? `
           <div class="flex items-center gap-1.5 flex-wrap mb-1">
             ${p.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(p.no)}</span>` : ''}
-            <span class="text-[9px] font-black text-indigo-700 opacity-80">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</span>
-            <span class="w-0.5 h-0.5 rounded-full bg-slate-300"></span>
-            <span class="text-[9px] font-black text-emerald-600">${p.meter}m</span>
+            <span class="text-[9px] font-black text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/30">
+              (${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm² - ${p.meter}m)
+            </span>
           </div>` : ''}
 
           <div class="text-[8px] font-black uppercase tracking-widest text-slate-400 opacity-70">${modeLabel} · ${Helpers.timeAgo(s.time)}</div>
