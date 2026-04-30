@@ -436,7 +436,7 @@ const ScanPage = {
           </div>`;
         
         Toast.show('success', 'Scan Accepted', `${p.cableNo} — ${modeLabel}`);
-        this._addSessionScan(barcode, true, p.cableNo);
+        this._addSessionScan(barcode, true, p);
         
         if (this._inputMode === 'SCAN') document.getElementById('scan-input').value = '';
         else document.getElementById('scan-select').value = '';
@@ -495,8 +495,15 @@ const ScanPage = {
     }
   },
 
-  _addSessionScan(barcode, ok, label) {
-    this._sessionScans.unshift({ barcode, ok, label, mode: this._mode, time: new Date() });
+  _addSessionScan(barcode, ok, productOrLabel) {
+    this._sessionScans.unshift({ 
+      barcode, 
+      ok, 
+      product: typeof productOrLabel === 'object' ? productOrLabel : null,
+      label: typeof productOrLabel === 'string' ? productOrLabel : (productOrLabel?.cableNo || barcode),
+      mode: this._mode, 
+      time: new Date() 
+    });
     const ct = document.getElementById('session-count');
     if (ct) ct.textContent = this._sessionScans.length;
     this._renderSessionList();
@@ -517,16 +524,28 @@ const ScanPage = {
       const icon = s.ok ? 'check' : 'x';
       const iconBg = s.ok ? 'bg-emerald-500' : 'bg-red-500';
 
+      const p = s.product;
       return `
-      <div class="flex items-center gap-2.5 p-2 rounded-xl ${bg} border border-white transition-all animate-fadeIn">
-        <div class="w-7 h-7 rounded-lg ${iconBg} text-white flex items-center justify-center shrink-0 shadow-sm">
-          <i data-lucide="${icon}" class="w-3.5 h-3.5"></i>
+      <div class="flex items-center gap-3 p-3 rounded-2xl ${bg} border border-white transition-all animate-fadeIn shadow-sm">
+        <div class="w-8 h-8 rounded-xl ${iconBg} text-white flex items-center justify-center shrink-0 shadow-md">
+          <i data-lucide="${icon}" class="w-4 h-4"></i>
         </div>
         <div class="flex-1 min-w-0">
-          <div class="text-[10px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(s.label)}</div>
-          <div class="text-[8px] font-black uppercase tracking-widest text-slate-400 mt-0.5">${modeLabel} · ${Helpers.timeAgo(s.time)}</div>
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate">${Helpers.escape(s.label)}</div>
+            <div class="text-[9px] font-black uppercase ${text} shrink-0 opacity-80">${s.ok ? 'SUCCESS' : 'FAILED'}</div>
+          </div>
+          
+          ${p ? `
+          <div class="flex items-center gap-1.5 flex-wrap mb-1">
+            ${p.no ? `<span class="inline-flex items-center px-1 py-0.5 rounded bg-white text-slate-800 font-black text-[8px] border border-slate-100 shadow-xs">${Helpers.escape(p.no)}</span>` : ''}
+            <span class="text-[9px] font-black text-indigo-700 opacity-80">${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²</span>
+            <span class="w-0.5 h-0.5 rounded-full bg-slate-300"></span>
+            <span class="text-[9px] font-black text-emerald-600">${p.meter}m</span>
+          </div>` : ''}
+
+          <div class="text-[8px] font-black uppercase tracking-widest text-slate-400 opacity-70">${modeLabel} · ${Helpers.timeAgo(s.time)}</div>
         </div>
-        <div class="text-[9px] font-black uppercase ${text}">${s.ok ? 'OK' : 'FAIL'}</div>
       </div>`;
     }).join('');
     if (window.lucide) lucide.createIcons({ nodes: [el] });
