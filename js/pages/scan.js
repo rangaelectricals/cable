@@ -45,7 +45,7 @@ const ScanPage = {
           </div>
 
           <!-- Compact Input Area -->
-          <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden transition-all duration-300">
+          <div class="bg-white rounded-2xl shadow-md border border-slate-200 transition-all duration-300">
             <!-- Tighter Header -->
             <div id="mode-header" class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/40">
               <div class="flex items-center gap-4">
