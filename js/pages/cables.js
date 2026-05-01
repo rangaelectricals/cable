@@ -1049,28 +1049,39 @@ const CablesPage = {
         const errors   = [];
 
         rows.forEach((row, idx) => {
-          // Normalize header keys (CSV may use different casing)
+          // Normalize header keys (CSV may use different casing, spaces, underscores)
           const norm = {};
-          Object.keys(row).forEach(k => { norm[k.toLowerCase().replace(/[\s_]/g,'')] = row[k]; });
+          Object.keys(row).forEach(k => { 
+            const normalized = k.toLowerCase().replace(/[\s_-]/g,'').trim();
+            norm[normalized] = row[k];
+          });
 
           const missing = required.filter(f => !norm[f] || !String(norm[f]).trim());
           if (missing.length) {
             errors.push(`Row ${idx+1}: missing ${missing.join(', ')}`);
           } else {
-            valid.push({
-              no:              String(norm.no || '').trim(),
-              cableNo:         String(norm.cableno).trim(),
-              category:        String(norm.category).trim(),
-              core:            String(norm.core).trim(),
-              sqmm:            String(norm.sqmm).trim(),
+            // Extract all fields, handling both formats (with or without 'no' column)
+            const extracted = {
+              no:              (norm.no || norm.ref || '').toString().trim(),
+              cableNo:         norm.cableno.toString().trim(),
+              category:        norm.category.toString().trim(),
+              core:            norm.core.toString().trim(),
+              sqmm:            norm.sqmm.toString().trim(),
               meter:           parseFloat(norm.meter) || 0,
               quantity:        parseInt(norm.quantity) || 1,
-              status:          String(norm.status || 'IN_GODOWN').trim(),
-              siteName:        String(norm.sitename || '').trim(),
-              personAssigned:  String(norm.personassigned || '').trim(),
-              activated:       String(norm.activated || 'false').trim(),
-              remarks:         String(norm.remarks||'').trim(),
-            });
+              status:          (norm.status || 'IN_GODOWN').toString().trim(),
+              siteName:        (norm.sitename || '').toString().trim(),
+              personAssigned:  (norm.personassigned || '').toString().trim(),
+              activated:       (norm.activated || 'false').toString().trim(),
+              remarks:         (norm.remarks || '').toString().trim(),
+            };
+            
+            // Validate non-empty critical fields
+            if (!extracted.cableNo) {
+              errors.push(`Row ${idx+1}: cableNo cannot be empty`);
+            } else {
+              valid.push(extracted);
+            }
           }
         });
 
