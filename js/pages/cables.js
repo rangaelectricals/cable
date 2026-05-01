@@ -162,6 +162,7 @@ const CablesPage = {
                     <div class="flex items-center gap-1">Status ${this._getSortIcon('status')}</div>
                   </th>
                   <th class="bg-transparent">Site / Person</th>
+                  <th class="bg-transparent">Order Type</th>
                   <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('dateOut')">
                     <div class="flex items-center gap-1">Date Out ${this._getSortIcon('dateOut')}</div>
                   </th>
@@ -418,15 +419,26 @@ const CablesPage = {
           </div>
         ` : '<span class="text-slate-300 text-xs font-medium italic">Available</span>'}
       </td>
-      <!-- 7. Date Out -->
+      <!-- 7. Order Type -->
+      <td>
+        ${p.siteName ? `
+          <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-black uppercase tracking-tighter
+            ${p.eventType === 'MONTHLY' ? 'bg-purple-100 text-purple-700 border border-purple-200' : 
+              p.eventType === 'EVENT' ? 'bg-pink-100 text-pink-700 border border-pink-200' : 
+              'bg-blue-100 text-blue-700 border border-blue-200'}">
+            ${Helpers.escape(p.eventType || 'DAILY')}
+          </span>
+        ` : '<span class="text-slate-200 text-xs">—</span>'}
+      </td>
+      <!-- 8. Date Out -->
       <td class="text-[10px] font-black text-slate-500 uppercase tracking-tight">${Helpers.formatDate(p.dateOut)}</td>
-      <!-- 8. Active -->
+      <!-- 9. Active -->
       <td class="text-center">
         ${(String(p.activated)==='true'||p.activated===true)
           ? `<i data-lucide="check-circle" class="w-4 h-4 text-indigo-500 mx-auto"></i>`
           : `<i data-lucide="circle" class="w-4 h-4 text-slate-200 mx-auto"></i>`}
       </td>
-      <!-- 9. Actions -->
+      <!-- 10. Actions -->
       <td class="pr-4 text-right">
         <div class="flex items-center justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
           ${p.status === 'IN_GODOWN' ? `
@@ -522,10 +534,16 @@ const CablesPage = {
           <div class="min-w-0 flex-1">
             ${p.siteName ? `
               <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Site Details</div>
-              <div class="flex items-center gap-2">
-                <div class="text-sm font-black text-amber-700 uppercase tracking-tight truncate">${Helpers.escape(p.siteName)}</div>
-                <div class="text-[10px] text-slate-500 font-bold flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-xs shrink-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="text-sm font-black text-amber-700 uppercase tracking-tight">${Helpers.escape(p.siteName)}</div>
+                <div class="text-[10px] text-slate-500 font-bold flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-xs">
                   <i data-lucide="user" class="w-2.5 h-2.5"></i> ${Helpers.escape(p.personAssigned || '—')}
+                </div>
+                <div class="text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full border shadow-xs
+                  ${p.eventType === 'MONTHLY' ? 'bg-purple-50 text-purple-700 border-purple-200' : 
+                    p.eventType === 'EVENT' ? 'bg-pink-50 text-pink-700 border-pink-200' : 
+                    'bg-blue-50 text-blue-700 border-blue-200'}">
+                  ${Helpers.escape(p.eventType || 'DAILY')}
                 </div>
               </div>
             ` : `
