@@ -1183,11 +1183,6 @@ const CablesPage = {
       Toast.show('success','Bulk Upload Done', `${totalInserted} cables inserted (${batches.length} batch${batches.length>1?'es':''})`);
       this._bulkRows = [];
       await this._fetchPage(null, false); // refresh list
-      } else {
-        btn.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> Retry Upload`;
-        if (window.lucide) lucide.createIcons({ nodes: [btn] });
-        Toast.show('error','Upload Failed', res.message);
-      }
     } catch(err) {
       btn.disabled = false;
       btn.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> Retry Upload`;
