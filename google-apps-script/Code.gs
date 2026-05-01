@@ -64,23 +64,29 @@ function getSheet(name) {
     var sheets = ss.getSheets();
     for (var i = 0; i < sheets.length; i++) {
       if (sheets[i].getName().trim().toUpperCase() === name.toUpperCase()) {
-        return sheets[i];
+        sheet = sheets[i];
+        break;
       }
     }
 
     // Truly missing? Create it and initialize
-    sheet = ss.insertSheet(name);
-    _initSheetHeaders(sheet, name);
+    if (!sheet) {
+      sheet = ss.insertSheet(name);
+      _initSheetHeaders(sheet, name);
 
-    if (name === SHEET_NAMES.USERS)   _seedDefaultAdmin(sheet);
-    if (name === SHEET_NAMES.MASTERS) _seedDefaultMasters(sheet);
-    
-    // Clean up: If we just created the first system sheet and "Sheet1" is empty, remove "Sheet1"
-    var sheet1 = ss.getSheetByName('Sheet1');
-    if (sheet1 && sheet1.getLastRow() === 0 && ss.getSheets().length > 1) {
-      ss.deleteSheet(sheet1);
+      if (name === SHEET_NAMES.USERS)   _seedDefaultAdmin(sheet);
+      if (name === SHEET_NAMES.MASTERS) _seedDefaultMasters(sheet);
+      
+      // Clean up: If we just created the first system sheet and "Sheet1" is empty, remove "Sheet1"
+      var sheet1 = ss.getSheetByName('Sheet1');
+      if (sheet1 && sheet1.getLastRow() === 0 && ss.getSheets().length > 1) {
+        ss.deleteSheet(sheet1);
+      }
     }
   }
+
+  // Ensure all required columns exist (for schema migrations)
+  _ensureColumnsExist(sheet, name);
 
   return sheet;
 }
@@ -103,6 +109,45 @@ function _initSheetHeaders(sheet, name) {
   // Auto-resize each column for readability
   for (var i = 1; i <= headers.length; i++) {
     sheet.setColumnWidth(i, 140);
+  }
+}
+
+/**
+ * Ensure all required columns exist in a sheet.
+ * If columns are missing, add them to the end.
+ * This handles schema migrations when new fields are added.
+ */
+function _ensureColumnsExist(sheet, name) {
+  var requiredHeaders = SHEET_HEADERS[name];
+  if (!requiredHeaders || requiredHeaders.length === 0) return;
+
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < 1) return; // Empty sheet, will be initialized
+
+  var currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  var missingCols = [];
+
+  // Find missing columns
+  requiredHeaders.forEach(function(h) {
+    if (currentHeaders.indexOf(h) < 0) {
+      missingCols.push(h);
+    }
+  });
+
+  // If columns are missing, add them
+  if (missingCols.length > 0) {
+    var newCol = lastCol + 1;
+    missingCols.forEach(function(colName) {
+      sheet.getRange(1, newCol, 1, 1).setValue(colName);
+      sheet.setColumnWidth(newCol, 140);
+      newCol++;
+    });
+    // Format header row
+    var headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+    headerRange.setFontWeight('bold')
+               .setBackground('#1e40af')
+               .setFontColor('#ffffff')
+               .setHorizontalAlignment('center');
   }
 }
 
@@ -808,5 +853,24 @@ function setupSheets() {
     'Default admin account: admin / admin123\n' +
     'Masters seeded: Categories, Core options, SQMM options\n' +
     '⚠️  Change the admin password after first login.'
+  );
+}
+
+/**
+ * MIGRATION: Add missing columns to existing sheets.
+ * Run this if eventType or other new columns are missing from your Google Sheet.
+ * Safe to run multiple times.
+ */
+function migrateSchema() {
+  Object.keys(SHEET_NAMES).forEach(function(key) {
+    var sheet = getSheet(SHEET_NAMES[key]);
+    _ensureColumnsExist(sheet, key);
+  });
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Schema migration complete!\n\n' +
+    'All sheets have been updated with the latest columns.\n' +
+    'Missing columns have been added to the end.\n\n' +
+    'Run this again anytime you need to sync schema changes.'
   );
 }
