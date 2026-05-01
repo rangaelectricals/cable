@@ -270,7 +270,7 @@ const CablesPage = {
             </button>
           </form>
           <h3 class="font-bold text-lg">Bulk Upload Cables</h3>
-          <p class="text-sm text-slate-500 mt-1">Upload a CSV file with multiple cables at once (max 500 rows).</p>
+          <p class="text-sm text-slate-500 mt-1">Upload a CSV file with multiple cables at once (max 2000 rows).</p>
 
           <!-- Step 1: Choose file -->
           <div id="bulk-step-1" class="mt-5 space-y-4">
@@ -1139,25 +1139,50 @@ const CablesPage = {
     if (!this._bulkRows.length) return;
     const btn = document.getElementById('btn-bulk-upload');
     btn.disabled = true;
-    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Uploading…';
-
+    
     try {
-      const res = await API.bulkAddProducts(this._bulkRows);
+      const batchSize = 2000; // Match backend limit
+      const batches = [];
+      for (let i = 0; i < this._bulkRows.length; i += batchSize) {
+        batches.push(this._bulkRows.slice(i, i + batchSize));
+      }
+      
+      let totalInserted = 0;
+      let totalSkipped = 0;
+      let allErrors = [];
+      
+      // Process batches sequentially
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        const batchNum = i + 1;
+        const totalBatches = batches.length;
+        
+        btn.innerHTML = `<span class="loading loading-spinner loading-xs"></span> Batch ${batchNum}/${totalBatches}…`;
+        
+        const res = await API.bulkAddProducts(batch);
+        if (res.success) {
+          const { inserted, skipped, errors } = res.data || res;
+          totalInserted += inserted;
+          totalSkipped += skipped;
+          if (errors?.length) allErrors.push(...errors);
+        } else {
+          throw new Error(res.message || 'Batch upload failed');
+        }
+      }
+      
       btn.disabled = false;
-      if (res.success) {
-        const { inserted, skipped, errors } = res.data || res;
-        document.getElementById('bulk-step-2').classList.add('hidden');
-        document.getElementById('bulk-step-3').classList.remove('hidden');
-        btn.classList.add('hidden');
+      document.getElementById('bulk-step-2').classList.add('hidden');
+      document.getElementById('bulk-step-3').classList.remove('hidden');
+      btn.classList.add('hidden');
 
-        const errNote = errors?.length ? `<div class="text-xs text-red-600 mt-2">${errors.length} item(s) skipped</div>` : '';
-        document.getElementById('bulk-result-text').innerHTML = `
-          <div class="text-lg font-bold text-emerald-600">${inserted} cables added!</div>
-          ${skipped ? `<div class="text-sm text-slate-500 mt-1">${skipped} duplicate(s) skipped</div>` : ''}
-          ${errNote}`;
-        Toast.show('success','Bulk Upload Done', `${inserted} cables inserted.`);
-        this._bulkRows = [];
-        await this._fetchPage(null, false); // refresh list
+      const errNote = allErrors?.length ? `<div class="text-xs text-red-600 mt-2">${allErrors.length} item(s) had issues</div>` : '';
+      document.getElementById('bulk-result-text').innerHTML = `
+        <div class="text-lg font-bold text-emerald-600">${totalInserted} cables added!</div>
+        ${totalSkipped ? `<div class="text-sm text-slate-500 mt-1">${totalSkipped} duplicate(s) skipped</div>` : ''}
+        ${errNote}`;
+      Toast.show('success','Bulk Upload Done', `${totalInserted} cables inserted (${batches.length} batch${batches.length>1?'es':''})`);
+      this._bulkRows = [];
+      await this._fetchPage(null, false); // refresh list
       } else {
         btn.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> Retry Upload`;
         if (window.lucide) lucide.createIcons({ nodes: [btn] });

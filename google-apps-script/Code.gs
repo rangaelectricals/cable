@@ -396,8 +396,8 @@ function handleBulkAddProducts(p) {
   }
   if (!Array.isArray(rowsArr) || rowsArr.length === 0)
     return _err('rows must be a non-empty array.');
-  if (rowsArr.length > 500)
-    return _err('Maximum 500 rows per bulk upload.');
+  if (rowsArr.length > 2000)
+    return _err('Maximum 2000 rows per bulk upload.');
 
   var sheet   = getSheet(SHEET_NAMES.PRODUCTS);
   var existing = sheetToObjects(sheet);
