@@ -187,12 +187,33 @@ const API = (() => {
     rows.forEach(r => {
        const newId = String(Date.now()) + Math.floor(Math.random()*10000);
        const newBarcode = 'CBL-' + Date.now() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
+       
+       // Parse status field (default to IN_GODOWN if not provided)
+       const status = r.status && r.status.trim() ? String(r.status).trim() : 'IN_GODOWN';
+       
+       // Parse boolean activated field (default to false)
+       const activatedVal = r.activated && String(r.activated).toLowerCase().trim();
+       const activated = activatedVal === 'true' || activatedVal === '1' || activatedVal === 'yes';
+       
        window.AppDB.products.unshift({
-          id: newId, cableNo: String(r.cableNo).trim(), barcode: newBarcode,
-          category: r.category, core: r.core, sqmm: r.sqmm, meter: Number(r.meter)||0,
-          quantity: Number(r.quantity)||1, status: 'IN_GODOWN', siteName: '', personAssigned: '',
-          dateOut: '', dateIn: '', remarks: r.remarks||'', activated: false,
-          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+          id: newId, 
+          cableNo: String(r.cableNo).trim(), 
+          barcode: newBarcode,
+          no: r.no || '',
+          category: r.category, 
+          core: r.core, 
+          sqmm: r.sqmm, 
+          meter: Number(r.meter) || 0,
+          quantity: Number(r.quantity) || 1, 
+          status: status, 
+          siteName: r.siteName ? String(r.siteName).trim() : '', 
+          personAssigned: r.personassigned ? String(r.personassigned).trim() : '', // CSV parser lowercases headers
+          dateOut: '', 
+          dateIn: '', 
+          remarks: r.remarks ? String(r.remarks).trim() : '', 
+          activated: activated,
+          createdAt: new Date().toISOString(), 
+          updatedAt: new Date().toISOString()
        });
        r.id = newId; r.barcode = newBarcode;
     });
