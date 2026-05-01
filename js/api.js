@@ -189,7 +189,7 @@ const API = (() => {
        const newBarcode = 'CBL-' + Date.now() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
        
        // Parse status field (default to IN_GODOWN if not provided)
-       const status = r.status && r.status.trim() ? String(r.status).trim() : 'IN_GODOWN';
+       const status = r.status && String(r.status).trim() ? String(r.status).trim() : 'IN_GODOWN';
        
        // Parse boolean activated field (default to false)
        const activatedVal = r.activated && String(r.activated).toLowerCase().trim();
@@ -199,15 +199,15 @@ const API = (() => {
           id: newId, 
           cableNo: String(r.cableNo).trim(), 
           barcode: newBarcode,
-          no: r.no || '',
-          category: r.category, 
-          core: r.core, 
-          sqmm: r.sqmm, 
+          no: r.no ? String(r.no).trim() : '',
+          category: String(r.category).trim(), 
+          core: String(r.core).trim(), 
+          sqmm: String(r.sqmm).trim(), 
           meter: Number(r.meter) || 0,
           quantity: Number(r.quantity) || 1, 
           status: status, 
           siteName: r.siteName ? String(r.siteName).trim() : '', 
-          personAssigned: r.personassigned ? String(r.personassigned).trim() : '', // CSV parser lowercases headers
+          personAssigned: r.personAssigned ? String(r.personAssigned).trim() : '', 
           dateOut: '', 
           dateIn: '', 
           remarks: r.remarks ? String(r.remarks).trim() : '', 

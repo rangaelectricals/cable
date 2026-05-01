@@ -1058,14 +1058,18 @@ const CablesPage = {
             errors.push(`Row ${idx+1}: missing ${missing.join(', ')}`);
           } else {
             valid.push({
-              no:       String(norm.no || '').trim(),
-              cableNo:  String(norm.cableno).trim(),
-              category: String(norm.category).trim(),
-              core:     String(norm.core).trim(),
-              sqmm:     String(norm.sqmm).trim(),
-              meter:    parseFloat(norm.meter) || 0,
-              quantity: parseInt(norm.quantity) || 1,
-              remarks:  String(norm.remarks||'').trim(),
+              no:              String(norm.no || '').trim(),
+              cableNo:         String(norm.cableno).trim(),
+              category:        String(norm.category).trim(),
+              core:            String(norm.core).trim(),
+              sqmm:            String(norm.sqmm).trim(),
+              meter:           parseFloat(norm.meter) || 0,
+              quantity:        parseInt(norm.quantity) || 1,
+              status:          String(norm.status || 'IN_GODOWN').trim(),
+              siteName:        String(norm.sitename || '').trim(),
+              personAssigned:  String(norm.personassigned || '').trim(),
+              activated:       String(norm.activated || 'false').trim(),
+              remarks:         String(norm.remarks||'').trim(),
             });
           }
         });
@@ -1080,12 +1084,12 @@ const CablesPage = {
             <td class="text-slate-400">${i+1}</td>
             <td class="text-xs font-black text-slate-400">${Helpers.escape(r.no || '-')}</td>
             <td class="font-semibold">${Helpers.escape(r.cableNo)}</td>
-            <td>${Helpers.escape(r.category)}</td>
-            <td>${Helpers.escape(r.core)}</td>
-            <td>${Helpers.escape(r.sqmm)}</td>
-            <td>${r.meter}m</td>
-            <td>${r.quantity}</td>
-            <td><span class="badge badge-success badge-xs">Ready</span></td>
+            <td class="text-xs">${Helpers.escape(r.category)}</td>
+            <td class="text-xs">${Helpers.escape(r.core)}</td>
+            <td class="text-xs">${Helpers.escape(r.sqmm)}</td>
+            <td class="text-xs">${r.meter}m</td>
+            <td class="text-xs">${r.quantity}</td>
+            <td><span class="badge badge-xs ${r.status === 'SENT_TO_SITE' ? 'badge-warning' : 'badge-success'}">${Helpers.escape(r.status)}</span></td>
           </tr>`).join('');
         }
 
