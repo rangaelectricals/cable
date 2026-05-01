@@ -32,8 +32,10 @@ const SpecsPage = {
       });
 
       this._groups = Object.values(grouped).sort((a,b) => {
-        if (a.category !== b.category) return a.category.localeCompare(b.category);
-        if (a.core !== b.core) return a.core.localeCompare(b.core, undefined, {numeric: true});
+        if (String(a.category || '') !== String(b.category || '')) 
+          return String(a.category || '').localeCompare(String(b.category || ''));
+        if (String(a.core || '') !== String(b.core || '')) 
+          return String(a.core || '').localeCompare(String(b.core || ''), undefined, {numeric: true});
         return parseFloat(a.sqmm) - parseFloat(b.sqmm);
       });
 
