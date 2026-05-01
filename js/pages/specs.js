@@ -140,8 +140,9 @@ const SpecsPage = {
           <div class="flex justify-between items-start relative z-10">
             <div class="flex flex-col">
               <div class="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-1">${Helpers.escape(g.category)}</div>
-              <div class="text-2xl font-black text-slate-900 leading-none">${Helpers.escape(g.core)} CORE</div>
-              <div class="text-xs font-bold text-slate-400 mt-1">${Helpers.escape(g.sqmm)} MM²</div>
+              <div class="text-xl sm:text-2xl font-black text-slate-900 leading-none uppercase tracking-tight">
+                ${Helpers.escape(g.core)} CORE / ${Helpers.escape(g.sqmm)} MM²
+              </div>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all shadow-sm">
               <i data-lucide="chevron-right" class="w-6 h-6"></i>
@@ -169,8 +170,8 @@ const SpecsPage = {
             <!-- Distribution Bar -->
             <div>
               <div class="flex justify-between text-[8px] font-black uppercase tracking-widest mb-2">
-                <span class="text-emerald-500">${g.inGodown} IN GODOWN</span>
-                <span class="text-amber-500">${g.atSite} AT SITE</span>
+                <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-md shadow-sm">${g.inGodown} IN GODOWN</span>
+                <span class="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md shadow-sm">${g.atSite} AT SITE</span>
               </div>
               <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
                 <div class="h-full bg-emerald-500" style="width: ${godownPct}%"></div>

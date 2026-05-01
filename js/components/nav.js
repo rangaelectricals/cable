@@ -91,7 +91,7 @@ const Nav = {
     if (!container) return;
 
     // Show max 5 items on bottom nav
-    const priority = ['dashboard','cables','scan','logs','masters'];
+    const priority = ['dashboard','cables','specs','scan','logs'];
     const visible  = priority.filter(id => navItems.find(i => i.id === id)).slice(0, 5);
 
     // Calculate indicator position

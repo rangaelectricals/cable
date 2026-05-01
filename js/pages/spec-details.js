@@ -164,22 +164,20 @@ const SpecDetailsPage = {
 
           <div class="hidden lg:block bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
              <div class="overflow-x-auto">
-                <table class="table table-sm border-separate border-spacing-y-2 px-4">
-                   <thead class="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      <tr>
-                         <th class="bg-transparent pl-6 text-center w-12">#</th>
-                         <th class="bg-transparent">Technical Specification</th>
-                         <th class="bg-transparent text-center">Status</th>
-                         <th class="bg-transparent">Current Node</th>
-                         <th class="bg-transparent text-center">Qty</th>
-                         <th class="bg-transparent text-center">Active</th>
-                         <th class="bg-transparent pr-6 text-right">Actions</th>
-                      </tr>
-                   </thead>
-                   <tbody id="spec-detail-results-desktop">
-                      <!-- Table Rows -->
-                   </tbody>
-                </table>
+                 <table class="w-full table table-zebra border-collapse border border-slate-200 table-auto">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                       <tr>
+                          <th class="py-3 px-4 w-12 border-r border-slate-200 text-center">#</th>
+                          <th class="py-3 px-4 w-[320px] border-r border-slate-200">Technical Specification</th>
+                          <th class="py-3 px-4 w-32 border-r border-slate-200 text-center">Status</th>
+                          <th class="py-3 px-4 w-48 border-r border-slate-200">Current Node</th>
+                          <th class="py-3 px-4 w-16 border-r border-slate-200 text-center">Qty</th>
+                          <th class="py-3 px-4 w-20 border-r border-slate-200 text-center">Active</th>
+                          <th class="py-3 px-4 pr-4 w-24 text-right">Actions</th>
+                       </tr>
+                    </thead>
+                    <tbody id="spec-detail-results-desktop"></tbody>
+                 </table>
              </div>
           </div>
 
@@ -272,49 +270,51 @@ const SpecDetailsPage = {
     mobileGrid.innerHTML = this._products.map(p => this._getCardHTML(p)).join('');
 
     // Render Desktop Rows
-    desktopTable.innerHTML = this._products.map((p, i) => `
-      <tr class="group hover:bg-slate-50/50 transition-colors">
-         <td class="pl-6 text-center">
-            <span class="text-[10px] font-black text-slate-300 group-hover:text-indigo-600 transition-colors">${(this._page - 1) * this._pageSize + i + 1}</span>
+    desktopTable.innerHTML = this._products.map((p, i) => {
+      const isSite = p.status === 'SENT_TO_SITE';
+      const rowClass = isSite ? 'row-status-site' : 'row-status-godown';
+
+      return `
+      <tr class="group hover:bg-slate-50/50 transition-colors ${rowClass}">
+         <td class="py-3 px-4 text-center border-r border-slate-200/50">
+            <span class="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 transition-colors">${(this._page - 1) * this._pageSize + i + 1}</span>
          </td>
-         <td>
+         <td class="py-3 px-4 border-r border-slate-200/50">
             <div class="flex flex-col">
-               <span class="text-[12px] font-black text-slate-900 uppercase mb-1">${Helpers.escape(p.category)}</span>
-               <div class="flex items-center gap-2 flex-wrap">
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
+               <span class="text-[14px] font-black text-slate-900 uppercase tracking-tight">${Helpers.escape(p.category)}</span>
+               <div class="mt-2 flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center px-2 py-1 rounded-md bg-white text-slate-900 font-black text-[13px] border-2 border-slate-200 shadow-sm min-w-[28px] justify-center">
                     ${p.no ? `${Helpers.escape(p.no)}` : '—'}
                   </span>
-                  <span class="text-[13px] font-black text-indigo-700 uppercase tracking-tighter">
+                  <span class="text-[17px] font-black text-indigo-700 uppercase tracking-tighter">
                     ${formatCore(p.core)} / ${Helpers.escape(p.sqmm)}mm²
                   </span>
-                  <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                  <span class="text-[13px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-md border border-emerald-100 shadow-sm uppercase tracking-widest">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                  <span class="text-[16px] font-black text-emerald-600 bg-white px-3 py-1 rounded-md border-2 border-emerald-200 shadow-sm uppercase tracking-widest">
                     ${p.meter}m
                   </span>
                </div>
             </div>
          </td>
-         <td class="text-center">
-            <div class="badge ${p.status === 'IN_GODOWN' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'} border font-black text-[8px] uppercase tracking-widest px-2 py-2.5 rounded-lg">
-               ${p.status.replace(/_/g, ' ')}
-            </div>
+         <td class="py-3 px-4 text-center border-r border-slate-200/50">
+            ${Helpers.statusBadge(p.status)}
          </td>
-         <td>
+         <td class="py-3 px-4 border-r border-slate-200/50">
             <div class="flex items-center gap-2">
-               <i data-lucide="map-pin" class="w-3 h-3 text-slate-300"></i>
-               <span class="text-[11px] font-bold text-slate-600 truncate max-w-[150px] inline-block">${p.siteName || 'GODOWN'}</span>
+               <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+               <span class="text-[12px] font-bold text-slate-600 truncate max-w-[150px] inline-block">${p.siteName || 'GODOWN'}</span>
             </div>
          </td>
-         <td class="text-center">
-            <span class="text-[11px] font-bold text-slate-600">${p.quantity}</span>
+         <td class="py-3 px-4 text-center border-r border-slate-200/50">
+            <span class="text-[13px] font-black text-slate-600">${p.quantity||1}</span>
          </td>
-         <td class="text-center">
+         <td class="py-3 px-4 text-center border-r border-slate-200/50">
             ${(String(p.activated)==='true' || p.activated===true) 
-              ? `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mx-auto"></i>` 
+              ? `<i data-lucide="check-circle" class="w-4 h-4 text-indigo-600 mx-auto"></i>` 
               : `<i data-lucide="circle" class="w-4 h-4 text-slate-200 mx-auto"></i>`}
          </td>
-         <td class="pr-6 text-right">
-            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+         <td class="py-3 px-4 pr-4 text-right">
+            <div class="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                <button class="btn btn-ghost btn-xs w-7 h-7 p-0 rounded-lg text-amber-500" title="Edit Cable" onclick="SpecDetailsPage.openEdit('${p.id}')">
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                </button>
@@ -324,7 +324,7 @@ const SpecDetailsPage = {
             </div>
          </td>
       </tr>
-    `).join('');
+    `; }).join('');
 
     const pag = document.getElementById('spec-detail-pagination');
     if (pag) {

@@ -147,30 +147,30 @@ const CablesPage = {
         <!-- ── DESKTOP TABLE VIEW (hidden on mobile) ──────────────────────── -->
         <div class="hidden lg:block card bg-white shadow-sm border border-slate-200 overflow-hidden">
           <div class="overflow-x-auto">
-            <table class="table table-sm border-separate border-spacing-y-1.5">
-              <thead class="text-[10px] uppercase tracking-widest text-slate-400 font-black">
+            <table class="w-full table table-zebra border-collapse border border-slate-200 table-auto">
+              <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
                 <tr>
-                  <th class="bg-transparent pl-4">#</th>
+                  <th class="py-3 px-4 w-12 border-r border-slate-200">#</th>
 
-                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('category')">
+                  <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-[320px] border-r border-slate-200" onclick="CablesPage._onSort('category')">
                     <div class="flex items-center gap-1">Category / Specs ${this._getSortIcon('category')}</div>
                   </th>
-                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('quantity')">
+                  <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-16 border-r border-slate-200" onclick="CablesPage._onSort('quantity')">
                     <div class="flex items-center gap-1">Qty ${this._getSortIcon('quantity')}</div>
                   </th>
-                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('status')">
+                  <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-32 border-r border-slate-200" onclick="CablesPage._onSort('status')">
                     <div class="flex items-center gap-1">Status ${this._getSortIcon('status')}</div>
                   </th>
-                  <th class="bg-transparent">Site / Person</th>
-                  <th class="bg-transparent">Order Type</th>
-                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('dateOut')">
+                  <th class="py-3 px-4 w-48 border-r border-slate-200">Site / Person</th>
+                  <th class="py-3 px-4 w-28 border-r border-slate-200">Order Type</th>
+                  <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-28 border-r border-slate-200" onclick="CablesPage._onSort('dateOut')">
                     <div class="flex items-center gap-1">Date Out ${this._getSortIcon('dateOut')}</div>
                   </th>
-                  <th class="bg-transparent text-center">Active</th>
-                  <th class="bg-transparent pr-4">Actions</th>
+                  <th class="py-3 px-4 text-center w-20 border-r border-slate-200">Active</th>
+                  <th class="py-3 px-4 pr-4 w-24">Actions</th>
                 </tr>
               </thead>
-              <tbody id="cables-body" class="before:block before:h-2"></tbody>
+              <tbody id="cables-body"></tbody>
             </table>
           </div>
           <div id="cables-pagination-desktop" class="px-4 pb-3"></div>
@@ -382,24 +382,23 @@ const CablesPage = {
       const rowClass = isSite ? 'row-status-site' : 'row-status-godown';
       
       return `
-    <tr class="group transition-all duration-300 table-row-accent ${rowClass}">
+    <tr class="group transition-all duration-300 ${rowClass}">
       <!-- 1. Index -->
       <td class="pl-4">
         <div class="text-slate-400 text-[10px] font-black w-6 h-6 rounded-lg bg-slate-100/50 flex items-center justify-center">${rowStart+i+1}</div>
       </td>
 
-      <!-- 3. Category / Specs -->
       <td>
-        <div class="font-black text-slate-900 text-[12px] uppercase tracking-tight">${Helpers.escape(p.category)}</div>
-        <div class="mt-1.5 flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white text-slate-900 font-black text-[11px] border border-slate-200 shadow-sm min-w-[24px] justify-center">
+        <div class="font-black text-slate-900 text-[14px] uppercase tracking-tight">${Helpers.escape(p.category)}</div>
+        <div class="mt-2 flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-md bg-white text-slate-900 font-black text-[13px] border-2 border-slate-200 shadow-sm min-w-[28px] justify-center">
             ${p.no ? `${Helpers.escape(p.no)}` : '—'}
           </span>
-          <span class="text-[13px] font-black text-indigo-700 uppercase tracking-tighter">
+          <span class="text-[17px] font-black text-indigo-700 uppercase tracking-tighter">
             ${Helpers.escape(p.core)} / ${Helpers.escape(p.sqmm)}mm²
           </span>
-          <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-          <span class="text-[13px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-md border border-emerald-100 shadow-sm uppercase tracking-widest">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          <span class="text-[16px] font-black text-emerald-600 bg-white px-3 py-1 rounded-md border-2 border-emerald-200 shadow-sm uppercase tracking-widest">
             ${p.meter}m
           </span>
         </div>

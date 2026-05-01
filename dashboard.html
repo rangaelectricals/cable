@@ -32,6 +32,64 @@
     .animate-slideUp { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
+    /* Inline CSS Input & Search overrides for complete mobile responsiveness */
+    input:not(label), select, textarea {
+      background: #ffffff !important;
+      border-radius: 0.75rem !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      font-weight: 500 !important;
+      font-size: 16px !important;
+      transition: all 0.2s ease-in-out !important;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #4f46e5 !important;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+      outline: none !important;
+    }
+    label.input {
+      background: #ffffff !important;
+      border-radius: 0.75rem !important;
+      border: 1.5px solid #cbd5e1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+      padding: 0 0.75rem !important;
+      height: 2.5rem !important;
+      transition: all 0.2s ease-in-out !important;
+    }
+    label.input:focus-within {
+      border-color: #4f46e5 !important;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+    }
+    label.input input, .input-bordered input {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      font-size: 16px !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Vibrant, highly distinguishable row and scenario highlighting */
+    .row-status-godown {
+      background-color: #ecfdf5 !important;
+      border-left: 4px solid #10b981 !important;
+    }
+    .row-status-site {
+      background-color: #fffbeb !important;
+      border-left: 4px solid #f59e0b !important;
+    }
+    .row-status-godown:hover {
+      background-color: #d1fae5 !important;
+    }
+    .row-status-site:hover {
+      background-color: #fef3c7 !important;
+    }
+
     .animate-fadeIn { animation: fadeIn 0.5s ease both; }
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
@@ -133,7 +191,7 @@
 
   <!-- Main Content Wrapper -->
   <main id="main-wrapper" class="pt-[64px] pb-[80px] md:pb-0 md:pl-64 transition-all min-h-screen bg-[#f3f4f6]">
-    <div id="main-content" class="h-full p-4 md:p-8 w-full max-w-7xl mx-auto">
+    <div id="main-content" class="h-full p-2 md:p-8 w-full max-w-7xl mx-auto">
       <div class="flex items-center justify-center h-64">
         <span class="loading loading-spinner loading-lg text-primary"></span>
       </div>
