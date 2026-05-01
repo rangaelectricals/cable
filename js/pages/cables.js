@@ -607,10 +607,10 @@ const CablesPage = {
     this._filterTimer = setTimeout(() => {
       this._filters = {
         search:   (document.getElementById('cable-search')?.value  || '').trim(),
-        status:   document.getElementById('cable-status')?.value   || '',
-        category: document.getElementById('cable-cat')?.value      || '',
-        core:     document.getElementById('cable-core')?.value     || '',
-        sqmm:     document.getElementById('cable-sqmm')?.value     || '',
+        status:   (document.getElementById('cable-status')?.value  || '').trim(),
+        category: (document.getElementById('cable-cat')?.value     || '').trim(),
+        core:     (document.getElementById('cable-core')?.value    || '').trim(),
+        sqmm:     (document.getElementById('cable-sqmm')?.value    || '').trim(),
       };
       this._page = 1;
       this._fetchPage(null, false);

@@ -100,10 +100,10 @@ const API = (() => {
         (r.remarks && r.remarks.toLowerCase().includes(q))
       );
     }
-    if (filters.status)   rows = rows.filter(r => r.status === filters.status);
-    if (filters.category) rows = rows.filter(r => r.category === filters.category);
-    if (filters.core)     rows = rows.filter(r => String(r.core) === String(filters.core));
-    if (filters.sqmm)     rows = rows.filter(r => String(r.sqmm) === String(filters.sqmm));
+    if (filters.status)   rows = rows.filter(r => r.status === String(filters.status || '').trim());
+    if (filters.category) rows = rows.filter(r => String(r.category || '') === String(filters.category || '').trim());
+    if (filters.core)     rows = rows.filter(r => String(r.core || '').trim() === String(filters.core || '').trim());
+    if (filters.sqmm)     rows = rows.filter(r => String(r.sqmm || '').trim() === String(filters.sqmm || '').trim());
 
     // Sorting
     const sortBy  = filters.sortBy  || 'createdAt';
