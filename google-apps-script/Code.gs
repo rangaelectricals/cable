@@ -33,8 +33,8 @@ var SHEET_HEADERS = {
   USERS:        ['id','username','password','role','name'],
   PRODUCTS:     ['id','no','cableNo','barcode','category','core','sqmm','meter','quantity',
                  'status','siteName','personAssigned','dateOut','dateIn',
-                 'remarks','activated','createdAt','updatedAt'],
-  TRANSACTIONS: ['id','no','barcode','action','cableNo','user','timestamp','note','siteName','personAssigned'],
+                 'remarks','activated','eventType','createdAt','updatedAt'],
+  TRANSACTIONS: ['id','no','barcode','action','cableNo','user','timestamp','note','siteName','personAssigned','eventType'],
   SCAN_LOG:     ['barcode','action','timestamp'],
   MASTERS:      ['id','type','value','sortOrder','createdAt'],
 };
@@ -354,6 +354,7 @@ function handleAddProduct(p) {
     dateIn:         '',
     remarks:        String(p.remarks || ''),
     activated:      false,
+    eventType:      'DAILY',
     createdAt:      now,
     updatedAt:      now,
   };
@@ -422,6 +423,8 @@ function handleBulkAddProducts(p) {
       errors.push('Row ' + lineNo + ': "' + cableNo + '" already exists (skipped)');
       return;
     }
+    var et = row.eventtype ? String(row.eventtype).trim().toUpperCase() : 'DAILY';
+    var eventType = (et === 'MONTHLY' || et === 'EVENT') ? et : 'DAILY';
     var obj = {
       id:             String(Date.now() + idx),
       no:             String(row.no || '').trim(),
@@ -439,6 +442,7 @@ function handleBulkAddProducts(p) {
       dateIn:         '',
       remarks:        String(row.remarks || '').trim(),
       activated:      false,
+      eventType:      eventType,
       createdAt:      now,
       updatedAt:      now,
     };
