@@ -48,32 +48,40 @@ const API = (() => {
   }
 
   // ── INITIAL BOOT ──────────────────────────────────────────────────────────
+  let _initPromise = null;
+
   async function initDatabase() {
     if (window.AppDB.isLoaded) return true;
-    
-    const url = new URL(CONFIG.API_BASE_URL);
-    url.searchParams.set('action', 'getData');
-    
-    try {
-      const resp = await fetch(url.toString());
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const res = await resp.json();
+    if (_initPromise) return _initPromise;
+
+    _initPromise = (async () => {
+      const url = new URL(CONFIG.API_BASE_URL);
+      url.searchParams.set('action', 'getData');
       
-      if (res.success && res.data) {
-        window.AppDB.products = res.data.products || [];
-        window.AppDB.logs = res.data.logs || [];
-        window.AppDB.users = res.data.users || [];
-        window.AppDB.masters = res.data.masters || [];
+      try {
+        const resp = await fetch(url.toString());
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const res = await resp.json();
         
-        // Sort logs descending by default
-        window.AppDB.logs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-        window.AppDB.isLoaded = true;
-        return true;
+        if (res.success && res.data) {
+          window.AppDB.products = res.data.products || [];
+          window.AppDB.logs = res.data.logs || [];
+          window.AppDB.users = res.data.users || [];
+          window.AppDB.masters = res.data.masters || [];
+          
+          // Sort logs descending by default
+          window.AppDB.logs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+          window.AppDB.isLoaded = true;
+          return true;
+        }
+      } catch(err) {
+        _initPromise = null; // reset if failed
+        console.error("Failed to init database:", err);
+        throw err;
       }
-    } catch(err) {
-      console.error("Failed to init database:", err);
-      throw err;
-    }
+    })();
+
+    return _initPromise;
   }
 
   // ── AUTH ──────────────────────────────────────────────────────────────────

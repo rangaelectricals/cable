@@ -8,6 +8,7 @@ const DashboardPage = {
 
     let products = [], logs = [];
     try {
+      await API.initDatabase();
       const [pRes, lRes] = await Promise.all([
         API.getProducts({ pageSize: 9999, page: 1 }),
         API.getLogs({ pageSize: 8, page: 1 }),
