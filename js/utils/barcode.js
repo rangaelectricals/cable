@@ -139,21 +139,55 @@ const Barcode = (() => {
   }
 
   async function downloadPNG(product, options = {}) {
-    const { size = 512 } = options;
-    const qrlib = window.QRious;
+    const size = 512;
     try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      const qrlib = window.QRious;
       let dataUrl = '';
       if (qrlib) {
         const qr = new qrlib({ value: product.barcode, size: size, level: 'H' });
         dataUrl = qr.toDataURL();
       } else {
-        // Fallback to QRServer for download
         dataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(product.barcode)}`;
       }
 
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size + 160;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(img, 0, 0, size, size);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "center";
+
+      ctx.font = "bold 22px Inter, Arial, sans-serif";
+      ctx.fillText(`${product.cableNo || 'CABLE'} — ${product.category || 'INVENTORY'}`, size / 2, size + 35);
+
+      ctx.font = "bold 28px Inter, Arial, sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+      const noPart = product.no ? `#${product.no} • ` : '';
+      ctx.fillText(`${noPart}${product.core} / ${product.sqmm}mm² • ${product.meter}M`, size / 2, size + 85);
+
+      ctx.font = "16px monospace";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText(product.barcode, size / 2, size + 130);
+
+      const fullUrl = canvas.toDataURL("image/png");
       const link = document.createElement('a');
-      link.download = `qr-${product.cableNo}-${size}.png`;
-      link.href = dataUrl;
+      link.download = `qr-${product.cableNo || 'cable'}.png`;
+      link.href = fullUrl;
       link.target = '_blank';
       link.click();
       return true;
