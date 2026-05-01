@@ -46,15 +46,17 @@ const Barcode = (() => {
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:2mm;font-size:8pt;text-align:left;}
     label{color:#888;display:block;font-size:7pt;text-transform:uppercase;font-weight:700;}
     span{font-weight:700;color:#111;}
+    .large-spec{font-size:15pt;font-weight:900;color:#1d4ed8;margin:3mm 0;text-transform:uppercase;border-top:1.5px solid #eee;border-bottom:1.5px solid #eee;padding:2mm 0;}
     @media print{body{margin:0;}.wrap{border:none;}}</style></head>
     <body><div class="wrap">
       <div class="title">RE CABLETRACK</div>
       <div class="sub">${product.cableNo} — ${product.category}</div>
       ${dataUrl ? `<img src="${dataUrl}" />` : ''}
+      <div class="large-spec">
+        ${product.core} / ${product.sqmm}mm² &bull; ${product.meter}M
+      </div>
       <div class="grid">
-        <div><label>Core/SQMM</label><span>${product.core} / ${product.sqmm}mm²</span></div>
-        <div><label>Meter</label><span>${product.meter}m</span></div>
-        <div style="grid-column:1/-1;margin-top:2mm;padding-top:2mm;border-top:1px solid #eee;">
+        <div style="grid-column:1/-1;margin-top:2mm;padding-top:2mm;">
           <label>ID / Barcode</label><span style="font-family:monospace;font-size:7pt">${product.barcode}</span>
         </div>
       </div>
