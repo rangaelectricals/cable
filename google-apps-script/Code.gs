@@ -512,6 +512,7 @@ function handleScanAction(p) {
     updates.status         = 'SENT_TO_SITE';
     updates.siteName       = String(p.siteName).trim();
     updates.personAssigned = String(p.personAssigned).trim();
+    updates.eventType      = p.eventType && String(p.eventType).trim().toUpperCase() === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
     updates.dateOut        = now.slice(0, 10);
     updates.dateIn         = '';
   }
@@ -527,6 +528,7 @@ function handleScanAction(p) {
 
     updates.siteName       = String(p.siteName).trim();
     updates.personAssigned = String(p.personAssigned).trim();
+    updates.eventType      = p.eventType && String(p.eventType).trim().toUpperCase() === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
     updates.dateOut        = now.slice(0, 10);
     // status remains 'SENT_TO_SITE'
   }
@@ -567,6 +569,7 @@ function handleScanAction(p) {
     note:           String(p.note || ''),
     siteName:       String(p.siteName       || product.siteName       || ''),
     personAssigned: String(p.personAssigned || product.personAssigned || ''),
+    eventType:      String(p.eventType      || product.eventType      || 'DAILY'),
   };
   appendObject(SHEET_NAMES.TRANSACTIONS, txn);
 
