@@ -53,7 +53,7 @@ const Barcode = (() => {
       <div class="sub">${product.cableNo} — ${product.category}</div>
       ${dataUrl ? `<img src="${dataUrl}" />` : ''}
       <div class="large-spec">
-        ${product.core} / ${product.sqmm}mm² &bull; ${product.meter}M
+        ${product.no ? `#${product.no} &bull; ` : ''}${product.core} / ${product.sqmm}mm² &bull; ${product.meter}M
       </div>
       <div class="grid">
         <div style="grid-column:1/-1;margin-top:2mm;padding-top:2mm;">
