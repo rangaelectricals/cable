@@ -369,7 +369,7 @@ const CablesPage = {
     if (!body) return;
     const rowStart = (this._page - 1) * this._pageSize;
     if (!this._products.length) {
-      body.innerHTML = `<tr><td colspan="12">
+      body.innerHTML = `<tr><td colspan="9">
         ${UI.emptyState('package',
           this._total===0?'No cables yet':'No cables match filter',
           this._total===0?'Click "+ Add Cable" to register the first cable':'Clear filters to see all')}
