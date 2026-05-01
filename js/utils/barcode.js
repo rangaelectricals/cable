@@ -97,28 +97,13 @@ const Barcode = (() => {
 
     try {
       await _scanner.start({ facingMode: 'environment' }, config, (decodedText) => {
-        if (debounce) return;
-        
-        // Pattern filter: Only accept system barcodes/QRs
-        if (!decodedText.startsWith('CBL-')) return;
+        if (debounce || !decodedText) return;
 
-        // Double-read confirmation is enough for QR (more robust than 1D)
-        if (decodedText === lastResult) {
-          count++;
-        } else {
-          lastResult = decodedText;
-          count = 1;
-        }
-
-        if (count >= 2 && onScan) {
-          // Instead of a timer, we rely on the caller to pause/resume if they want,
-          // but we still debounce briefly to prevent instant double-fires
-          debounce = true;
+        debounce = true;
+        if (onScan) {
           onScan(decodedText);
-          lastResult = null;
-          count = 0;
-          setTimeout(() => { debounce = false; }, 1000);
         }
+        setTimeout(() => { debounce = false; }, 1500);
       });
       return true;
     } catch(err) {
