@@ -18,17 +18,23 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-  <!-- Barcode & QR libs -->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Document Export Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <link rel="stylesheet" href="css/styles.css?v=4.0" />
 
   <style>
-    .page-enter { animation: fadeUp .22s ease both; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .animate-slideDown { animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
     
+    .animate-slideUp { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .animate-fadeIn { animation: fadeIn 0.5s ease both; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
     /* Hide scrollbars for sidebars */
     .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -70,22 +76,55 @@
 
   <!-- Top Navigation Header -->
   <header class="fixed top-0 left-0 right-0 h-[64px] header-dark z-30 px-6 flex items-center justify-between shadow-sm" style="font-family: 'Inter', sans-serif;">
-    <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full w-full basis-1/2">
-      <!-- Hidden on mobile since we use bottom nav now -->
+    <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full flex-1">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md p-1.5 flex md:hidden items-center justify-center">
              <i data-lucide="zap" class="w-5 h-5 text-white"></i>
         </div>
         <span class="text-[17px] font-bold text-white tracking-tight" id="header-page-title">Dashboard</span>
       </div>
+
+      <!-- Unified Command Search (Hidden on Mobile) -->
+      <div class="hidden lg:flex items-center ml-8 flex-1 max-w-md">
+        <div class="relative w-full group">
+          <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-white transition-colors"></i>
+          <input type="text" placeholder="Global Command Search (Ctrl+/)" 
+            class="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-2 text-xs font-bold text-white placeholder:text-slate-500 outline-none focus:bg-white/10 focus:border-indigo-500/50 transition-all" />
+        </div>
+      </div>
     </div>
-    <nav class="flex items-center gap-4">
+
+    <nav class="flex items-center gap-2 sm:gap-4">
+      <!-- Quick Info / Status Node -->
+      <div class="hidden sm:flex items-center gap-3 mr-4">
+        <div class="flex flex-col items-end">
+          <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Link Security</span>
+          <span class="text-[10px] font-bold text-emerald-400 leading-none">AES-256</span>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+      </div>
+
+      <!-- Action Node Group -->
+      <div class="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4 border-r border-white/10 pr-2 sm:pr-4">
+        <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all relative group">
+          <i data-lucide="bell" class="w-4.5 h-4.5"></i>
+          <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0f172a] animate-bounce"></span>
+          <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl p-4 hidden group-hover:block animate-slideDown">
+            <p class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-2 border-b pb-2">Recent Alerts</p>
+            <p class="text-[10px] text-slate-400 italic">No critical exceptions...</p>
+          </div>
+        </button>
+        <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+          <i data-lucide="help-circle" class="w-4.5 h-4.5"></i>
+        </button>
+      </div>
+
       <div class="flex items-center gap-2">
-        <div id="header-avatar" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white/10">A</div>
+        <div id="header-avatar" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-sm ring-2 ring-white/10">A</div>
         <div class="hidden sm:flex flex-col items-start justify-center ml-1">
           <div class="flex items-center gap-1.5">
             <span id="header-user-name" class="text-sm font-semibold text-white leading-none">Admin</span>
-            <span id="header-user-role-badge" class="bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded leading-none font-bold tracking-wider">ADMIN</span>
+            <span id="header-user-role-badge" class="bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded leading-none font-bold tracking-wider uppercase">ADMIN</span>
           </div>
         </div>
       </div>
@@ -102,14 +141,32 @@
   </main>
 
   <!-- Mobile Bottom Navigation (Super Premium Design) -->
-  <nav class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a] border-t border-indigo-500/20 shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.5)]">
+  <nav class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-xl border-t border-white/5 shadow-[0_-8px_40px_-10px_rgba(0,0,0,0.6)]">
     <!-- Active Indicator Bar -->
-    <div id="bottom-nav-indicator" class="absolute top-0 h-[3px] bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all duration-300 ease-out" style="width: 20%; left: 0%; border-radius: 0 0 4px 4px;"></div>
+    <div id="bottom-nav-indicator" class="absolute top-0 h-[4px] bg-gradient-to-r from-indigo-500 to-blue-500 shadow-[0_0_15px_rgba(99,102,241,0.9)] transition-all duration-300 ease-out" style="width: 20%; left: 0%; border-radius: 0 0 4px 4px;"></div>
     
-    <div id="bottom-nav-content" class="flex items-center justify-around h-[70px] px-2 relative z-10">
+    <div id="bottom-nav-content" class="flex items-center justify-around h-[75px] px-2 relative z-10">
       <!-- Rendered by JS -->
     </div>
   </nav>
+
+  <!-- Quick Action FAB (Desktop) -->
+  <div class="hidden lg:flex fixed bottom-8 right-8 z-[100] flex-col items-end gap-4">
+    <div id="fab-menu" class="hidden flex-col items-end gap-3 mb-4 animate-slideUp">
+      <button onclick="App.navigateTo('scan')" class="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl shadow-2xl border border-slate-100 group hover:bg-slate-900 transition-all">
+        <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white">Quick Scan</span>
+        <div class="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center shadow-lg"><i data-lucide="scan-line" class="w-5 h-5"></i></div>
+      </button>
+      <button onclick="App.navigateTo('cables')" class="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl shadow-2xl border border-slate-100 group hover:bg-slate-900 transition-all">
+        <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white">Add Inventory</span>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg"><i data-lucide="plus" class="w-5 h-5"></i></div>
+      </button>
+    </div>
+    <button onclick="document.getElementById('fab-menu').classList.toggle('hidden')" 
+      class="w-16 h-16 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center shadow-[0_20px_50px_rgba(15,23,42,0.4)] hover:scale-110 active:scale-95 transition-all ring-4 ring-white">
+      <i data-lucide="layers" class="w-7 h-7"></i>
+    </button>
+  </div>
 
   <!-- Toasts & Modals container -->
   <div id="toast-wrap" class="toast toast-top toast-end z-[100]"></div>
@@ -134,6 +191,7 @@
   <script src="js/pages/dashboard.js?v=4.0"></script>
   <script src="js/pages/cables.js?v=4.0"></script>
   <script src="js/pages/specs.js?v=4.0"></script>
+  <script src="js/pages/spec-details.js?v=4.0"></script>
   <script src="js/pages/scan.js?v=4.0"></script>
   <script src="js/pages/logs-users.js?v=4.0"></script>
   <script src="js/pages/masters.js?v=4.0"></script>
@@ -156,10 +214,11 @@
     document.getElementById('header-user-role-badge').textContent = ROLE_LABELS[user.role] || user.role;
 
     // Intercept navigateTo
-    const PAGE_LABELS = {
-      dashboard: 'Dashboard', cables: 'Cable Inventory', specs: 'Inventory by Spec',
-      scan: 'Scan Operations', masters: 'Masters', logs: 'Activity Logs', users: 'User Management',
-    };
+     const PAGE_LABELS = {
+       dashboard: 'Dashboard', cables: 'Cable Inventory', specs: 'Inventory by Spec',
+       'spec-details': 'Specification Details',
+       scan: 'Scan Operations', masters: 'Masters', logs: 'Activity Logs', users: 'User Management',
+     };
     const origNav = App.navigateTo.bind(App);
     App.navigateTo = async function(section) {
       const title = document.getElementById('header-page-title');

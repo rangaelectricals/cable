@@ -33,6 +33,7 @@ const App = {
         case 'dashboard': await DashboardPage.render(container); break;
         case 'cables':    await CablesPage.render(container);    break;
         case 'specs':     await SpecsPage.render(container);     break;
+        case 'spec-details': await SpecDetailsPage.render(container); break;
         case 'scan':      await ScanPage.render(container);      break;
         case 'masters':   await MastersPage.render(container);   break;
         case 'logs':      await LogsPage.render(container);      break;

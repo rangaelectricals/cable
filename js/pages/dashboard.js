@@ -13,7 +13,10 @@ const DashboardPage = {
         API.getLogs({ pageSize: 8, page: 1 }),
       ]);
       products = pRes.data || [];
-      logs     = lRes.data || [];
+      logs     = (lRes.data || []).map(l => {
+        const prod = products.find(p => p.barcode === l.cableNo || p.cableNo === l.cableNo);
+        return { ...l, ...prod };
+      });
     } catch(err) {
       container.innerHTML = `
         <div class="alert alert-error max-w-lg mx-auto mt-8 gap-3">
@@ -143,9 +146,28 @@ const DashboardPage = {
         <i data-lucide="${m.icon}" class="w-5 h-5 ${m.color}"></i>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-[13px] font-black text-slate-800 tracking-tight truncate uppercase leading-tight">${log.no ? `<span class="text-slate-400 mr-1">${Helpers.escape(log.no)}</span>` : ''}${Helpers.escape(log.cableNo)}</div>
-        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-70">
-          ${Helpers.escape(log.note || log.siteName || '—')} · ${Helpers.timeAgo(log.timestamp)}
+        <div class="text-[11px] font-black text-slate-900 uppercase tracking-tight mb-1.5 leading-none">
+          ${Helpers.escape(log.cableNo)}
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          ${log.no ? `
+          <div class="w-6 h-6 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-[10px] font-black text-slate-900 shadow-sm">
+            ${Helpers.escape(log.no)}
+          </div>` : ''}
+          
+          <div class="text-[11px] font-black text-indigo-600 uppercase">
+            ${log.core || '?'}/${log.sqmm || '?'}MM²
+          </div>
+
+          <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+
+          ${log.meter ? `
+          <div class="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[10px] font-black uppercase tracking-tight">
+            ${log.meter}M
+          </div>` : ''}
+        </div>
+        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2 opacity-80">
+          ${Helpers.escape(log.note || log.siteName || 'System Event')} · ${Helpers.timeAgo(log.timestamp)}
         </div>
       </div>
       <div class="hidden sm:block">

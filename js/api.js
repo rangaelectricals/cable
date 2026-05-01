@@ -20,6 +20,23 @@ const API = (() => {
   // ── BACKGROUND SYNC ────────────────────────────────────────────────────────
   function _bgFetch(action, params = {}) {
     const url = new URL(CONFIG.API_BASE_URL);
+    
+    // For bulk uploads or large payloads, use POST to avoid URL length limits
+    if (action === 'bulkAddProducts' || action === 'scanAction') {
+      const formData = new FormData();
+      formData.append('action', action);
+      Object.entries(params).forEach(([k, v]) => {
+        formData.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+      });
+      
+      fetch(url.toString(), {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors' // Use no-cors for fire-and-forget with Google Apps Script
+      }).catch(err => console.error("Google Sheets Sync Error (POST):", err));
+      return;
+    }
+
     url.searchParams.set('action', action);
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') {
@@ -27,7 +44,7 @@ const API = (() => {
       }
     });
     // Fire and forget - do not await
-    fetch(url.toString()).catch(err => console.error("Google Sheets Sync Error:", err));
+    fetch(url.toString()).catch(err => console.error("Google Sheets Sync Error (GET):", err));
   }
 
   // ── INITIAL BOOT ──────────────────────────────────────────────────────────
@@ -70,26 +87,45 @@ const API = (() => {
   // ── PRODUCTS ──────────────────────────────────────────────────────────────
   async function getProducts(filters = {}) {
     await initDatabase();
-    let rows = window.AppDB.products;
+    let rows = [...window.AppDB.products];
 
+    // Filtering
     if (filters.search) {
       const q = filters.search.toLowerCase();
       rows = rows.filter(r => 
         (r.no && String(r.no).toLowerCase().includes(q)) ||
         (r.cableNo && r.cableNo.toLowerCase().includes(q)) ||
         (r.barcode && r.barcode.toLowerCase().includes(q)) ||
-        (r.siteName && r.siteName.toLowerCase().includes(q))
+        (r.siteName && r.siteName.toLowerCase().includes(q)) ||
+        (r.remarks && r.remarks.toLowerCase().includes(q))
       );
     }
-    if (filters.status) {
-      rows = rows.filter(r => r.status === filters.status);
-    }
-    if (filters.category) {
-      rows = rows.filter(r => r.category === filters.category);
-    }
+    if (filters.status)   rows = rows.filter(r => r.status === filters.status);
+    if (filters.category) rows = rows.filter(r => r.category === filters.category);
+    if (filters.core)     rows = rows.filter(r => String(r.core) === String(filters.core));
+    if (filters.sqmm)     rows = rows.filter(r => String(r.sqmm) === String(filters.sqmm));
 
-    // Sort newest first
-    rows.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Sorting
+    const sortBy  = filters.sortBy  || 'createdAt';
+    const sortDir = filters.sortDir || 'desc';
+    
+    rows.sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+      
+      // Handle numeric values
+      if (['meter', 'quantity', 'no'].includes(sortBy)) {
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+      } else {
+        valA = String(valA || '').toLowerCase();
+        valB = String(valB || '').toLowerCase();
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
 
     const total = rows.length;
     const page = filters.page || 1;

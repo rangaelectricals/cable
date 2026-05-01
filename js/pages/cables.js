@@ -9,7 +9,10 @@ const CablesPage = {
   _pageSize:   20,
   _total:      0,
   _totalPages: 1,
-  _filters:    { search:'', status:'', category:'' },
+  _filters:    { search:'', status:'', category:'', core:'', sqmm:'' },
+  _sortBy:     'createdAt',
+  _sortDir:    'desc',
+  _isSpecMode: false,
 
   async render(container) {
     container.innerHTML = `<div class="flex items-center justify-center h-64">
@@ -22,6 +25,7 @@ const CablesPage = {
     try {
       const params = {
         page: this._page, pageSize: this._pageSize,
+        sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)),
       };
       const res = await API.getProducts(params);
@@ -50,10 +54,27 @@ const CablesPage = {
         ${UI.pageHeader('Cable Inventory',
           `<span id="cable-total-count">${this._total}</span> cables total`,
           `<div class="flex gap-2">
-            <button class="btn btn-ghost btn-sm gap-2" onclick="CablesPage.exportCSV()" title="Export CSV">
-              <i data-lucide="download" class="w-4 h-4"></i>
-              <span class="hidden sm:inline">Export</span>
-            </button>
+            <div class="dropdown dropdown-end">
+              <button tabindex="0" class="btn btn-ghost btn-sm gap-2">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Export</span>
+                <i data-lucide="chevron-down" class="w-3 h-3 opacity-50"></i>
+              </button>
+              <ul tabindex="0" class="dropdown-content z-[10] menu p-2 shadow-2xl bg-white border border-slate-100 rounded-2xl w-52 mt-2">
+                <li>
+                  <a onclick="CablesPage.exportExcel()" class="flex items-center gap-3 py-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></div>
+                    <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">Excel Report</span><span class="text-[9px] text-slate-400">Formatted Spreadsheet</span></div>
+                  </a>
+                </li>
+                <li>
+                  <a onclick="CablesPage.exportPDF()" class="flex items-center gap-3 py-3">
+                    <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i data-lucide="file-text" class="w-4 h-4"></i></div>
+                    <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">PDF Document</span><span class="text-[9px] text-slate-400">Pro Quality PDF</span></div>
+                  </a>
+                </li>
+              </ul>
+            </div>
             ${canEdit ? `
             <button class="btn btn-outline btn-sm gap-2" onclick="CablesPage.openBulkUpload()">
               <i data-lucide="upload" class="w-4 h-4"></i>
@@ -69,7 +90,7 @@ const CablesPage = {
         <!-- Filters -->
         <div class="rounded-2xl bg-white border border-slate-200 shadow-sm">
           <div class="py-3 px-4">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 items-center">
               <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 shrink-0"></i>
                 <input type="text" id="cable-search" class="grow min-w-0 text-sm"
@@ -77,12 +98,14 @@ const CablesPage = {
                   value="${Helpers.escape(this._filters.search)}"
                   oninput="CablesPage._onFilter()" />
               </label>
+              
               <select id="cable-status" class="select select-bordered select-sm min-w-36"
                       onchange="CablesPage._onFilter()">
                 <option value="">All Status</option>
                 <option value="IN_GODOWN"    ${this._filters.status==='IN_GODOWN'   ?'selected':''}>In Godown</option>
                 <option value="SENT_TO_SITE" ${this._filters.status==='SENT_TO_SITE'?'selected':''}>Sent to Site</option>
               </select>
+
               <select id="cable-cat" class="select select-bordered select-sm min-w-36"
                       onchange="CablesPage._onFilter()">
                 <option value="">All Categories</option>
@@ -101,6 +124,16 @@ const CablesPage = {
                 ${sqmms.map(s => `<option value="${Helpers.escape(s)}"
                   ${this._filters.sqmm===s?'selected':''}>${Helpers.escape(s)} mm²</option>`).join('')}
               </select>
+
+              ${this._isSpecMode ? `
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+                    Drill-down: ${Helpers.escape(this._filters.category)} | ${Helpers.escape(this._filters.core)}C
+                  </span>
+                </div>
+              ` : ''}
+
               <button class="btn btn-ghost btn-sm text-red-600 gap-1 px-2" onclick="CablesPage.clearFilters()" title="Clear Filters">
                 <i data-lucide="filter-x" class="w-4 h-4"></i>
               </button>
@@ -118,12 +151,20 @@ const CablesPage = {
               <thead class="text-[10px] uppercase tracking-widest text-slate-400 font-black">
                 <tr>
                   <th class="bg-transparent pl-4">#</th>
-                  <th class="bg-transparent">Cable No</th>
-                  <th class="bg-transparent">Category / Specs</th>
-                  <th class="bg-transparent">Qty</th>
-                  <th class="bg-transparent">Status</th>
+
+                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('category')">
+                    <div class="flex items-center gap-1">Category / Specs ${this._getSortIcon('category')}</div>
+                  </th>
+                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('quantity')">
+                    <div class="flex items-center gap-1">Qty ${this._getSortIcon('quantity')}</div>
+                  </th>
+                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('status')">
+                    <div class="flex items-center gap-1">Status ${this._getSortIcon('status')}</div>
+                  </th>
                   <th class="bg-transparent">Site / Person</th>
-                  <th class="bg-transparent">Date Out</th>
+                  <th class="bg-transparent cursor-pointer hover:text-slate-900 group" onclick="CablesPage._onSort('dateOut')">
+                    <div class="flex items-center gap-1">Date Out ${this._getSortIcon('dateOut')}</div>
+                  </th>
                   <th class="bg-transparent text-center">Active</th>
                   <th class="bg-transparent pr-4">Actions</th>
                 </tr>
@@ -341,14 +382,12 @@ const CablesPage = {
       
       return `
     <tr class="group transition-all duration-300 table-row-accent ${rowClass}">
+      <!-- 1. Index -->
       <td class="pl-4">
         <div class="text-slate-400 text-[10px] font-black w-6 h-6 rounded-lg bg-slate-100/50 flex items-center justify-center">${rowStart+i+1}</div>
       </td>
-      <td>
-        <div class="font-black text-sm text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors uppercase tracking-tight"
-          onclick="CablesPage.viewDetail('${p.id}')">${Helpers.escape(p.cableNo)}</div>
-        <div class="text-[9px] font-mono text-slate-400 mt-0.5">${Helpers.escape(p.barcode)}</div>
-      </td>
+
+      <!-- 3. Category / Specs -->
       <td>
         <div class="font-black text-slate-900 text-[12px] uppercase tracking-tight">${Helpers.escape(p.category)}</div>
         <div class="mt-1.5 flex items-center gap-2 flex-wrap">
@@ -364,8 +403,11 @@ const CablesPage = {
           </span>
         </div>
       </td>
+      <!-- 4. Qty -->
       <td class="font-bold text-slate-600 text-xs">${p.quantity||1}</td>
+      <!-- 5. Status -->
       <td>${Helpers.statusBadge(p.status)}</td>
+      <!-- 6. Site / Person -->
       <td>
         ${p.siteName ? `
           <div class="flex flex-col">
@@ -376,12 +418,15 @@ const CablesPage = {
           </div>
         ` : '<span class="text-slate-300 text-xs font-medium italic">Available</span>'}
       </td>
+      <!-- 7. Date Out -->
       <td class="text-[10px] font-black text-slate-500 uppercase tracking-tight">${Helpers.formatDate(p.dateOut)}</td>
+      <!-- 8. Active -->
       <td class="text-center">
         ${(String(p.activated)==='true'||p.activated===true)
-          ? `<span class="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-black uppercase tracking-widest shadow-sm">Active</span>`
-          : `<span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-50 text-slate-400 border border-slate-100 text-[9px] font-black uppercase tracking-widest">Inactive</span>`}
+          ? `<i data-lucide="check-circle" class="w-4 h-4 text-indigo-500 mx-auto"></i>`
+          : `<i data-lucide="circle" class="w-4 h-4 text-slate-200 mx-auto"></i>`}
       </td>
+      <!-- 9. Actions -->
       <td class="pr-4 text-right">
         <div class="flex items-center justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
           ${p.status === 'IN_GODOWN' ? `
@@ -448,8 +493,7 @@ const CablesPage = {
         <div class="flex items-center justify-between px-4 pl-6 pt-4 pb-2 cursor-pointer"
              onclick="CablesPage.viewDetail('${p.id}')">
           <div class="min-w-0 flex-1">
-            <div class="text-base font-black text-slate-900 leading-tight truncate uppercase tracking-tighter">${Helpers.escape(p.cableNo)}</div>
-            <div class="text-[10px] font-mono text-slate-400 mt-1 truncate opacity-70">${Helpers.escape(p.barcode || '')}</div>
+            <div class="text-base font-black text-slate-900 leading-tight truncate uppercase tracking-tighter">REF #${p.no || '—'}</div>
           </div>
           <div class="shrink-0 scale-90 origin-right">
             ${Helpers.statusBadge(p.status)}
@@ -537,6 +581,26 @@ const CablesPage = {
     if (m) m.innerHTML = UI.pagination({ ...opts, onPage:'CablesPage.goToPage', onSize:'CablesPage.setPageSize' });
   },
 
+  _getSortIcon(col) {
+    if (this._sortBy !== col) return '<i data-lucide="chevrons-up-down" class="w-3 h-3 opacity-20 group-hover:opacity-100 transition-opacity"></i>';
+    return this._sortDir === 'asc' 
+      ? '<i data-lucide="chevron-up" class="w-3 h-3 text-indigo-600"></i>' 
+      : '<i data-lucide="chevron-down" class="w-3 h-3 text-indigo-600"></i>';
+  },
+
+  async _onSort(col) {
+    if (this._sortBy === col) {
+      this._sortDir = (this._sortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+      this._sortBy = col;
+      this._sortDir = 'asc';
+    }
+    this._page = 1;
+    Loading.show();
+    await this._fetchPage(null, true);
+    Loading.hide();
+  },
+
   _filterTimer: null,
   _onFilter() {
     clearTimeout(this._filterTimer);
@@ -570,6 +634,9 @@ const CablesPage = {
 
   async clearFilters() {
     this._filters = { search:'', status:'', category:'', core:'', sqmm:'' };
+    this._sortBy = 'createdAt';
+    this._sortDir = 'desc';
+    this._isSpecMode = false;
     this._page = 1;
     const container = document.getElementById('main-content');
     if (container) await this.render(container);
@@ -623,8 +690,17 @@ const CablesPage = {
       if (res.success) {
         Toast.show('success', id ? 'Cable Updated' : 'Cable Added', `${data.cableNo} saved.`);
         Modal.close('modal-cable');
-        if (!id) this._page = 1;
-        await this._fetchPage(null, false);
+        
+        // Refresh based on active page
+        const titleEl = document.getElementById('header-page-title');
+        const isSpecDetail = titleEl && titleEl.textContent === 'Specification Details';
+        
+        if (isSpecDetail && window.SpecDetailsPage) {
+           await SpecDetailsPage._fetchPage(null, false);
+        } else {
+           if (!id) this._page = 1;
+           await this._fetchPage(null, false);
+        }
       } else { Toast.show('error','Save Failed', res.message); }
     } catch(err) {
       btn.disabled = false;
@@ -696,19 +772,176 @@ const CablesPage = {
     Toast.show('success', 'Downloaded', 'QR Code PNG saved.');
   },
 
-  async exportCSV() {
+  async exportExcel() {
     if (!this._total) { Toast.show('warning','No Data','Nothing to export.'); return; }
-    Loading.show('Preparing export…');
+    Loading.show('Preparing Styled Excel...');
     try {
-      const params = { pageSize: 9999, page: 1,
+      const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
       const res = await API.getProducts(params);
       Loading.hide();
-      if (res.data?.length) {
-        Helpers.downloadCSV(res.data, `cables_${new Date().toISOString().slice(0,10)}.csv`);
-        Toast.show('success','Exported',`${res.data.length} cables downloaded.`);
-      }
-    } catch(err) { Loading.hide(); Toast.show('error','Export Error', err.message); }
+      if (!res.data?.length) return;
+
+      const workbook = new ExcelJS.Workbook();
+      
+      // 1. Create Master Sheet
+      const masterSheet = workbook.addWorksheet('All Inventory');
+      const cols = [
+        { header: '#',           key: 'index',    width: 6 },
+        { header: 'NO',          key: 'no',       width: 6 },
+        { header: 'CABLE NO',    key: 'cableNo',  width: 18 },
+        { header: 'CATEGORY',    key: 'category', width: 20 },
+        { header: 'CORE',        key: 'core',     width: 8 },
+        { header: 'SQMM',        key: 'sqmm',     width: 8 },
+        { header: 'METER',       key: 'meter',    width: 10 },
+        { header: 'QTY',         key: 'quantity', width: 8 },
+        { header: 'STATUS',      key: 'status',   width: 18 },
+        { header: 'SITE NAME',   key: 'siteName', width: 25 },
+        { header: 'PERSON',      key: 'person',   width: 20 },
+        { header: 'DATE OUT',    key: 'dateOut',  width: 15 },
+        { header: 'REMARKS',     key: 'remarks',  width: 30 }
+      ];
+
+      const applyStyles = (ws) => {
+        ws.columns = cols;
+        const headerRow = ws.getRow(1);
+        headerRow.height = 30;
+        headerRow.eachCell(cell => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+          cell.font = { name: 'Arial', bold: true, color: { argb: 'FFFFFF' }, size: 10 };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+      };
+
+      const addDataRows = (ws, items) => {
+        items.forEach((p, i) => {
+          const row = ws.addRow({
+            index:    i + 1,
+            no:       p.no || '',
+            cableNo:  p.cableNo,
+            category: p.category,
+            core:     p.core,
+            sqmm:     p.sqmm,
+            meter:    p.meter,
+            quantity: p.quantity || 1,
+            status:   p.status.replace(/_/g, ' '),
+            siteName: p.siteName || 'GODOWN',
+            person:   p.personAssigned || '—',
+            dateOut:  p.dateOut ? Helpers.formatDate(p.dateOut) : '—',
+            remarks:  p.remarks || ''
+          });
+          row.height = 24;
+          row.eachCell(cell => {
+            cell.font = { name: 'Arial', size: 9 };
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+            cell.border = {
+               top: { style: 'thin', color: { argb: 'E2E8F0' } },
+               bottom: { style: 'thin', color: { argb: 'E2E8F0' } },
+               left: { style: 'thin', color: { argb: 'E2E8F0' } },
+               right: { style: 'thin', color: { argb: 'E2E8F0' } }
+            };
+          });
+          ['index', 'no', 'core', 'sqmm', 'meter', 'quantity'].forEach(key => {
+            row.getCell(key).alignment = { horizontal: 'center', vertical: 'middle' };
+          });
+          const statusCell = row.getCell('status');
+          if (statusCell.value === 'SENT TO SITE') {
+            statusCell.font = { bold: true, color: { argb: 'B45309' } };
+          } else {
+            statusCell.font = { bold: true, color: { argb: '059669' } };
+          }
+        });
+      };
+
+      applyStyles(masterSheet);
+      addDataRows(masterSheet, res.data);
+
+      // 2. Group by Category + Core/SQMM for separate sheets
+      const groups = {};
+      res.data.forEach(p => {
+        const key = `${p.category}_${p.core}_${p.sqmm}`.substring(0, 31); // Excel limit
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+
+      Object.entries(groups).forEach(([name, items]) => {
+        const ws = workbook.addWorksheet(name.replace(/[\/*?\[\]:]/g, '-'));
+        applyStyles(ws);
+        addDataRows(ws, items);
+      });
+
+      // Write to buffer and download
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `cables_report_${new Date().toISOString().slice(0,10)}.xlsx`;
+      link.click();
+      
+      Toast.show('success','Excel Exported',`${res.data.length} cables saved to styled Excel.`);
+    } catch(err) { Loading.hide(); Toast.show('error','Excel Error', err.message); }
+  },
+
+  async exportPDF() {
+    if (!this._total) { Toast.show('warning','No Data','Nothing to export.'); return; }
+    Loading.show('Preparing PDF...');
+    try {
+      const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
+        ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
+      const res = await API.getProducts(params);
+      Loading.hide();
+      if (!res.data?.length) return;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('l', 'mm', 'a4'); // Landscape
+
+      // Add Header
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.text('CABLE INVENTORY REPORT', 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+      doc.text(`Total Records: ${res.data.length}`, 14, 33);
+
+      const tableData = res.data.map((p, i) => [
+        i + 1,
+        p.cableNo,
+        `${p.category}\n(${p.core}/${p.sqmm}mm²)`,
+        p.meter + 'm',
+        p.status.replace(/_/g, ' '),
+        p.siteName || '—',
+        p.personAssigned || '—',
+        p.dateOut ? Helpers.formatDate(p.dateOut) : '—',
+        (String(p.activated)==='true' || p.activated===true) ? 'Active' : 'Inactive'
+      ]);
+
+      doc.autoTable({
+        startY: 40,
+        head: [['#', 'Cable No', 'Category/Specs', 'Meter', 'Status', 'Site Name', 'Person', 'Date Out', 'Active']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+        bodyStyles: { fontSize: 8, textColor: [50, 50, 50] },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { fontStyle: 'bold', cellWidth: 25 },
+          2: { cellWidth: 40 },
+          3: { fontStyle: 'bold', textColor: [5, 150, 105] }, // emerald-600
+          4: { fontStyle: 'bold' }
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] }, // slate-50
+        margin: { top: 40 },
+        didDrawPage: (data) => {
+          doc.setFontSize(8);
+          doc.text(`Page ${data.pageNumber}`, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10);
+        }
+      });
+
+      doc.save(`cables_report_${new Date().toISOString().slice(0,10)}.pdf`);
+      Toast.show('success','PDF Exported',`${res.data.length} cables saved to PDF.`);
+    } catch(err) { Loading.hide(); Toast.show('error','PDF Error', err.message); }
   },
 
   quickAction(mode, cableNo) {
