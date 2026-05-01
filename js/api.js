@@ -195,6 +195,10 @@ const API = (() => {
        const activatedVal = r.activated && String(r.activated).toLowerCase().trim();
        const activated = activatedVal === 'true' || activatedVal === '1' || activatedVal === 'yes';
        
+       // Parse eventType (DAILY or MONTHLY, default to DAILY)
+       const eventTypeVal = r.eventtype ? String(r.eventtype).trim().toUpperCase() : 'DAILY';
+       const eventType = eventTypeVal === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
+       
        window.AppDB.products.unshift({
           id: newId, 
           cableNo: String(r.cableNo).trim(), 
@@ -208,6 +212,7 @@ const API = (() => {
           status: status, 
           siteName: r.siteName ? String(r.siteName).trim() : '', 
           personAssigned: r.personAssigned ? String(r.personAssigned).trim() : '', 
+          eventType: eventType,
           dateOut: '', 
           dateIn: '', 
           remarks: r.remarks ? String(r.remarks).trim() : '', 
@@ -251,6 +256,7 @@ const API = (() => {
       product.status = 'SENT_TO_SITE';
       product.siteName = extra.siteName;
       product.personAssigned = extra.personAssigned;
+      product.eventType = extra.eventType || 'DAILY';
       product.dateOut = new Date().toISOString();
       product.dateIn = '';
     } else if (mode === 'RETURN_TO_GODOWN') {
@@ -269,6 +275,7 @@ const API = (() => {
       if (!extra.personAssigned) throw new Error('New Person assigned is required.');
       product.siteName = extra.siteName;
       product.personAssigned = extra.personAssigned;
+      product.eventType = extra.eventType || 'DAILY';
       product.dateOut = new Date().toISOString();
     } else {
       throw new Error('Unknown scan action: ' + mode);

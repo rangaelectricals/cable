@@ -133,6 +133,14 @@ const ScanPage = {
                         <label class="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Assignment Officer</label>
                         <input type="text" id="f-person" class="w-full bg-white border-2 border-slate-200 rounded-lg sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-sm font-bold text-slate-800 focus:border-slate-900 outline-none transition-all shadow-sm" placeholder="Name..." />
                       </div>
+                      <div class="space-y-2">
+                        <label class="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Order Type</label>
+                        <div class="flex items-center gap-2 h-[46px] sm:h-[52px] bg-white border-2 border-slate-200 rounded-lg sm:rounded-2xl px-4 sm:px-6">
+                          <span class="text-[10px] sm:text-[11px] font-bold text-slate-600">Daily</span>
+                          <input type="checkbox" id="f-monthly-toggle" class="toggle toggle-sm toggle-indigo"/>
+                          <span class="text-[10px] sm:text-[11px] font-bold text-slate-600">Monthly</span>
+                        </div>
+                      </div>
                       <div class="col-span-full space-y-2">
                         <label class="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mission Remarks</label>
                         <textarea id="f-scan-remark" rows="2" class="w-full bg-white border-2 border-slate-200 rounded-lg sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-sm font-bold text-slate-800 focus:border-slate-900 outline-none transition-all shadow-sm" placeholder="Operational notes..."></textarea>
@@ -628,6 +636,7 @@ const ScanPage = {
       extra.siteName = (document.getElementById('f-site-name')?.value || '').trim();
       extra.personAssigned = (document.getElementById('f-person')?.value || '').trim();
       extra.note = (document.getElementById('f-scan-remark')?.value || '').trim();
+      extra.eventType = document.getElementById('f-monthly-toggle')?.checked ? 'MONTHLY' : 'DAILY';
       if (!extra.siteName) { Toast.show('warning', 'Required', 'Enter Site Name first.'); return; }
       if (!extra.personAssigned) { Toast.show('warning', 'Required', 'Enter Person Assigned first.'); return; }
     }

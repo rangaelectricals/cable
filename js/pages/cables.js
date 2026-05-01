@@ -856,7 +856,23 @@ const CablesPage = {
       applyStyles(masterSheet);
       addDataRows(masterSheet, res.data);
 
-      // 2. Group by Category + Core/SQMM for separate sheets
+      // 2. Create Event Type sheets (DAILY and MONTHLY)
+      const dailyItems = res.data.filter(p => (p.eventType || 'DAILY') === 'DAILY');
+      const monthlyItems = res.data.filter(p => (p.eventType || 'DAILY') === 'MONTHLY');
+      
+      if (dailyItems.length > 0) {
+        const dailySheet = workbook.addWorksheet('Daily Orders');
+        applyStyles(dailySheet);
+        addDataRows(dailySheet, dailyItems);
+      }
+      
+      if (monthlyItems.length > 0) {
+        const monthlySheet = workbook.addWorksheet('Monthly Orders');
+        applyStyles(monthlySheet);
+        addDataRows(monthlySheet, monthlyItems);
+      }
+
+      // 3. Group by Category + Core/SQMM for separate sheets
       const groups = {};
       res.data.forEach(p => {
         const key = `${p.category}_${p.core}_${p.sqmm}`.substring(0, 31); // Excel limit
@@ -878,7 +894,7 @@ const CablesPage = {
       link.download = `cables_report_${new Date().toISOString().slice(0,10)}.xlsx`;
       link.click();
       
-      Toast.show('success','Excel Exported',`${res.data.length} cables saved to styled Excel.`);
+      Toast.show('success','Excel Exported',`${res.data.length} cables saved (with Event Types).`);
     } catch(err) { Loading.hide(); Toast.show('error','Excel Error', err.message); }
   },
 
@@ -1073,6 +1089,7 @@ const CablesPage = {
               siteName:        (norm.sitename || '').toString().trim(),
               personAssigned:  (norm.personassigned || '').toString().trim(),
               activated:       (norm.activated || 'false').toString().trim(),
+              eventType:       (norm.eventtype || 'DAILY').toString().trim().toUpperCase(),
               remarks:         (norm.remarks || '').toString().trim(),
             };
             
