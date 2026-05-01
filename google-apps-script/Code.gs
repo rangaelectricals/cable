@@ -512,7 +512,8 @@ function handleScanAction(p) {
     updates.status         = 'SENT_TO_SITE';
     updates.siteName       = String(p.siteName).trim();
     updates.personAssigned = String(p.personAssigned).trim();
-    updates.eventType      = p.eventType && String(p.eventType).trim().toUpperCase() === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
+    var et = p.eventType ? String(p.eventType).trim().toUpperCase() : 'DAILY';
+    updates.eventType      = (et === 'MONTHLY' || et === 'EVENT') ? et : 'DAILY';
     updates.dateOut        = now.slice(0, 10);
     updates.dateIn         = '';
   }
@@ -528,7 +529,8 @@ function handleScanAction(p) {
 
     updates.siteName       = String(p.siteName).trim();
     updates.personAssigned = String(p.personAssigned).trim();
-    updates.eventType      = p.eventType && String(p.eventType).trim().toUpperCase() === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
+    var et = p.eventType ? String(p.eventType).trim().toUpperCase() : 'DAILY';
+    updates.eventType      = (et === 'MONTHLY' || et === 'EVENT') ? et : 'DAILY';
     updates.dateOut        = now.slice(0, 10);
     // status remains 'SENT_TO_SITE'
   }

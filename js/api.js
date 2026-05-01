@@ -195,9 +195,9 @@ const API = (() => {
        const activatedVal = r.activated && String(r.activated).toLowerCase().trim();
        const activated = activatedVal === 'true' || activatedVal === '1' || activatedVal === 'yes';
        
-       // Parse eventType (DAILY or MONTHLY, default to DAILY)
+       // Parse eventType (DAILY, MONTHLY, or EVENT, default to DAILY)
        const eventTypeVal = r.eventtype ? String(r.eventtype).trim().toUpperCase() : 'DAILY';
-       const eventType = eventTypeVal === 'MONTHLY' ? 'MONTHLY' : 'DAILY';
+       const eventType = (eventTypeVal === 'MONTHLY' || eventTypeVal === 'EVENT') ? eventTypeVal : 'DAILY';
        
        window.AppDB.products.unshift({
           id: newId, 

@@ -87,7 +87,7 @@ const Helpers = {
     const sample = [
       '1,CBL-001,Power Cable,3C,10,500,1,IN_GODOWN,,,,DAILY,',
       '2,CBL-002,Control Cable,2C,1.5,300,2,SENT_TO_SITE,Site Name 1,Person Name,false,MONTHLY,Test remark',
-      '3,CBL-003,Signal Cable,1C,2.5,250,1,IN_GODOWN,,,false,DAILY,',
+      '3,CBL-003,Signal Cable,1C,2.5,250,1,IN_GODOWN,,,false,EVENT,Special event cable',
     ].join('\n');
     Helpers.downloadCSVRaw(header + '\n' + sample, 'bulk_upload_template.csv');
   },
