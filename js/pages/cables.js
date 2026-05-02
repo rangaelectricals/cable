@@ -360,7 +360,7 @@ const CablesPage = {
     this._renderTable();
     this._renderCards();
     this._renderPagination();
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
   // ── Desktop table rows ────────────────────────────────────────────────────
