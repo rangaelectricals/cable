@@ -3,7 +3,8 @@
  * Manage: Cable Categories | Core Options | SQMM Options
  */
 const MastersPage = {
-  _data:      { CATEGORY: [], CORE: [], SQMM: [] },
+  _data:        { CATEGORY: [], CORE: [], SQMM: [] },
+  _searchQuery: { CATEGORY: '', CORE: '', SQMM: '' },
   _activeTab: 'CATEGORY',
   _pages:     { CATEGORY: 1, CORE: 1, SQMM: 1 },
   _pageSize:  15,
@@ -120,17 +121,23 @@ const MastersPage = {
 
     const el = document.getElementById('masters-content');
     el.innerHTML = `
-    <div class="card bg-white shadow-sm border border-slate-200">
+    <div class="card no-hover bg-white shadow-sm border border-slate-200">
       <div class="card-body p-4 sm:p-6">
 
         <!-- Header -->
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div class="flex items-center gap-2">
             <i data-lucide="${tabIcons[type]}" class="w-5 h-5 text-indigo-600"></i>
             <div>
               <h2 class="font-bold text-base">${labels[type]}</h2>
               <p class="text-xs text-slate-400">${items.length} items · used in cable form dropdowns</p>
             </div>
+          </div>
+          <div class="relative max-w-xs w-full sm:w-auto">
+            <input type="text" id="master-search-${type}" class="input input-bordered input-sm w-full pl-8"
+              placeholder="Search ${labels[type]}…" value="${Helpers.escape(this._searchQuery[type])}"
+              oninput="MastersPage.onSearch('${type}')" />
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2 pointer-events-none"></i>
           </div>
         </div>
 
@@ -178,7 +185,12 @@ const MastersPage = {
   },
 
   _renderRows(type, items) {
-    const sorted     = [...items].sort((a,b) => Number(a.sortOrder||999)-Number(b.sortOrder||999));
+    let sorted = [...items];
+    const q = (this._searchQuery[type] || '').trim().toLowerCase();
+    if (q) {
+      sorted = sorted.filter(item => String(item.value).toLowerCase().includes(q));
+    }
+    sorted.sort((a,b) => Number(a.sortOrder||999)-Number(b.sortOrder||999));
     const total      = sorted.length;
     const page       = this._pages[type] || 1;
     const pageSize   = this._pageSize;
@@ -261,6 +273,13 @@ const MastersPage = {
         onSize: `MastersPage.setPageSize.bind(MastersPage)`,
       });
     }
+  },
+
+  onSearch(type) {
+    const val = (document.getElementById(`master-search-${type}`)?.value || '').trim();
+    this._searchQuery[type] = val;
+    this._pages[type] = 1;
+    this._renderRows(type, this._data[type]);
   },
 
   goToPage(type, page)  { this._pages[type] = page; this._renderRows(type, this._data[type]); },
