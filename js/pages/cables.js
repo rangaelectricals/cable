@@ -873,21 +873,22 @@ const CablesPage = {
       applyStyles(masterSheet);
       addDataRows(masterSheet, res.data);
 
-      // 2. Create Event Type sheets (DAILY and MONTHLY)
-      const dailyItems = res.data.filter(p => (p.eventType || 'DAILY') === 'DAILY');
-      const monthlyItems = res.data.filter(p => (p.eventType || 'DAILY') === 'MONTHLY');
+      // 2. Create Event Type sheets (DAILY, EVENT, and MONTHLY)
+      const dailyItems = res.data.filter(p => (p.eventType || 'DAILY').toString().trim().toUpperCase() === 'DAILY');
+      const eventItems = res.data.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'EVENT');
+      const monthlyItems = res.data.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'MONTHLY');
       
-      if (dailyItems.length > 0) {
-        const dailySheet = workbook.addWorksheet('Daily Orders');
-        applyStyles(dailySheet);
-        addDataRows(dailySheet, dailyItems);
-      }
+      const dailySheet = workbook.addWorksheet('Daily Orders');
+      applyStyles(dailySheet);
+      if (dailyItems.length > 0) addDataRows(dailySheet, dailyItems);
       
-      if (monthlyItems.length > 0) {
-        const monthlySheet = workbook.addWorksheet('Monthly Orders');
-        applyStyles(monthlySheet);
-        addDataRows(monthlySheet, monthlyItems);
-      }
+      const eventSheet = workbook.addWorksheet('Event Orders');
+      applyStyles(eventSheet);
+      if (eventItems.length > 0) addDataRows(eventSheet, eventItems);
+      
+      const monthlySheet = workbook.addWorksheet('Monthly Orders');
+      applyStyles(monthlySheet);
+      if (monthlyItems.length > 0) addDataRows(monthlySheet, monthlyItems);
 
       // 3. Group by Category + Core/SQMM for separate sheets
       const groups = {};
