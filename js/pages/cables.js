@@ -649,7 +649,8 @@ const CablesPage = {
   async goToPage(page) {
     this._page = page;
     Loading.show();
-    await this._fetchPage(null, false);
+    const container = document.getElementById('main-content');
+    await this._fetchPage(container, false);
     Loading.hide();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
@@ -657,7 +658,8 @@ const CablesPage = {
   async setPageSize(size) {
     this._pageSize = size; this._page = 1;
     Loading.show();
-    await this._fetchPage(null, false);
+    const container = document.getElementById('main-content');
+    await this._fetchPage(container, false);
     Loading.hide();
   },
 
