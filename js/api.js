@@ -112,6 +112,7 @@ const API = (() => {
     if (filters.category) rows = rows.filter(r => String(r.category || '') === String(filters.category || '').trim());
     if (filters.core)     rows = rows.filter(r => String(r.core || '').trim() === String(filters.core || '').trim());
     if (filters.sqmm)     rows = rows.filter(r => String(r.sqmm || '').trim() === String(filters.sqmm || '').trim());
+    if (filters.eventType) rows = rows.filter(r => String(r.eventType || 'DAILY').trim().toUpperCase() === String(filters.eventType || '').trim().toUpperCase());
 
     // Sorting
     const sortBy  = filters.sortBy  || 'createdAt';

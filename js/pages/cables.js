@@ -9,7 +9,7 @@ const CablesPage = {
   _pageSize:   20,
   _total:      0,
   _totalPages: 1,
-  _filters:    { search:'', status:'', category:'', core:'', sqmm:'' },
+  _filters:    { search:'', status:'', category:'', core:'', sqmm:'', eventType:'' },
   _sortBy:     'createdAt',
   _sortDir:    'desc',
   _isSpecMode: false,
@@ -92,6 +92,49 @@ const CablesPage = {
           </div>`
         )}
 
+        <!-- Quick stats cards -->
+        <div id="cable-quick-stats" class="grid grid-cols-1 sm:grid-cols-4 gap-3 animate-fadeIn">
+          <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="box" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-indigo-400">Total Cables</div>
+              <div class="text-lg font-black text-indigo-700 leading-tight">${this._products.length} listed</div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-emerald-400">In Godown</div>
+              <div class="text-lg font-black text-emerald-700 leading-tight">${this._products.filter(p => p.status === 'IN_GODOWN').length} cables</div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-amber-400">Sent to Site</div>
+              <div class="text-lg font-black text-amber-700 leading-tight">${this._products.filter(p => p.status === 'SENT_TO_SITE').length} cables</div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-rose-400">Active Status</div>
+              <div class="text-lg font-black text-rose-700 leading-tight">${this._products.filter(p => String(p.activated) === 'true').length} activated</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filters -->
         <div class="rounded-2xl bg-white border border-slate-200 shadow-sm">
           <div class="py-3 px-4">
@@ -109,6 +152,14 @@ const CablesPage = {
                 <option value="">All Status</option>
                 <option value="IN_GODOWN"    ${this._filters.status==='IN_GODOWN'   ?'selected':''}>In Godown</option>
                 <option value="SENT_TO_SITE" ${this._filters.status==='SENT_TO_SITE'?'selected':''}>Sent to Site</option>
+              </select>
+
+              <select id="cable-event" class="select select-bordered select-sm min-w-36"
+                      onchange="CablesPage._onFilter()">
+                <option value="">All Order Types</option>
+                <option value="DAILY"   ${this._filters.eventType==='DAILY'?'selected':''}>Daily</option>
+                <option value="EVENT"   ${this._filters.eventType==='EVENT'?'selected':''}>Event</option>
+                <option value="MONTHLY" ${this._filters.eventType==='MONTHLY'?'selected':''}>Monthly</option>
               </select>
 
               <select id="cable-cat" class="select select-bordered select-sm min-w-36"
@@ -634,11 +685,12 @@ const CablesPage = {
     clearTimeout(this._filterTimer);
     this._filterTimer = setTimeout(async () => {
       this._filters = {
-        search:   (document.getElementById('cable-search')?.value  || '').trim(),
-        status:   (document.getElementById('cable-status')?.value  || '').trim(),
-        category: (document.getElementById('cable-cat')?.value     || '').trim(),
-        core:     (document.getElementById('cable-core')?.value    || '').trim(),
-        sqmm:     (document.getElementById('cable-sqmm')?.value    || '').trim(),
+        search:    (document.getElementById('cable-search')?.value  || '').trim(),
+        status:    (document.getElementById('cable-status')?.value  || '').trim(),
+        category:  (document.getElementById('cable-cat')?.value     || '').trim(),
+        core:      (document.getElementById('cable-core')?.value    || '').trim(),
+        sqmm:      (document.getElementById('cable-sqmm')?.value    || '').trim(),
+        eventType: (document.getElementById('cable-event')?.value   || '').trim(),
       };
       this._page = 1;
       const container = document.getElementById('main-content');
@@ -664,7 +716,7 @@ const CablesPage = {
   },
 
   async clearFilters() {
-    this._filters = { search:'', status:'', category:'', core:'', sqmm:'' };
+    this._filters = { search:'', status:'', category:'', core:'', sqmm:'', eventType:'' };
     this._sortBy = 'createdAt';
     this._sortDir = 'desc';
     this._isSpecMode = false;
