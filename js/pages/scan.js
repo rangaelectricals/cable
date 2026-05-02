@@ -7,7 +7,9 @@ const ScanPage = {
   _inputMode: 'SCAN',
   _sessionScans: [],
   _selectedCables: [], // For bulk selection
-  _allCables: [],      // Cache for multi-  async render(container) {
+  _allCables: [],      // Cache for multi-select
+
+  async render(container) {
     if (!Auth.canScan()) {
       container.innerHTML = UI.emptyState('lock', 'Access Denied', 'Admin role required to perform scanning.');
       if (window.lucide && container) lucide.createIcons({ nodes: [container] });
