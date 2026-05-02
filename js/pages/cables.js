@@ -481,7 +481,7 @@ const CablesPage = {
         <div class="text-slate-400 text-[10px] font-black w-6 h-6 rounded-lg bg-slate-100/50 flex items-center justify-center">${rowStart+i+1}</div>
       </td>
       <td class="text-center border-r border-slate-200">
-        <input type="checkbox" data-cable-id="${p.id}" class="checkbox checkbox-xs cable-row-select" ${this._selectedCables.has(p.id)?'checked':''} onchange="CablesPage.toggleSelectRow(this)" />
+        <input type="checkbox" data-cable-id="${p.id}" class="checkbox checkbox-xs cable-row-select" ${this._selectedCables.has(String(p.id))?'checked':''} onchange="CablesPage.toggleSelectRow(this)" />
       </td>
 
       <td>
@@ -574,7 +574,7 @@ const CablesPage = {
     // Sync Select All checkbox
     const allCb = document.getElementById('cable-select-all');
     if (allCb) {
-      const allCheckedOnPage = this._products.every(p => this._selectedCables.has(p.id));
+      const allCheckedOnPage = this._products.every(p => this._selectedCables.has(String(p.id)));
       allCb.checked = this._products.length > 0 && allCheckedOnPage;
     }
   },
@@ -1196,7 +1196,7 @@ const CablesPage = {
   async printSelectedQRs() {
     let list = [];
     if (this._selectedCables.size > 0) {
-      list = this._allProducts.filter(p => this._selectedCables.has(p.id));
+      list = this._allProducts.filter(p => this._selectedCables.has(String(p.id)));
     } else {
       const confirmAll = confirm('No cables selected. Generate QR labels for all cables on the current page?');
       if (!confirmAll) return;
@@ -1538,3 +1538,5 @@ const CablesPage = {
     }
   },
 };
+
+window.CablesPage = CablesPage;
