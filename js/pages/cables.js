@@ -833,7 +833,7 @@ const CablesPage = {
         const headerRow = ws.getRow(1);
         headerRow.height = 30;
         headerRow.eachCell(cell => {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4F46E5' } };
           cell.font = { name: 'Arial', bold: true, color: { argb: 'FFFFFF' }, size: 10 };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
         });
@@ -868,15 +868,20 @@ const CablesPage = {
                left: { style: 'thin', color: { argb: 'E2E8F0' } },
                right: { style: 'thin', color: { argb: 'E2E8F0' } }
             };
+            if (i % 2 === 0) {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F8FAFC' } };
+            }
           });
           ['index', 'no', 'core', 'sqmm', 'meter', 'quantity'].forEach(key => {
             row.getCell(key).alignment = { horizontal: 'center', vertical: 'middle' };
           });
           const statusCell = row.getCell('status');
           if (statusCell.value === 'SENT TO SITE') {
-            statusCell.font = { bold: true, color: { argb: 'B45309' } };
-          } else {
-            statusCell.font = { bold: true, color: { argb: '059669' } };
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF3C7' } };
+            statusCell.font = { name: 'Arial', bold: true, color: { argb: '92400E' }, size: 9 };
+          } else if (statusCell.value === 'IN GODOWN') {
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'D1FAE5' } };
+            statusCell.font = { name: 'Arial', bold: true, color: { argb: '065F46' }, size: 9 };
           }
         });
       };
@@ -884,7 +889,25 @@ const CablesPage = {
       applyStyles(masterSheet);
       addDataRows(masterSheet, res.data);
 
-      // 2. Group by Category + Core/SQMM for separate sheets
+      // 2. Create Event Type sheets (DAILY, EVENT, and MONTHLY)
+      const deployedItems = res.data.filter(p => p.status === 'SENT_TO_SITE');
+      const dailyItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'DAILY');
+      const eventItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'EVENT');
+      const monthlyItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'MONTHLY');
+      
+      const dailySheet = workbook.addWorksheet('Daily Orders');
+      applyStyles(dailySheet);
+      if (dailyItems.length > 0) addDataRows(dailySheet, dailyItems);
+      
+      const eventSheet = workbook.addWorksheet('Event Orders');
+      applyStyles(eventSheet);
+      if (eventItems.length > 0) addDataRows(eventSheet, eventItems);
+      
+      const monthlySheet = workbook.addWorksheet('Monthly Orders');
+      applyStyles(monthlySheet);
+      if (monthlyItems.length > 0) addDataRows(monthlySheet, monthlyItems);
+
+      // 3. Group by Category + Core/SQMM for separate sheets
       const groups = {};
       res.data.forEach(p => {
         const key = `${p.category}_${p.core}_${p.sqmm}`.substring(0, 31); // Excel limit
