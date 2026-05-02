@@ -1001,6 +1001,18 @@ const CablesPage = {
         Loading.show('Preparing QR Codes...');
       }
 
+      if (typeof QRious === 'undefined') {
+        Loading.show('Loading QR generator...');
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+        Loading.show('Preparing QR Codes...');
+      }
+
       const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
       const res = await API.getProducts(params);

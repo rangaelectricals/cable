@@ -200,7 +200,7 @@ const Barcode = (() => {
   }
 
   async function generatePNGDataURL(product) {
-    const size = 1024;
+    const size = 400;
     try {
       const img = new Image();
       img.crossOrigin = "anonymous";
@@ -223,7 +223,7 @@ const Barcode = (() => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = size;
-      canvas.height = size + 320;
+      canvas.height = size + 130;
 
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -233,17 +233,17 @@ const Barcode = (() => {
       ctx.fillStyle = "#0f172a";
       ctx.textAlign = "center";
 
-      ctx.font = "bold 44px Inter, Arial, sans-serif";
-      ctx.fillText(`${product.cableNo || 'CABLE'} — ${product.category || 'INVENTORY'}`, size / 2, size + 70);
+      ctx.font = "bold 13px Inter, Arial, sans-serif";
+      ctx.fillText(`${product.cableNo || 'CABLE'} — ${product.category || 'INVENTORY'}`, size / 2, size + 30);
 
-      ctx.font = "bold 56px Inter, Arial, sans-serif";
+      ctx.font = "bold 15px Inter, Arial, sans-serif";
       ctx.fillStyle = "#1d4ed8";
       const noPart = product.no ? `#${product.no} • ` : '';
-      ctx.fillText(`${noPart}${product.core} / ${product.sqmm}mm² • ${product.meter}M`, size / 2, size + 170);
+      ctx.fillText(`${noPart}${product.core} / ${product.sqmm}mm² • ${product.meter}M`, size / 2, size + 65);
 
-      ctx.font = "32px monospace";
+      ctx.font = "11px monospace";
       ctx.fillStyle = "#64748b";
-      ctx.fillText(product.barcode, size / 2, size + 260);
+      ctx.fillText(product.barcode, size / 2, size + 100);
 
       return canvas.toDataURL("image/png");
     } catch (e) {
