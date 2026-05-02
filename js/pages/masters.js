@@ -43,13 +43,7 @@ const MastersPage = {
 
       <!-- Tab content -->
       <div id="masters-content">
-        <div class="space-y-4 animate-pulse p-4">
-          <div class="h-10 bg-slate-200/80 rounded-xl w-3/4"></div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="h-24 bg-slate-200/80 rounded-xl"></div>
-            <div class="h-24 bg-slate-200/80 rounded-xl"></div>
-          </div>
-        </div>
+        ${UI.skeletonLoader()}
       </div>
     </div>
 

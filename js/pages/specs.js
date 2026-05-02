@@ -3,16 +3,7 @@ const SpecsPage = {
   _filters: { search: '' },
 
   async render(container) {
-    container.innerHTML = `
-    <div class="space-y-6 animate-pulse p-4">
-      <div class="h-10 bg-slate-200/80 rounded-xl w-3/4"></div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
-        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
-        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
-      </div>
-      <div class="h-96 bg-slate-200/80 rounded-2xl"></div>
-    </div>`;
+    container.innerHTML = UI.skeletonLoader();
 
     try {
       const res = await API.getProducts({ pageSize: 10000 });

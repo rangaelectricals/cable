@@ -69,6 +69,20 @@ const UI = {
     return `<div class="card bg-white shadow-sm border border-slate-200 ${extraClass}">${content}</div>`;
   },
 
+  /** Standard reusable Skeleton Loader */
+  skeletonLoader() {
+    return `
+    <div class="space-y-6 animate-pulse p-4">
+      <div class="h-10 bg-slate-200/80 rounded-xl w-3/4"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+        <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+      </div>
+      <div class="h-96 bg-slate-200/80 rounded-2xl"></div>
+    </div>`;
+  },
+
   /** Table loading skeleton */
   tableSkeleton(rows = 5, cols = 6) {
     const headerCells = Array(cols).fill('<th><div class="skeleton h-4 w-20"></div></th>').join('');
