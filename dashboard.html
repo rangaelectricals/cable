@@ -174,10 +174,31 @@
         <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all relative group" onclick="this.querySelector('.notification-badge')?.remove()">
           <i data-lucide="bell" class="w-4.5 h-4.5"></i>
           <span class="notification-badge absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0f172a] animate-bounce"></span>
-          <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl p-4 hidden group-hover:block animate-slideDown">
+          <div class="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl p-4 hidden group-hover:block animate-slideDown z-50">
             <p class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-2 border-b pb-2">Recent Alerts</p>
-            <p class="text-[10px] text-emerald-600 font-semibold mb-1">✓ Connection active</p>
-            <p class="text-[10px] text-slate-400 italic">No critical exceptions...</p>
+            <div class="space-y-2.5 text-left">
+              <div class="flex items-start gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 mt-1 shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-slate-800 leading-tight">Cables ready</p>
+                  <p class="text-[10px] text-slate-400">All cables are correctly synchronized with Google Sheets.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2 border-t pt-2 border-slate-50">
+                <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1 shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-slate-800 leading-tight">New scans processed</p>
+                  <p class="text-[10px] text-slate-400">Scan actions logged to the Activity Logs.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2 border-t pt-2 border-slate-50">
+                <div class="w-2 h-2 rounded-full bg-amber-500 mt-1 shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-slate-800 leading-tight">Secure Connection</p>
+                  <p class="text-[10px] text-slate-400">Link Security configured with AES-256 encryption.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </button>
         <button onclick="App.openHelp()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all">
