@@ -139,6 +139,9 @@
   <header class="fixed top-0 left-0 right-0 h-[64px] header-dark z-30 px-6 flex items-center justify-between shadow-sm" style="font-family: 'Inter', sans-serif;">
     <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full flex-1">
       <div class="flex items-center gap-3">
+        <button id="sidebar-mobile-toggle" onclick="App.toggleSidebar()" class="w-9 h-9 rounded-xl bg-white/10 backdrop-blur-md flex md:hidden items-center justify-center text-white hover:bg-white/20 transition-all">
+             <i data-lucide="menu" class="w-5 h-5 text-white"></i>
+        </button>
         <div class="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md p-1.5 flex md:hidden items-center justify-center">
              <i data-lucide="zap" class="w-5 h-5 text-white"></i>
         </div>
@@ -149,7 +152,8 @@
       <div class="hidden lg:flex items-center ml-8 flex-1 max-w-md">
         <div class="relative w-full group">
           <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-white transition-colors"></i>
-          <input type="text" placeholder="Global Command Search (Ctrl+/)" 
+          <input type="text" id="global-command-search" placeholder="Global Command Search (Ctrl+/)"
+            oninput="App.globalSearch(event)"
             class="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-2 text-xs font-bold text-white placeholder:text-slate-500 outline-none focus:bg-white/10 focus:border-indigo-500/50 transition-all" />
         </div>
       </div>
@@ -167,21 +171,22 @@
 
       <!-- Action Node Group -->
       <div class="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4 border-r border-white/10 pr-2 sm:pr-4">
-        <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all relative group">
+        <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all relative group" onclick="this.querySelector('.notification-badge')?.remove()">
           <i data-lucide="bell" class="w-4.5 h-4.5"></i>
-          <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0f172a] animate-bounce"></span>
+          <span class="notification-badge absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0f172a] animate-bounce"></span>
           <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl p-4 hidden group-hover:block animate-slideDown">
             <p class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-2 border-b pb-2">Recent Alerts</p>
+            <p class="text-[10px] text-emerald-600 font-semibold mb-1">✓ Connection active</p>
             <p class="text-[10px] text-slate-400 italic">No critical exceptions...</p>
           </div>
         </button>
-        <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+        <button onclick="App.openHelp()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all">
           <i data-lucide="help-circle" class="w-4.5 h-4.5"></i>
         </button>
       </div>
 
       <div class="flex items-center gap-2">
-        <div id="header-avatar" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-sm ring-2 ring-white/10">A</div>
+        <div id="header-avatar" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-sm ring-2 ring-white/10 cursor-pointer" onclick="Auth.logout()">A</div>
         <div class="hidden sm:flex flex-col items-start justify-center ml-1">
           <div class="flex items-center gap-1.5">
             <span id="header-user-name" class="text-sm font-semibold text-white leading-none">Admin</span>
@@ -298,5 +303,44 @@
     if (window.lucide) lucide.createIcons();
   });
   </script>
+
+  <!-- Help & Documentation Modal -->
+  <dialog id="modal-help" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box w-full max-w-md">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </form>
+      <h3 class="font-bold text-lg mb-3">Help & Documentation</h3>
+      <p class="text-xs text-slate-500 mb-4">Learn how to use CableTrack Inventory Management System</p>
+      <div class="space-y-3 text-sm">
+        <div class="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl flex items-start gap-2.5">
+          <i data-lucide="info" class="w-5 h-5 text-indigo-600 mt-0.5 shrink-0"></i>
+          <div>
+            <p class="font-bold text-slate-800">Add Cables</p>
+            <p class="text-xs text-slate-500">Go to Cable Inventory and click "+ Add" to register a new cable into the Godown.</p>
+          </div>
+        </div>
+        <div class="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-start gap-2.5">
+          <i data-lucide="scan" class="w-5 h-5 text-emerald-600 mt-0.5 shrink-0"></i>
+          <div>
+            <p class="font-bold text-slate-800">Scan & Move</p>
+            <p class="text-xs text-slate-500">Use Scan Operations to update statuses and location of cables instantly via QR/Barcode scanner.</p>
+          </div>
+        </div>
+        <div class="p-3 bg-amber-50/50 border border-amber-100 rounded-xl flex items-start gap-2.5">
+          <i data-lucide="check-circle" class="w-5 h-5 text-amber-600 mt-0.5 shrink-0"></i>
+          <div>
+            <p class="font-bold text-slate-800">Cable Activation</p>
+            <p class="text-xs text-slate-500">Toggle cable activation during transit or usage to confirm physical readiness.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost w-full" onclick="Modal.close('modal-help')">Close</button>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>

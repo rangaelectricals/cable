@@ -69,6 +69,33 @@ const App = {
     // Scroll to top on navigation
     window.scrollTo({ top: 0, behavior: 'instant' });
   },
+
+  globalSearch(e) {
+    const q = (e.target.value || '').trim().toLowerCase();
+    if (this._currentSection === 'cables') {
+      const inp = document.getElementById('cable-search');
+      if (inp) {
+        inp.value = q;
+        CablesPage._filters.search = q;
+        CablesPage._renderFiltered();
+      }
+    } else {
+      localStorage.setItem('global_search_term', q);
+      this.navigateTo('cables');
+    }
+  },
+
+  toggleSidebar() {
+    const s = document.getElementById('sidebar');
+    if (!s) return;
+    s.classList.toggle('hidden');
+    s.classList.toggle('flex');
+    s.classList.toggle('z-50');
+  },
+
+  openHelp() {
+    Modal.open('modal-help');
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());

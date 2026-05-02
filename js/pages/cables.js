@@ -16,6 +16,13 @@ const CablesPage = {
   _isSpecMode: false,
 
   async render(container) {
+    const q = localStorage.getItem('global_search_term');
+    if (q) {
+      this._filters.search = q;
+      localStorage.removeItem('global_search_term');
+      const gInput = document.getElementById('global-command-search');
+      if (gInput) gInput.value = q;
+    }
     container.innerHTML = UI.skeletonLoader();
     await MastersCache.load();
     await this._fetchPage(container, true);
