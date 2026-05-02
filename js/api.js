@@ -348,7 +348,8 @@ const API = (() => {
     const page = params.page || 1;
     const pageSize = params.pageSize || 25;
     const start = (page - 1) * pageSize;
-    return { success: true, data: rows.slice(start, start + pageSize), total, page, pageSize };
+    const totalPages = Math.ceil(total / pageSize) || 1;
+    return { success: true, data: rows.slice(start, start + pageSize), total, page, pageSize, totalPages };
   }
 
   // ── USERS ─────────────────────────────────────────────────────────────────

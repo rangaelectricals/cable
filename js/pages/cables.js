@@ -30,7 +30,7 @@ const CablesPage = {
       const res = await API.getProducts(params);
       this._products   = res.data       || [];
       this._total      = res.total      || 0;
-      this._totalPages = res.totalPages || 1;
+      this._totalPages = res.totalPages || Math.ceil(this._total / this._pageSize) || 1;
       this._page       = res.page       || 1;
       this._pageSize   = res.pageSize   || this._pageSize;
     } catch(err) {
