@@ -44,6 +44,14 @@ const DashboardPage = {
     const copperCables   = products.filter(p => (p.category || '').toUpperCase().includes('COPPER')).length;
     const aluminumCables = products.filter(p => (p.category || '').toUpperCase().includes('ALUMINUM') || (p.category || '').toUpperCase().includes('ALUM')).length;
 
+    const outAging = products.filter(p => {
+      if (p.status === 'IN_GODOWN' || !p.dateOut) return false;
+      const days = Math.floor((Date.now() - new Date(p.dateOut).getTime()) / (1000 * 3600 * 24));
+      return days > 0;
+    }).length;
+
+    const totalMeters = products.reduce((acc, p) => acc + (Number(p.meter) || 0) * (Number(p.quantity) || 1), 0);
+
     container.innerHTML = `
     <div class="space-y-5 page-enter">
       ${UI.pageHeader('Dashboard', 'Real-time cable inventory overview',
@@ -53,9 +61,9 @@ const DashboardPage = {
         </button>`
       )}
 
-      <!-- Stats grid — 2 col on mobile, 5 col on xl -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-        <div class="col-span-2 sm:col-span-1">
+      <!-- Stats grid — 2 col on mobile, 6 col on xl -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 animate-fadeIn">
+        <div>
           ${UI.statCard({ icon:'package',    label:'Total Cables',  value: total,        color:'neutral', onclick:"App.navigateTo('cables')" })}
         </div>
         <div>
@@ -68,7 +76,10 @@ const DashboardPage = {
           ${UI.statCard({ icon:'check-circle',label:'Activated',    value: activated,    color:'primary', onclick:"App.navigateTo('scan')"   })}
         </div>
         <div>
-          ${UI.statCard({ icon:'clock',      label:'Not Activated', value: notActivated, color:'error',   onclick:"App.navigateTo('cables')" })}
+          ${UI.statCard({ icon:'alert-triangle',label:'Aging Out',  value: outAging,     color:'error',   onclick:"App.navigateTo('cables')" })}
+        </div>
+        <div>
+          ${UI.statCard({ icon:'ruler',      label:'Total Length',  value: `${totalMeters}M`,color:'accent', onclick:"App.navigateTo('cables')" })}
         </div>
       </div>
 
@@ -90,7 +101,7 @@ const DashboardPage = {
       <!-- Advanced Order Type Breakdown & Materials -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Deployed Order Types -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-full">
+        <div class="card no-hover p-5 bg-white border border-slate-200 flex flex-col justify-between h-full">
           <div>
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
@@ -117,7 +128,7 @@ const DashboardPage = {
         </div>
 
         <!-- Material Distribution -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-full">
+        <div class="card no-hover p-5 bg-white border border-slate-200 flex flex-col justify-between h-full">
           <div>
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
@@ -138,7 +149,7 @@ const DashboardPage = {
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <!-- Status Distribution -->
         <div class="lg:col-span-2">
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 h-full">
+          <div class="card no-hover bg-white border border-slate-200 h-full">
             <div class="p-5">
               <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
@@ -160,7 +171,7 @@ const DashboardPage = {
 
         <!-- Recent Activity -->
         <div class="lg:col-span-3">
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 h-full">
+          <div class="card no-hover bg-white border border-slate-200 h-full">
             <div class="p-5">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
