@@ -823,6 +823,8 @@ const CablesPage = {
         { header: 'SITE NAME',   key: 'siteName', width: 25 },
         { header: 'PERSON',      key: 'person',   width: 20 },
         { header: 'DATE OUT',    key: 'dateOut',  width: 15 },
+        { header: 'ORDER TYPE',  key: 'eventType', width: 14 },
+        { header: 'AGING',       key: 'aging',    width: 14 },
         { header: 'REMARKS',     key: 'remarks',  width: 30 }
       ];
 
@@ -852,6 +854,8 @@ const CablesPage = {
             siteName: p.siteName || 'GODOWN',
             person:   p.personAssigned || '—',
             dateOut:  p.dateOut ? Helpers.formatDate(p.dateOut) : '—',
+            eventType: p.eventType || '—',
+            aging:    p.dateOut ? `${Math.max(0, Math.ceil(Math.abs(new Date() - new Date(p.dateOut)) / (1000 * 60 * 60 * 24)))} days` : '—',
             remarks:  p.remarks || ''
           });
           row.height = 24;
@@ -956,22 +960,28 @@ const CablesPage = {
         p.siteName || '—',
         p.personAssigned || '—',
         p.dateOut ? Helpers.formatDate(p.dateOut) : '—',
-        (String(p.activated)==='true' || p.activated===true) ? 'Active' : 'Inactive'
+        p.eventType || '—',
+        p.dateOut ? `${Math.max(0, Math.ceil(Math.abs(new Date() - new Date(p.dateOut)) / (1000 * 60 * 60 * 24)))}d aging` : '—'
       ]);
 
       doc.autoTable({
         startY: 40,
-        head: [['#', 'Cable No', 'Category/Specs', 'Meter', 'Status', 'Site Name', 'Person', 'Date Out', 'Active']],
+        head: [['#', 'Cable No', 'Category/Specs', 'Meter', 'Status', 'Site Name', 'Person', 'Date Out', 'Order Type', 'Aging']],
         body: tableData,
         theme: 'striped',
-        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-        bodyStyles: { fontSize: 8, textColor: [50, 50, 50] },
+        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 7, textColor: [50, 50, 50] },
         columnStyles: {
-          0: { cellWidth: 10 },
-          1: { fontStyle: 'bold', cellWidth: 25 },
-          2: { cellWidth: 40 },
-          3: { fontStyle: 'bold', textColor: [5, 150, 105] }, // emerald-600
-          4: { fontStyle: 'bold' }
+          0: { cellWidth: 8 },
+          1: { fontStyle: 'bold', cellWidth: 20 },
+          2: { cellWidth: 32 },
+          3: { fontStyle: 'bold', textColor: [5, 150, 105], cellWidth: 15 }, // emerald-600
+          4: { fontStyle: 'bold', cellWidth: 22 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 20 },
+          7: { cellWidth: 18 },
+          8: { cellWidth: 18 },
+          9: { fontStyle: 'bold', textColor: [217, 119, 6], cellWidth: 18 } // amber-600
         },
         alternateRowStyles: { fillColor: [248, 250, 252] }, // slate-50
         margin: { top: 40 },
