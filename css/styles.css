@@ -42,7 +42,7 @@ main, .container, .card, .glass-card, .premium-table {
 	border: 1.5px solid var(--color-border);
 	transition: box-shadow 0.2s, transform 0.2s;
 }
-.card:hover, .glass-card:hover {
+.card:not(.no-hover):hover, .glass-card:not(.no-hover):hover {
 	box-shadow: var(--shadow-card-hover);
 	transform: translateY(-2px) scale(1.02);
 }
