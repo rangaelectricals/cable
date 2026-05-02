@@ -108,6 +108,9 @@
   <!-- Desktop Sidebar -->
   <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 sidebar-pattern shadow-2xl z-40 hidden md:flex flex-col transition-transform text-white animate-fadeIn" style="font-family: 'Inter', sans-serif;">
     <div class="px-6 py-8 border-b border-white/5 relative z-10 flex flex-col items-center">
+      <button onclick="App.toggleSidebar()" class="absolute right-4 top-4 w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex md:hidden items-center justify-center text-white transition-all">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
       <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center shadow-xl mb-4 group transition-all hover:scale-105">
         <i data-lucide="zap" class="w-8 h-8 text-white filter drop-shadow-md"></i>
       </div>

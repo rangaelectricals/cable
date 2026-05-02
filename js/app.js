@@ -32,6 +32,13 @@ const App = {
       window.location.hash = section;
     }
 
+    // Close sidebar on mobile if it's visible
+    const s = document.getElementById('sidebar');
+    if (s && !s.classList.contains('hidden') && window.innerWidth < 768) {
+      s.classList.add('hidden');
+      s.classList.remove('flex', 'z-50', 'fixed', 'inset-y-0', 'left-0');
+    }
+
     // Update nav active state
     Nav.setActive(section);
 
@@ -88,9 +95,13 @@ const App = {
   toggleSidebar() {
     const s = document.getElementById('sidebar');
     if (!s) return;
-    s.classList.toggle('hidden');
-    s.classList.toggle('flex');
-    s.classList.toggle('z-50');
+    if (s.classList.contains('hidden')) {
+      s.classList.remove('hidden');
+      s.classList.add('flex', 'z-50', 'fixed', 'inset-y-0', 'left-0');
+    } else {
+      s.classList.add('hidden');
+      s.classList.remove('flex', 'z-50', 'fixed', 'inset-y-0', 'left-0');
+    }
   },
 
   openHelp() {
