@@ -207,11 +207,12 @@ const Barcode = (() => {
 
       const qrlib = window.QRious;
       let dataUrl = '';
+      const barcodeValue = product.barcode || product.cableNo || product.id || '';
       if (qrlib) {
-        const qr = new qrlib({ value: product.barcode, size: size, level: 'H' });
+        const qr = new qrlib({ value: barcodeValue, size: size, level: 'H' });
         dataUrl = qr.toDataURL();
       } else {
-        dataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(product.barcode)}`;
+        dataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(barcodeValue)}`;
       }
 
       await new Promise((resolve, reject) => {
@@ -239,11 +240,11 @@ const Barcode = (() => {
       ctx.font = "bold 15px Inter, Arial, sans-serif";
       ctx.fillStyle = "#1d4ed8";
       const noPart = product.no ? `#${product.no} • ` : '';
-      ctx.fillText(`${noPart}${product.core} / ${product.sqmm}mm² • ${product.meter}M`, size / 2, size + 65);
+      ctx.fillText(`${noPart}${product.core || ''} / ${product.sqmm || ''}mm² • ${product.meter || 0}M`, size / 2, size + 65);
 
       ctx.font = "11px monospace";
       ctx.fillStyle = "#64748b";
-      ctx.fillText(product.barcode, size / 2, size + 100);
+      ctx.fillText(barcodeValue, size / 2, size + 100);
 
       return canvas.toDataURL("image/png");
     } catch (e) {

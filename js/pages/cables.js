@@ -570,6 +570,13 @@ const CablesPage = {
     </tr>`;
     }).join('');
     if (window.lucide) lucide.createIcons({ nodes: [body] });
+
+    // Sync Select All checkbox
+    const allCb = document.getElementById('cable-select-all');
+    if (allCb) {
+      const allCheckedOnPage = this._products.every(p => this._selectedCables.has(p.id));
+      allCb.checked = this._products.length > 0 && allCheckedOnPage;
+    }
   },
 
   // ── Mobile card view (full-width, premium) ───────────────────────────────
@@ -1164,12 +1171,14 @@ const CablesPage = {
 
   toggleSelectAll(el) {
     const checked = el.checked;
-    this._selectedCables.clear();
     const cbs = document.querySelectorAll('.cable-row-select');
     cbs.forEach(cb => {
       cb.checked = checked;
       const id = cb.getAttribute('data-cable-id');
-      if (checked && id) this._selectedCables.add(id);
+      if (id) {
+        if (checked) this._selectedCables.add(id);
+        else this._selectedCables.delete(id);
+      }
     });
   },
 
