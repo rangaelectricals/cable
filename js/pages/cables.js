@@ -5,6 +5,7 @@
  */
 const CablesPage = {
   _products:   [],
+  _allProducts: [],
   _page:       1,
   _pageSize:   20,
   _total:      0,
@@ -26,13 +27,29 @@ const CablesPage = {
         page: this._page, pageSize: this._pageSize,
         sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)),
-      };
-      const res = await API.getProducts(params);
-      this._products   = res.data       || [];
-      this._total      = res.total      || 0;
-      this._totalPages = res.totalPages || Math.ceil(this._total / this._pageSize) || 1;
-      this._page       = res.page       || 1;
-      this._pageSize   = res.pageSize   || this._pageSize;
+       };
+      const [res, allRes] = await Promise.all([
+        API.getProducts(params),
+        API.getProducts({ pageSize: 9999, page: 1 }),
+      ]);
+      this._products    = res.data       || [];
+      this._allProducts = allRes.data    || [];
+      this._total       = res.total      || 0;
+      this._totalPages  = res.totalPages || Math.ceil(this._total / this._pageSize) || 1;
+      this._page        = res.page       || 1;
+      this._pageSize    = res.pageSize   || this._pageSize;
+
+      // Dynamically update DOM stats cards if buildShell is false
+      if (!buildShell) {
+        const elTotal = document.getElementById('cable-overall-total');
+        const elGodown = document.getElementById('cable-overall-godown');
+        const elSite = document.getElementById('cable-overall-site');
+        const elActive = document.getElementById('cable-overall-active');
+        if (elTotal) elTotal.textContent = `${this._allProducts.length} listed`;
+        if (elGodown) elGodown.textContent = `${this._allProducts.filter(p => p.status === 'IN_GODOWN').length} cables`;
+        if (elSite) elSite.textContent = `${this._allProducts.filter(p => p.status === 'SENT_TO_SITE').length} cables`;
+        if (elActive) elActive.textContent = `${this._allProducts.filter(p => String(p.activated) === 'true').length} activated`;
+      }
     } catch(err) {
       if (buildShell) container.innerHTML =
         `<div class="alert alert-error"><i data-lucide="wifi-off" class="w-5 h-5"></i><span>${Helpers.escape(err.message)}</span></div>`;
@@ -100,7 +117,7 @@ const CablesPage = {
             </div>
             <div>
               <div class="text-[10px] font-black uppercase text-indigo-400">Total Cables</div>
-              <div class="text-lg font-black text-indigo-700 leading-tight">${this._products.length} listed</div>
+              <div id="cable-overall-total" class="text-lg font-black text-indigo-700 leading-tight">${this._allProducts.length} listed</div>
             </div>
           </div>
 
@@ -110,7 +127,7 @@ const CablesPage = {
             </div>
             <div>
               <div class="text-[10px] font-black uppercase text-emerald-400">In Godown</div>
-              <div class="text-lg font-black text-emerald-700 leading-tight">${this._products.filter(p => p.status === 'IN_GODOWN').length} cables</div>
+              <div id="cable-overall-godown" class="text-lg font-black text-emerald-700 leading-tight">${this._allProducts.filter(p => p.status === 'IN_GODOWN').length} cables</div>
             </div>
           </div>
 
@@ -120,7 +137,7 @@ const CablesPage = {
             </div>
             <div>
               <div class="text-[10px] font-black uppercase text-amber-400">Sent to Site</div>
-              <div class="text-lg font-black text-amber-700 leading-tight">${this._products.filter(p => p.status === 'SENT_TO_SITE').length} cables</div>
+              <div id="cable-overall-site" class="text-lg font-black text-amber-700 leading-tight">${this._allProducts.filter(p => p.status === 'SENT_TO_SITE').length} cables</div>
             </div>
           </div>
 
@@ -130,7 +147,7 @@ const CablesPage = {
             </div>
             <div>
               <div class="text-[10px] font-black uppercase text-rose-400">Active Status</div>
-              <div class="text-lg font-black text-rose-700 leading-tight">${this._products.filter(p => String(p.activated) === 'true').length} activated</div>
+              <div id="cable-overall-active" class="text-lg font-black text-rose-700 leading-tight">${this._allProducts.filter(p => String(p.activated) === 'true').length} activated</div>
             </div>
           </div>
         </div>
