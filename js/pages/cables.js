@@ -854,7 +854,7 @@ const CablesPage = {
             siteName: p.siteName || 'GODOWN',
             person:   p.personAssigned || '—',
             dateOut:  p.dateOut ? Helpers.formatDate(p.dateOut) : '—',
-            eventType: p.eventType || '—',
+            eventType: p.status === 'IN_GODOWN' ? '—' : (p.eventType || '—'),
             aging:    p.dateOut ? `${Math.max(0, Math.ceil(Math.abs(new Date() - new Date(p.dateOut)) / (1000 * 60 * 60 * 24)))} days` : '—',
             remarks:  p.remarks || ''
           });
@@ -886,7 +886,7 @@ const CablesPage = {
 
       // 2. Create Event Type sheets (DAILY, EVENT, and MONTHLY)
       const deployedItems = res.data.filter(p => p.status === 'SENT_TO_SITE');
-      const dailyItems = deployedItems.filter(p => (p.eventType || 'DAILY').toString().trim().toUpperCase() === 'DAILY');
+      const dailyItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'DAILY');
       const eventItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'EVENT');
       const monthlyItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'MONTHLY');
       
