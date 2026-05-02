@@ -12,7 +12,7 @@ const ScanPage = {
   async render(container) {
     if (!Auth.canScan()) {
       container.innerHTML = UI.emptyState('lock', 'Access Denied', 'Admin role required to perform scanning.');
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
 
@@ -294,7 +294,7 @@ const ScanPage = {
 
     this.setInputMode('SCAN');
     this.setMode('ACTIVATE');
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
   async setInputMode(mode) {

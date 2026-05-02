@@ -40,7 +40,7 @@ const LogsPage = {
             <i data-lucide="wifi-off" class="w-5 h-5 shrink-0"></i>
             <span>${Helpers.escape(err.message)}</span>
           </div>`;
-        if (window.lucide) lucide.createIcons({ nodes: [container] });
+        if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       } else {
         Toast.show('error','Load Error', err.message);
       }
@@ -290,7 +290,7 @@ const UsersPage = {
   async render(container) {
     if (!Auth.canManageUsers()) {
       container.innerHTML = UI.emptyState('lock','Access Denied','Super Admin required.');
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
     container.innerHTML = `<div class="flex items-center justify-center h-40">
@@ -303,7 +303,7 @@ const UsersPage = {
       container.innerHTML = `<div class="alert alert-error gap-3">
         <i data-lucide="wifi-off" class="w-5 h-5"></i>
         <span>${Helpers.escape(err.message)}</span></div>`;
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
     this._page = 1;
@@ -389,7 +389,7 @@ const UsersPage = {
     </dialog>`;
 
     this._renderAll();
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
   _renderAll() {

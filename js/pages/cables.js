@@ -38,7 +38,7 @@ const CablesPage = {
       if (buildShell) container.innerHTML =
         `<div class="alert alert-error"><i data-lucide="wifi-off" class="w-5 h-5"></i><span>${Helpers.escape(err.message)}</span></div>`;
       else Toast.show('error','Load Error', err.message);
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
 

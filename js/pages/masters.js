@@ -11,7 +11,7 @@ const MastersPage = {
   async render(container) {
     if (!Auth.canEdit()) {
       container.innerHTML = UI.emptyState('lock', 'Access Denied', 'Admin role required.');
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
 
@@ -88,12 +88,12 @@ const MastersPage = {
       container.innerHTML = `<div class="alert alert-error gap-3">
         <i data-lucide="wifi-off" class="w-5 h-5 shrink-0"></i>
         <span>${Helpers.escape(err.message)}</span></div>`;
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
     Loading.hide();
     this.switchTab('CATEGORY');
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
   switchTab(type) {

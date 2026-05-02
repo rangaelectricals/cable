@@ -28,7 +28,7 @@ const DashboardPage = {
             <p class="text-xs mt-1 opacity-70">Check your Apps Script URL in <code>js/config.js</code></p>
           </div>
         </div>`;
-      if (window.lucide) lucide.createIcons({ nodes: [container] });
+      if (window.lucide && container) lucide.createIcons({ nodes: [container] });
       return;
     }
 
@@ -131,7 +131,7 @@ const DashboardPage = {
       </div>
     </div>`;
 
-    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
   _logRow(log) {
