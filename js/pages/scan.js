@@ -1,12 +1,13 @@
 /**
- * Scan Operations page — Unified Smart Scanning Hub
- * Mode-less scanning: Enter a barcode/serial, system detects current status & presents next logical steps.
+ * Scan Operations page — Unified Smart Scanning Hub with Bulk Capability
+ * Add multiple cables to selection, apply next logical actions to everything selected.
  */
 const ScanPage = {
   _mode: 'ACTIVATE',
   _inputMode: 'SCAN',
   _sessionScans: [],
-  _selectedCable: null,
+  _selectedCables: [], // Full cable objects in current selection
+  _allCables: [],      // Cache of all cables for the manual switcher
 
   async render(container) {
     if (!Auth.canScan()) {
@@ -26,8 +27,8 @@ const ScanPage = {
               <i data-lucide="scan-line" class="w-4.5 h-4.5 sm:w-5 sm:h-5"></i>
             </div>
             <div>
-              <h1 class="text-sm sm:text-lg font-bold text-slate-900 tracking-tight leading-none">Smart Scanning Hub</h1>
-              <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Unified Scan & Match Lifecycle Command Center</p>
+              <h1 class="text-sm sm:text-lg font-bold text-slate-900 tracking-tight leading-none">Smart Bulk Hub</h1>
+              <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Unified Multi-Item & Lifecycle Operations Hub</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -42,52 +43,91 @@ const ScanPage = {
       <main class="w-full max-w-none p-2 sm:p-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           
-          <!-- Left/Top Column (Smart Input controller) -->
+          <!-- Left/Top Column (Input controller) -->
           <div class="lg:col-span-6 xl:col-span-7 space-y-4 sm:space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-visible relative">
               
-              <!-- Smart Scan Input -->
+              <!-- Smart Scan Selector Input Header -->
               <div class="p-4 sm:p-6 border-b border-slate-100 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 class="text-sm sm:text-base font-extrabold text-slate-900 uppercase tracking-tight">Search or Scan Cable</h2>
-                    <p class="text-[10px] sm:text-xs font-medium text-slate-400 mt-0.5">Input barcode, QR, or cable number to surface valid workflows.</p>
+                    <h2 class="text-sm sm:text-base font-extrabold text-slate-900 uppercase tracking-tight">Step 1: Manifest Construction</h2>
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-400 mt-0.5">Use manual lookup or direct typing/scanning to build the bulk manifest.</p>
                   </div>
-                  <div class="flex gap-2 shrink-0">
-                    <button id="btn-camera" onclick="ScanPage.toggleCamera()" class="btn btn-ghost btn-sm btn-square border border-slate-200 hover:border-slate-400 text-slate-600 hover:text-slate-900">
-                      <i data-lucide="camera" class="w-4 h-4"></i>
+
+                  <!-- Input Switcher -->
+                  <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1 w-full sm:w-auto shrink-0">
+                    <button id="btn-mode-scan" onclick="ScanPage.setInputMode('SCAN')" class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all text-center">
+                      Scanner
+                    </button>
+                    <button id="btn-mode-select" onclick="ScanPage.setInputMode('SELECT')" class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all text-center">
+                      Manual Picker
                     </button>
                   </div>
                 </div>
 
-                <!-- Camera Viewer Module -->
-                <div id="camera-wrap" class="hidden animate-scaleIn mt-2">
-                  <div class="relative max-w-xs mx-auto mb-4">
-                    <div id="scan-viewport" class="aspect-square rounded-xl overflow-hidden bg-slate-900 border-4 border-white shadow-lg relative ring-1 ring-slate-200">
-                      <div class="absolute inset-4 border border-white/20 rounded flex items-center justify-center">
-                        <div class="w-full h-[2px] bg-indigo-500 shadow-[0_0_15px_#6366f1] animate-scan-slow opacity-80"></div>
+                <!-- Input Field: SCAN Mode -->
+                <div id="wrap-scan-input" class="space-y-4">
+                  <div class="flex items-center gap-2">
+                    <div class="relative group flex-1">
+                      <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"></i>
+                      <input type="text" id="smart-scan-input" 
+                        class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-slate-900 outline-none transition-all"
+                        placeholder="Scan Barcode or Enter No…" autocomplete="off" />
+                    </div>
+                    <button id="btn-camera" onclick="ScanPage.toggleCamera()" class="btn btn-ghost btn-sm btn-square border border-slate-200 hover:border-slate-400 text-slate-600 hover:text-slate-900 w-12 h-12">
+                      <i data-lucide="camera" class="w-4.5 h-4.5"></i>
+                    </button>
+                  </div>
+
+                  <!-- Camera Viewer Module -->
+                  <div id="camera-wrap" class="hidden animate-scaleIn">
+                    <div class="relative max-w-xs mx-auto mb-4">
+                      <div id="scan-viewport" class="aspect-square rounded-xl overflow-hidden bg-slate-900 border-4 border-white shadow-lg relative ring-1 ring-slate-200">
+                        <div class="absolute inset-4 border border-white/20 rounded flex items-center justify-center">
+                          <div class="w-full h-[2px] bg-indigo-500 shadow-[0_0_15px_#6366f1] animate-scan-slow opacity-80"></div>
+                        </div>
+                      </div>
+                      <button onclick="ScanPage.toggleCamera()" class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-2 ring-2 ring-white hover:bg-black transition-colors">
+                        <i data-lucide="power" class="w-3 h-3"></i> Stop Camera
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Quick Select:</span>
+                    <button onclick="ScanPage.setQuickValue('RC001')" class="badge badge-ghost badge-sm hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-bold tracking-wider text-[9px] cursor-pointer">RC001</button>
+                    <button onclick="ScanPage.setQuickValue('MC002')" class="badge badge-ghost badge-sm hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-bold tracking-wider text-[9px] cursor-pointer">MC002</button>
+                  </div>
+                </div>
+
+                <!-- Input Field: SELECT Mode -->
+                <div id="wrap-scan-select" class="hidden relative h-full">
+                  <button onclick="ScanPage.toggleMultiSelect()" id="btn-multi-select"
+                    class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 flex items-center justify-between group hover:bg-white hover:border-slate-900 transition-all">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <i data-lucide="package-search" class="w-4.5 h-4.5 text-slate-400 group-hover:text-slate-900 transition-colors"></i>
+                      <span id="multi-select-label" class="text-xs font-bold text-slate-400 group-hover:text-slate-900 transition-colors truncate">Select Multiple Cables…</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-4.5 h-4.5 text-slate-300 group-hover:text-slate-900"></i>
+                  </button>
+
+                  <!-- Multi-Select Search Panel -->
+                  <div id="multi-select-dropdown" class="hidden absolute inset-x-0 top-full z-[100] mt-1 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden animate-scaleIn">
+                    <div class="p-3 border-b border-slate-100">
+                      <div class="relative group">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-slate-900"></i>
+                        <input type="text" id="multi-search" oninput="ScanPage.renderMultiSelectList(this.value)"
+                          class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-900 transition-all"
+                          placeholder="Search inventory keywords…" />
                       </div>
                     </div>
-                    <button onclick="ScanPage.toggleCamera()" class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-2 ring-2 ring-white hover:bg-black transition-colors">
-                      <i data-lucide="power" class="w-3 h-3"></i> Stop Camera
-                    </button>
+                    <div id="multi-select-list" class="max-h-[300px] overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
                   </div>
-                </div>
-
-                <div class="relative group">
-                  <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"></i>
-                  <input type="text" id="smart-scan-input" 
-                    class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-slate-900 outline-none transition-all"
-                    placeholder="Enter No, Serial, or Barcode…" autocomplete="off" />
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Common examples:</span>
-                  <button onclick="ScanPage.setQuickValue('RC001')" class="badge badge-ghost badge-sm hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-bold tracking-wider text-[9px] cursor-pointer">RC001</button>
-                  <button onclick="ScanPage.setQuickValue('MC002')" class="badge badge-ghost badge-sm hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-bold tracking-wider text-[9px] cursor-pointer">MC002</button>
                 </div>
               </div>
 
-              <!-- Context-Adaptive Action Card -->
+              <!-- Context-Adaptive Bulk Action Card -->
               <div id="smart-action-card" class="hidden min-h-[140px] border-t border-slate-50"></div>
             </div>
 
@@ -103,7 +143,7 @@ const ScanPage = {
 
           <!-- Desktop Operation Log -->
           <aside class="hidden lg:block lg:col-span-6 xl:col-span-5 space-y-4 h-fit">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[560px]">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[600px]">
               <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow">
@@ -145,57 +185,168 @@ const ScanPage = {
       }
     </style>`;
 
+    // Add search input enter key trigger
     document.getElementById('smart-scan-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') ScanPage.identifyCable();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        ScanPage.addInputToSelection();
+      }
     });
 
-    document.getElementById('smart-scan-input').addEventListener('input', e => {
-      ScanPage.debounceIdentify();
-    });
-
+    // Populate all cables cache for multi lookup
+    this.setInputMode('SCAN');
+    this.clearSelection();
     this._renderSessionList();
     if (window.lucide && container) lucide.createIcons({ nodes: [container] });
   },
 
-  // Stubs for backwards compatibility (e.g. called from quick actions)
-  setMode(mode) {
-    this._mode = mode;
-    setTimeout(() => {
-      const inp = document.getElementById('smart-scan-input');
-      if (inp) inp.focus();
-    }, 120);
-  },
-  setInputMode(mode) {
+  async setInputMode(mode) {
     this._inputMode = mode;
+    const btnScan = document.getElementById('btn-mode-scan');
+    const btnSelect = document.getElementById('btn-mode-select');
+    const wrapScan = document.getElementById('wrap-scan-input');
+    const wrapSelect = document.getElementById('wrap-scan-select');
+
+    if (!btnScan || !btnSelect) return;
+
+    const activeCls = ['bg-slate-900', 'text-white', 'shadow-sm'];
+    const inactiveCls = ['bg-transparent', 'text-slate-500', 'hover:bg-slate-200/40'];
+
+    if (mode === 'SCAN') {
+      btnScan.classList.add(...activeCls);
+      btnScan.classList.remove(...inactiveCls);
+      btnSelect.classList.remove(...activeCls);
+      btnSelect.classList.add(...inactiveCls);
+
+      wrapScan?.classList.remove('hidden');
+      wrapSelect?.classList.add('hidden');
+      setTimeout(() => document.getElementById('smart-scan-input')?.focus(), 100);
+    } else {
+      btnSelect.classList.add(...activeCls);
+      btnSelect.classList.remove(...inactiveCls);
+      btnScan.classList.remove(...activeCls);
+      btnScan.classList.add(...inactiveCls);
+
+      wrapScan?.classList.add('hidden');
+      wrapSelect?.classList.remove('hidden');
+      this.loadAllCablesCache();
+    }
   },
 
   setQuickValue(val) {
     const inp = document.getElementById('smart-scan-input');
     if (inp) {
       inp.value = val;
-      this.identifyCable();
+      this.addInputToSelection();
     }
   },
 
-  _debounceTimer: null,
-  debounceIdentify() {
-    clearTimeout(this._debounceTimer);
-    this._debounceTimer = setTimeout(() => this.identifyCable(), 400);
+  async loadAllCablesCache() {
+    try {
+      const pRes = await API.getProducts({ page: 1, pageSize: 9999 });
+      this._allCables = pRes.data || [];
+      this.updateMultiSelectLabel();
+      this.renderMultiSelectList();
+    } catch (e) {
+      Toast.show('error', 'Inventory Error', 'Unable to retrieve master cables list.');
+    }
   },
 
-  async identifyCable() {
-    const code = (document.getElementById('smart-scan-input')?.value || '').trim();
-    if (!code) {
-      this._selectedCable = null;
-      const card = document.getElementById('smart-action-card');
-      if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
+  toggleMultiSelect() {
+    const dd = document.getElementById('multi-select-dropdown');
+    if (dd) {
+      dd.classList.toggle('hidden');
+      if (!dd.classList.contains('hidden')) {
+        document.getElementById('multi-search')?.focus();
+      }
+    }
+  },
+
+  renderMultiSelectList(query = '') {
+    const listEl = document.getElementById('multi-select-list');
+    if (!listEl) return;
+
+    const q = query.toLowerCase().trim();
+    const filtered = this._allCables.filter(c =>
+      (c.cableNo || '').toLowerCase().includes(q) ||
+      (c.no && String(c.no).toLowerCase().includes(q)) ||
+      (c.core && String(c.core).toLowerCase().includes(q)) ||
+      (c.sqmm && String(c.sqmm).toLowerCase().includes(q))
+    );
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="p-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">No matching inventory</div>`;
       return;
     }
 
-    // Direct match by in-memory cables list
+    listEl.innerHTML = filtered.map(c => {
+      const isSelected = this._selectedCables.some(sc => sc.barcode === c.barcode);
+      return `
+      <div onclick="ScanPage.toggleCableInSelection('${c.barcode}')" 
+        class="flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer group ${isSelected ? 'bg-indigo-50 border border-indigo-100/60' : 'hover:bg-slate-50 border border-transparent'}">
+        <div class="w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0 ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'}">
+          <i data-lucide="check" class="w-2.5 h-2.5 text-white ${isSelected ? '' : 'hidden'}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-slate-900 uppercase truncate">${Helpers.escape(c.cableNo)}</span>
+            ${c.no ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-slate-800 font-bold text-[9px] border border-slate-200 bg-white flex-shrink-0">${Helpers.escape(c.no)}</span>` : ''}
+            <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded border border-indigo-100/30 flex-shrink-0">
+              ${Helpers.escape(c.core)}/${Helpers.escape(c.sqmm)}mm² • ${c.meter || 0}m
+            </span>
+            ${Helpers.statusBadge(c.status)}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    if (window.lucide) lucide.createIcons({ nodes: [listEl] });
+  },
+
+  updateMultiSelectLabel() {
+    const label = document.getElementById('multi-select-label');
+    if (!label) return;
+    if (this._selectedCables.length === 0) {
+      label.textContent = 'Select Multiple Cables…';
+      label.classList.remove('text-indigo-600');
+    } else {
+      label.textContent = `${this._selectedCables.length} Items Selected`;
+      label.classList.add('text-indigo-600');
+    }
+  },
+
+  toggleCableInSelection(barcode) {
+    const idx = this._selectedCables.findIndex(c => c.barcode === barcode);
+    if (idx > -1) {
+      this._selectedCables.splice(idx, 1);
+    } else {
+      const match = this._allCables.find(c => c.barcode === barcode);
+      if (match) this._selectedCables.push(match);
+    }
+    this.updateMultiSelectLabel();
+    this.renderMultiSelectList(document.getElementById('multi-search')?.value || '');
+    this.renderActions();
+  },
+
+  removeCableFromSelection(barcode) {
+    this._selectedCables = this._selectedCables.filter(c => c.barcode !== barcode);
+    this.updateMultiSelectLabel();
+    this.renderMultiSelectList(document.getElementById('multi-search')?.value || '');
+    this.renderActions();
+  },
+
+  clearSelection() {
+    this._selectedCables = [];
+    this.updateMultiSelectLabel();
+    this.renderMultiSelectList();
+    this.renderActions();
+  },
+
+  async addInputToSelection() {
+    const code = (document.getElementById('smart-scan-input')?.value || '').trim();
+    if (!code) return;
+
     const pRes = await API.getProducts({ page: 1, pageSize: 9999 });
     const all = pRes.data || [];
-    
     const matched = all.find(c => 
       String(c.barcode).toUpperCase() === code.toUpperCase() || 
       String(c.cableNo).toUpperCase() === code.toUpperCase() ||
@@ -203,145 +354,144 @@ const ScanPage = {
     );
 
     if (!matched) {
-      // Avoid overly aggressive toasts if debounce is active
+      Toast.show('error', 'Not Found', `Cable "${code}" could not be located in inventory.`);
       return;
     }
 
-    this._selectedCable = matched;
-    this.renderActions(matched);
+    if (this._selectedCables.some(sc => sc.barcode === matched.barcode)) {
+      Toast.show('warning', 'Already Selected', `Cable "${matched.cableNo}" is already in your manifest.`);
+    } else {
+      this._selectedCables.push(matched);
+      this.updateMultiSelectLabel();
+      this.renderActions();
+      Toast.show('success', 'Manifest Updated', `Added "${matched.cableNo}" successfully.`);
+    }
+
+    // Reset input
+    const inp = document.getElementById('smart-scan-input');
+    if (inp) { inp.value = ''; inp.focus(); }
   },
 
-  renderActions(p) {
+  renderActions() {
     const wrap = document.getElementById('smart-action-card');
     if (!wrap) return;
 
-    // Detect status
-    const isActivated = String(p.activated) === 'true' || p.activated === true;
-    const isAtSite = p.status === 'SENT_TO_SITE';
-
-    let actionFormHtml = '';
-
-    // Next step recognition
-    if (!isActivated) {
-      actionFormHtml = `
-      <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 sm:p-5 space-y-4">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
-          <h4 class="text-xs font-black text-indigo-900 uppercase tracking-wide">Ready for Activation</h4>
-        </div>
-        <p class="text-[11px] text-indigo-700/80 font-bold leading-relaxed">This cable has been created but not activated. Activating unlocks full deployment features.</p>
-        <button onclick="ScanPage.submitAction('ACTIVATE')" class="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-          <i data-lucide="zap" class="w-4 h-4"></i> Activate Now
-        </button>
-      </div>`;
-    } 
-    else if (isAtSite) {
-      actionFormHtml = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Return to Godown -->
-        <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i data-lucide="warehouse" class="w-3.5 h-3.5"></i></div>
-              <h4 class="text-xs font-black text-emerald-900 uppercase tracking-wide">Return to Godown</h4>
-            </div>
-            <p class="text-[10px] text-emerald-700/80 font-bold">Inbound recovery from existing site.</p>
-            <div class="space-y-1">
-              <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Meter Reading</label>
-              <input type="number" id="f-meter-bal" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Current: ${p.meter}m" />
-            </div>
-            <div class="space-y-1 pb-1">
-              <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Log Notes</label>
-              <input type="text" id="f-return-remark" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Assess state…" />
-            </div>
-          </div>
-          <button onclick="ScanPage.submitAction('RETURN_TO_GODOWN')" class="w-full h-10 mt-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold uppercase tracking-wider text-[10px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-            Confirm Inbound
-          </button>
-        </div>
-
-        <!-- Transfer to Site -->
-        <div class="bg-blue-50/60 border border-blue-100 rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i data-lucide="repeat" class="w-3.5 h-3.5"></i></div>
-              <h4 class="text-xs font-black text-blue-900 uppercase tracking-wide">Transfer Site</h4>
-            </div>
-            <div class="space-y-1">
-              <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">New Destination Hub</label>
-              <input type="text" id="f-trans-site" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Destination site…" />
-            </div>
-            <div class="space-y-1">
-              <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Officer Assigned</label>
-              <input type="text" id="f-trans-person" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Person name…" />
-            </div>
-          </div>
-          <button onclick="ScanPage.submitAction('SITE_TO_SITE')" class="w-full h-10 mt-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase tracking-wider text-[10px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-            Confirm Transfer
-          </button>
-        </div>
-      </div>`;
-    } 
-    else {
-      actionFormHtml = `
-      <div class="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 sm:p-5 space-y-4">
-        <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i data-lucide="truck" class="w-3.5 h-3.5"></i></div>
-          <h4 class="text-xs font-black text-amber-900 uppercase tracking-wide">Ready for Dispatch</h4>
-        </div>
-        <p class="text-[11px] text-amber-700/80 font-bold leading-relaxed">Presently available in Godown. Complete the fields below to deploy to a site.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1">
-            <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Site Name</label>
-            <input type="text" id="f-dispatch-site" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Site name…" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Officer Assigned</label>
-            <input type="text" id="f-dispatch-person" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Full name…" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Order Type</label>
-            <select id="f-dispatch-event-type" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:border-slate-900 outline-none transition-all">
-              <option value="DAILY">Daily Order</option>
-              <option value="MONTHLY">Monthly Order</option>
-              <option value="EVENT">Event</option>
-            </select>
-          </div>
-          <div class="space-y-1">
-            <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Mission Notes</label>
-            <input type="text" id="f-dispatch-note" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Remarks…" />
-          </div>
-        </div>
-        <button onclick="ScanPage.submitAction('SEND_TO_SITE')" class="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-          Dispatch Cable
-        </button>
-      </div>`;
+    if (this._selectedCables.length === 0) {
+      wrap.classList.add('hidden');
+      wrap.innerHTML = '';
+      return;
     }
+
+    // Selected cables chips list
+    const listHtml = this._selectedCables.map(c => `
+      <div class="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800">
+        <span>${Helpers.escape(c.cableNo)}</span>
+        <button onclick="ScanPage.removeCableFromSelection('${c.barcode}')" class="hover:text-rose-600 transition-colors">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>`).join('');
 
     wrap.innerHTML = `
     <div class="p-4 sm:p-6 space-y-5 animate-scaleIn">
-       <!-- Cable Summary Badge -->
-       <div class="bg-slate-50/50 border border-slate-200 rounded-2xl p-4">
-         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-           <div>
-             <div class="flex items-center gap-2 flex-wrap">
-               <h3 class="text-base font-black text-slate-900 uppercase tracking-tight">${Helpers.escape(p.cableNo)}</h3>
-               ${p.no ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-slate-800 font-bold text-[10px] border border-slate-200 bg-white">${Helpers.escape(p.no)}</span>` : ''}
-               ${Helpers.statusBadge(p.status)}
-             </div>
-             <p class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50/40 px-2 py-0.5 rounded border border-indigo-100/40 inline-flex mt-1.5">
-               ${Helpers.escape(p.core)}/${Helpers.escape(p.sqmm)}mm² • ${p.meter}m
-             </p>
-           </div>
-           <div class="text-left sm:text-right flex-shrink-0">
-             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Current Location</span>
-             <span class="text-xs font-black text-slate-700 uppercase tracking-tight block mt-0.5">${p.siteName ? Helpers.escape(p.siteName) : 'Central Godown'}</span>
-           </div>
+       <!-- Selected Cables Manifest Summary -->
+       <div class="bg-slate-50/50 border border-slate-200 rounded-2xl p-4 space-y-3">
+         <div class="flex items-center justify-between">
+           <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Step 2: Operational Dispatch Forms (${this._selectedCables.length} Cables Selected)</span>
+           <button onclick="ScanPage.clearSelection()" class="text-[10px] font-bold text-rose-500 hover:underline uppercase tracking-wider">Clear All</button>
+         </div>
+         <div class="flex flex-wrap gap-2">
+           ${listHtml}
          </div>
        </div>
 
-       <!-- Dynamic Operations Option -->
-       ${actionFormHtml}
+       <!-- Sub-Actions Panel: Explicit Buttons for Selected Options -->
+       <div class="grid grid-cols-1 gap-4">
+         
+         <!-- 1. Dispatch All -->
+         <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 sm:p-5 space-y-4">
+           <div class="flex items-center gap-2">
+             <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i data-lucide="truck" class="w-3.5 h-3.5"></i></div>
+             <h4 class="text-xs font-black text-amber-900 uppercase tracking-wide">Dispatch to Site</h4>
+           </div>
+           <p class="text-[10px] text-amber-700/80 font-bold">Deploy all selected cables from central Godown directly to a physical site.</p>
+           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Site Name</label>
+               <input type="text" id="f-dispatch-site" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Dispatch location…" />
+             </div>
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Officer Assigned</label>
+               <input type="text" id="f-dispatch-person" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Full name…" />
+             </div>
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Order Type</label>
+               <select id="f-dispatch-event-type" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:border-slate-900 outline-none transition-all">
+                 <option value="DAILY">Daily Order</option>
+                 <option value="MONTHLY">Monthly Order</option>
+                 <option value="EVENT">Event</option>
+               </select>
+             </div>
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Mission Notes</label>
+               <input type="text" id="f-dispatch-note" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Remarks…" />
+             </div>
+           </div>
+           <button onclick="ScanPage.submitAction('SEND_TO_SITE')" class="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+             Dispatch Selection
+           </button>
+         </div>
+
+         <!-- 2. Transfer All -->
+         <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 sm:p-5 space-y-4">
+           <div class="flex items-center gap-2">
+             <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i data-lucide="repeat" class="w-3.5 h-3.5"></i></div>
+             <h4 class="text-xs font-black text-blue-900 uppercase tracking-wide">Transfer Site</h4>
+           </div>
+           <p class="text-[10px] text-blue-700/80 font-bold">Relocate all selected cables directly from their current site to a new site.</p>
+           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">New Destination Site</label>
+               <input type="text" id="f-trans-site" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Destination hub…" />
+             </div>
+             <div class="space-y-1">
+               <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Officer Assigned</label>
+               <input type="text" id="f-trans-person" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="Person name…" />
+             </div>
+           </div>
+           <button onclick="ScanPage.submitAction('SITE_TO_SITE')" class="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+             Transfer Selection
+           </button>
+         </div>
+
+         <!-- 3. Return All -->
+         <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 sm:p-5 space-y-4">
+           <div class="flex items-center gap-2">
+             <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i data-lucide="warehouse" class="w-3.5 h-3.5"></i></div>
+             <h4 class="text-xs font-black text-emerald-900 uppercase tracking-wide">Return to Godown</h4>
+           </div>
+           <p class="text-[10px] text-emerald-700/80 font-bold">Inbound recovery. Return all selected cables from their deployed site to central inventory.</p>
+           <div class="space-y-1">
+             <label class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Assessment Notes</label>
+             <input type="text" id="f-return-remark" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 outline-none transition-all" placeholder="State assessed…" />
+           </div>
+           <button onclick="ScanPage.submitAction('RETURN_TO_GODOWN')" class="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+             Return Selection
+           </button>
+         </div>
+
+         <!-- 4. Activate All -->
+         <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 sm:p-5 space-y-4">
+           <div class="flex items-center gap-2">
+             <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+             <h4 class="text-xs font-black text-indigo-900 uppercase tracking-wide">Activate Cables</h4>
+           </div>
+           <p class="text-[10px] text-indigo-700/80 font-bold leading-relaxed">Activate all newly created cables in the selection manifest instantly.</p>
+           <button onclick="ScanPage.submitAction('ACTIVATE')" class="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+             Activate Selection
+           </button>
+         </div>
+
+       </div>
     </div>`;
 
     wrap.classList.remove('hidden');
@@ -349,8 +499,7 @@ const ScanPage = {
   },
 
   async submitAction(mode) {
-    const p = this._selectedCable;
-    if (!p) return;
+    if (this._selectedCables.length === 0) return;
 
     const extra = {};
     if (mode === 'SEND_TO_SITE') {
@@ -364,38 +513,40 @@ const ScanPage = {
     if (mode === 'SITE_TO_SITE') {
       extra.siteName = document.getElementById('f-trans-site')?.value?.trim();
       extra.personAssigned = document.getElementById('f-trans-person')?.value?.trim();
-      extra.eventType = p.eventType || 'DAILY';
+      extra.eventType = 'DAILY';
       if (!extra.siteName) { Toast.show('warning', 'Required', 'Enter Destination Site first.'); return; }
       if (!extra.personAssigned) { Toast.show('warning', 'Required', 'Enter Officer name first.'); return; }
     }
     if (mode === 'RETURN_TO_GODOWN') {
-      const mb = document.getElementById('f-meter-bal')?.value;
-      if (mb) extra.meterBalance = parseFloat(mb);
       extra.note = document.getElementById('f-return-remark')?.value?.trim();
     }
 
-    Loading.show('Syncing operational action…');
-    try {
-      const res = await API.scanAction(mode, p.barcode, extra);
-      Loading.hide();
-      if (res.success) {
-        Toast.show('success', 'Sync Successful', `${p.cableNo} updated successfully.`);
-        this._addSessionScan(p.barcode, true, res.data.product);
-
-        // Reset search/scan input
-        const inp = document.getElementById('smart-scan-input');
-        if (inp) { inp.value = ''; inp.focus(); }
-
-        // Hide action card
-        const card = document.getElementById('smart-action-card');
-        if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
-      } else {
-        Toast.show('error', 'Operation failed', res.message);
+    Loading.show(`Syncing ${this._selectedCables.length} cables in background…`);
+    let successCount = 0;
+    
+    for (const c of this._selectedCables) {
+      try {
+        const res = await API.scanAction(mode, c.barcode, extra);
+        if (res.success) {
+          successCount++;
+          this._addSessionScan(c.barcode, true, res.data.product || c.cableNo);
+        } else {
+          this._addSessionScan(c.barcode, false, c.cableNo);
+        }
+      } catch (e) {
+        this._addSessionScan(c.barcode, false, c.cableNo);
       }
-    } catch (e) {
-      Loading.hide();
-      Toast.show('error', 'Error', e.message);
     }
+
+    Loading.hide();
+    if (successCount === this._selectedCables.length) {
+      Toast.show('success', 'Operation Complete', `${successCount} items synced successfully.`);
+    } else {
+      Toast.show('warning', 'Partial Sync', `${successCount} of ${this._selectedCables.length} succeeded.`);
+    }
+
+    // Reset list & components
+    this.clearSelection();
   },
 
   async toggleCamera() {
@@ -406,15 +557,15 @@ const ScanPage = {
     if (Barcode.isCameraActive()) {
       Barcode.stopCamera();
       wrap.classList.add('hidden');
-      btn.innerHTML = '<i data-lucide="camera" class="w-4 h-4"></i>';
+      btn.innerHTML = '<i data-lucide="camera" class="w-4.5 h-4.5"></i>';
     } else {
       wrap.classList.remove('hidden');
-      btn.innerHTML = '<i data-lucide="camera-off" class="w-4 h-4"></i>';
+      btn.innerHTML = '<i data-lucide="camera-off" class="w-4.5 h-4.5"></i>';
       await Barcode.startCamera('scan-viewport', code => {
         const inp = document.getElementById('smart-scan-input');
         if (inp) {
           inp.value = code;
-          ScanPage.identifyCable();
+          ScanPage.addInputToSelection();
         }
       });
     }
@@ -486,7 +637,7 @@ const ScanPage = {
             </div>
           </div>
           <div class="px-2 py-0.5 ${statusBg} ${statusText} rounded text-[10px] font-bold uppercase tracking-wider flex-shrink-0 border border-current/10">
-            ${s.ok ? 'Stored' : 'Fault'}
+            ${s.ok ? 'Synced' : 'Error'}
           </div>
         </div>
       </div>`;
