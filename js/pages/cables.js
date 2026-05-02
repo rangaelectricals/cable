@@ -910,15 +910,25 @@ const CablesPage = {
       // 3. Group by Category + Core/SQMM for separate sheets
       const groups = {};
       res.data.forEach(p => {
-        const key = `${p.category}_${p.core}_${p.sqmm}`.substring(0, 31); // Excel limit
+        const cat = (p.category || '').toString().trim().toUpperCase().replace(/S$/, '');
+        const key = `${cat}_${p.core}_${p.sqmm}`.substring(0, 31); // Excel limit
         if (!groups[key]) groups[key] = [];
         groups[key].push(p);
       });
 
       Object.entries(groups).forEach(([name, items]) => {
-        const ws = workbook.addWorksheet(name.replace(/[\/*?\[\]:]/g, '-'));
-        applyStyles(ws);
-        addDataRows(ws, items);
+        // Also ensure duplicate worksheet names doesn't crash Excel if trailing 'S' removal maps to same
+        const safeName = name.replace(/[\/*?\[\]:]/g, '-');
+        try {
+          const ws = workbook.addWorksheet(safeName);
+          applyStyles(ws);
+          addDataRows(ws, items);
+        } catch(e) {
+          // Fallback if worksheet name somehow overlaps
+          const ws = workbook.addWorksheet(safeName + '-' + Math.floor(Math.random() * 100));
+          applyStyles(ws);
+          addDataRows(ws, items);
+        }
       });
 
       // Write to buffer and download
