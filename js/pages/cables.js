@@ -60,7 +60,7 @@ const CablesPage = {
                 <span class="hidden sm:inline">Export</span>
                 <i data-lucide="chevron-down" class="w-3 h-3 opacity-50"></i>
               </button>
-              <ul tabindex="0" class="dropdown-content z-[10] menu p-2 shadow-2xl bg-white border border-slate-100 rounded-2xl w-52 mt-2">
+               <ul tabindex="0" class="dropdown-content z-[10] menu p-2 shadow-2xl bg-white border border-slate-100 rounded-2xl w-52 mt-2">
                 <li>
                   <a onclick="CablesPage.exportExcel()" class="flex items-center gap-3 py-3">
                     <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></div>
@@ -71,6 +71,12 @@ const CablesPage = {
                   <a onclick="CablesPage.exportPDF()" class="flex items-center gap-3 py-3">
                     <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i data-lucide="file-text" class="w-4 h-4"></i></div>
                     <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">PDF Document</span><span class="text-[9px] text-slate-400">Pro Quality PDF</span></div>
+                  </a>
+                </li>
+                <li>
+                  <a onclick="CablesPage.downloadAllQRs()" class="flex items-center gap-3 py-3">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i data-lucide="image" class="w-4 h-4"></i></div>
+                    <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">QR Images (ZIP)</span><span class="text-[9px] text-slate-400">Export all QR codes as ZIP</span></div>
                   </a>
                 </li>
               </ul>
@@ -977,6 +983,49 @@ const CablesPage = {
       doc.save(`cables_report_${new Date().toISOString().slice(0,10)}.pdf`);
       Toast.show('success','PDF Exported',`${res.data.length} cables saved to PDF.`);
     } catch(err) { Loading.hide(); Toast.show('error','PDF Error', err.message); }
+  },
+
+  async downloadAllQRs() {
+    if (!this._total) { Toast.show('warning','No Data','Nothing to export.'); return; }
+    Loading.show('Preparing QR Codes...');
+    try {
+      if (typeof JSZip === 'undefined') {
+        Loading.show('Loading compression tools...');
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+        Loading.show('Preparing QR Codes...');
+      }
+
+      const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
+        ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
+      const res = await API.getProducts(params);
+      if (!res.data?.length) { Loading.hide(); return; }
+
+      const zip = new JSZip();
+
+      for (const p of res.data) {
+        const dataUrl = await Barcode.generatePNGDataURL(p);
+        if (dataUrl) {
+          const base64Data = dataUrl.split(',')[1];
+          const fileName = `${p.category || 'INV'}_${p.core || ''}_${p.sqmm || ''}mm2_${p.meter || 0}M_${p.cableNo}.png`.replace(/[\s\/]/g, '_');
+          zip.file(fileName, base64Data, { base64: true });
+        }
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(content);
+      link.download = `qr_codes_${new Date().toISOString().slice(0, 10)}.zip`;
+      link.click();
+
+      Loading.hide();
+      Toast.show('success', 'ZIP Created', `Downloaded all QR codes as a ZIP.`);
+    } catch (err) { Loading.hide(); Toast.show('error', 'Export Error', err.message); }
   },
 
   quickAction(mode, cableNo) {

@@ -199,5 +199,58 @@ const Barcode = (() => {
     }
   }
 
-  return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, pauseCamera, resumeCamera, isCameraActive };
+  async function generatePNGDataURL(product) {
+    const size = 1024;
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      const qrlib = window.QRious;
+      let dataUrl = '';
+      if (qrlib) {
+        const qr = new qrlib({ value: product.barcode, size: size, level: 'H' });
+        dataUrl = qr.toDataURL();
+      } else {
+        dataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(product.barcode)}`;
+      }
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size + 320;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(img, 0, 0, size, size);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "center";
+
+      ctx.font = "bold 44px Inter, Arial, sans-serif";
+      ctx.fillText(`${product.cableNo || 'CABLE'} — ${product.category || 'INVENTORY'}`, size / 2, size + 70);
+
+      ctx.font = "bold 56px Inter, Arial, sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+      const noPart = product.no ? `#${product.no} • ` : '';
+      ctx.fillText(`${noPart}${product.core} / ${product.sqmm}mm² • ${product.meter}M`, size / 2, size + 170);
+
+      ctx.font = "32px monospace";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText(product.barcode, size / 2, size + 260);
+
+      return canvas.toDataURL("image/png");
+    } catch (e) {
+      console.error('generatePNGDataURL error', e);
+      return null;
+    }
+  }
+
+  return { generate, toDataURL, printLabel, downloadPNG, startCamera, stopCamera, pauseCamera, resumeCamera, isCameraActive, generatePNGDataURL };
 })();
