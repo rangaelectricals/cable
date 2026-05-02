@@ -263,7 +263,10 @@ const LogsPage = {
     };
     this._page = 1;
     clearTimeout(this._filterTimer);
-    this._filterTimer = setTimeout(() => this._fetchPage(null, false), 300);
+    this._filterTimer = setTimeout(() => {
+      const container = document.getElementById('main-content');
+      this._fetchPage(container, false);
+    }, 300);
   },
 
   _clearFilters() {
@@ -277,7 +280,8 @@ const LogsPage = {
     if (cn) cn.value = '';
     if (df) df.value = '';
     if (dt) dt.value = '';
-    this._fetchPage(null, false);
+    const container = document.getElementById('main-content');
+    this._fetchPage(container, false);
   },
 
   async goToPage(page) {

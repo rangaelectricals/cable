@@ -360,6 +360,9 @@ const CablesPage = {
           </div>
         </div>
       </dialog>`;
+    } else {
+      const el = document.getElementById('cable-total-count');
+      if (el) el.textContent = this._total;
     }
 
     this._renderTable();
@@ -621,14 +624,15 @@ const CablesPage = {
     }
     this._page = 1;
     Loading.show();
-    await this._fetchPage(null, true);
+    const container = document.getElementById('main-content');
+    await this._fetchPage(container, false);
     Loading.hide();
   },
 
   _filterTimer: null,
   _onFilter() {
     clearTimeout(this._filterTimer);
-    this._filterTimer = setTimeout(() => {
+    this._filterTimer = setTimeout(async () => {
       this._filters = {
         search:   (document.getElementById('cable-search')?.value  || '').trim(),
         status:   (document.getElementById('cable-status')?.value  || '').trim(),
@@ -637,7 +641,8 @@ const CablesPage = {
         sqmm:     (document.getElementById('cable-sqmm')?.value    || '').trim(),
       };
       this._page = 1;
-      this._fetchPage(null, false);
+      const container = document.getElementById('main-content');
+      await this._fetchPage(container, false);
     }, 350);
   },
 
