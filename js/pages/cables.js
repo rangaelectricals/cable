@@ -901,13 +901,13 @@ const CablesPage = {
 
   async exportExcel() {
     if (!this._total) { Toast.show('warning','No Data','Nothing to export.'); return; }
-    Loading.show('Preparing Styled Excel...');
+    Loading.show('Fetching cables for Excel...');
     try {
       const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
       const res = await API.getProducts(params);
-      Loading.hide();
-      if (!res.data?.length) return;
+      if (!res.data?.length) { Loading.hide(); return; }
+      Loading.show(`Generating Styled Excel (${res.data.length} cables)...`);
 
       const workbook = new ExcelJS.Workbook();
       
@@ -1048,13 +1048,13 @@ const CablesPage = {
 
   async exportPDF() {
     if (!this._total) { Toast.show('warning','No Data','Nothing to export.'); return; }
-    Loading.show('Preparing PDF...');
+    Loading.show('Fetching cables for PDF...');
     try {
       const params = { pageSize: 9999, page: 1, sortBy: this._sortBy, sortDir: this._sortDir,
         ...Object.fromEntries(Object.entries(this._filters).filter(([,v]) => v)) };
       const res = await API.getProducts(params);
-      Loading.hide();
-      if (!res.data?.length) return;
+      if (!res.data?.length) { Loading.hide(); return; }
+      Loading.show(`Generating PDF Report (${res.data.length} cables)...`);
 
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4'); // Landscape
@@ -1127,7 +1127,6 @@ const CablesPage = {
           s.onerror = reject;
           document.head.appendChild(s);
         });
-        Loading.show('Preparing QR Codes...');
       }
 
       if (typeof QRious === 'undefined') {
@@ -1148,8 +1147,12 @@ const CablesPage = {
       if (!res.data?.length) { Loading.hide(); return; }
 
       const zip = new JSZip();
-
+ 
+      let current = 0;
+      const total = res.data.length;
       for (const p of res.data) {
+        current++;
+        Loading.show(`Preparing QR Codes (${current}/${total})...`);
         const dataUrl = await Barcode.generatePNGDataURL(p);
         if (dataUrl) {
           const base64Data = dataUrl.split(',')[1];
