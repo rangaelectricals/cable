@@ -14,6 +14,7 @@ const CablesPage = {
   _sortBy:     'createdAt',
   _sortDir:    'desc',
   _isSpecMode: false,
+  _selectedCables: new Set(),
 
   async render(container) {
     const q = localStorage.getItem('global_search_term');
@@ -100,6 +101,12 @@ const CablesPage = {
                   <a onclick="CablesPage.downloadAllQRs()" class="flex items-center gap-3 py-3">
                     <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i data-lucide="image" class="w-4 h-4"></i></div>
                     <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">QR Images (ZIP)</span><span class="text-[9px] text-slate-400">Export all QR codes as ZIP</span></div>
+                  </a>
+                </li>
+                <li>
+                  <a onclick="CablesPage.printSelectedQRs()" class="flex items-center gap-3 py-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="printer" class="w-4 h-4"></i></div>
+                    <div class="flex flex-col"><span class="text-[11px] font-black uppercase tracking-widest">Print QR Labels</span><span class="text-[9px] text-slate-400">Printable QR PDF</span></div>
                   </a>
                 </li>
               </ul>
@@ -231,6 +238,9 @@ const CablesPage = {
               <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
                 <tr>
                   <th class="py-3 px-4 w-12 border-r border-slate-200">#</th>
+                  <th class="py-3 px-2 w-8 border-r border-slate-200 text-center">
+                    <input type="checkbox" id="cable-select-all" class="checkbox checkbox-xs" onchange="CablesPage.toggleSelectAll(this)" />
+                  </th>
 
                   <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-[320px] border-r border-slate-200" onclick="CablesPage._onSort('category')">
                     <div class="flex items-center gap-1">Category / Specs ${this._getSortIcon('category')}</div>
@@ -469,6 +479,9 @@ const CablesPage = {
       <!-- 1. Index -->
       <td class="pl-4">
         <div class="text-slate-400 text-[10px] font-black w-6 h-6 rounded-lg bg-slate-100/50 flex items-center justify-center">${rowStart+i+1}</div>
+      </td>
+      <td class="text-center border-r border-slate-200">
+        <input type="checkbox" data-cable-id="${p.id}" class="checkbox checkbox-xs cable-row-select" ${this._selectedCables.has(p.id)?'checked':''} onchange="CablesPage.toggleSelectRow(this)" />
       </td>
 
       <td>
@@ -1147,6 +1160,125 @@ const CablesPage = {
       Loading.hide();
       Toast.show('success', 'ZIP Created', `Downloaded all QR codes as a ZIP.`);
     } catch (err) { Loading.hide(); Toast.show('error', 'Export Error', err.message); }
+  },
+
+  toggleSelectAll(el) {
+    const checked = el.checked;
+    this._selectedCables.clear();
+    const cbs = document.querySelectorAll('.cable-row-select');
+    cbs.forEach(cb => {
+      cb.checked = checked;
+      const id = cb.getAttribute('data-cable-id');
+      if (checked && id) this._selectedCables.add(id);
+    });
+  },
+
+  toggleSelectRow(el) {
+    const id = el.getAttribute('data-cable-id');
+    if (el.checked) {
+      this._selectedCables.add(id);
+    } else {
+      this._selectedCables.delete(id);
+      const allCb = document.getElementById('cable-select-all');
+      if (allCb) allCb.checked = false;
+    }
+  },
+
+  async printSelectedQRs() {
+    let list = [];
+    if (this._selectedCables.size > 0) {
+      list = this._allProducts.filter(p => this._selectedCables.has(p.id));
+    } else {
+      const confirmAll = confirm('No cables selected. Generate QR labels for all cables on the current page?');
+      if (!confirmAll) return;
+      list = this._products;
+    }
+
+    if (!list || !list.length) {
+      Toast.show('warning', 'No Data', 'Please select cables to print.');
+      return;
+    }
+
+    Loading.show('Generating QR Label PDF...');
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4'); // portrait
+
+      // Page configuration
+      const marginX = 15;
+      const marginY = 15;
+      const labelW = 56;
+      const labelH = 62;
+      const gapX = 6;
+      const gapY = 6;
+      const cols = 3;
+      const rows = 4;
+      const labelsPerPage = cols * rows;
+
+      let idx = 0;
+      for (const p of list) {
+        if (idx > 0 && idx % labelsPerPage === 0) {
+          doc.addPage();
+        }
+
+        const pageIdx = idx % labelsPerPage;
+        const col = pageIdx % cols;
+        const row = Math.floor(pageIdx / cols);
+
+        const x = marginX + col * (labelW + gapX);
+        const y = marginY + row * (labelH + gapY);
+
+        // Draw label box
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(226, 232, 240); // slate-200
+        doc.setLineWidth(0.3);
+        doc.roundedRect(x, y, labelW, labelH, 3, 3, 'FD');
+
+        // Draw top header inside label
+        doc.setFillColor(79, 70, 229); // indigo-600
+        doc.roundedRect(x, y, labelW, 8, 3, 3, 'F');
+        // Overwrite bottom part of rounded header
+        doc.rect(x, y + 5, labelW, 3, 'F');
+
+        // Header text
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('Helvetica', 'bold');
+        doc.text(`CABLETRACK [${p.no || 'N/A'}]`, x + labelW / 2, y + 5, { align: 'center' });
+
+        // Fetch / Generate QR
+        const dataUrl = await Barcode.generatePNGDataURL(p);
+        if (dataUrl) {
+          doc.addImage(dataUrl, 'PNG', x + (labelW - 30) / 2, y + 10, 30, 30);
+        }
+
+        // Add Product Details
+        doc.setFontSize(7);
+        doc.setTextColor(51, 65, 85); // slate-700
+        doc.setFont('Helvetica', 'bold');
+        doc.text(`Cable No: ${p.cableNo}`, x + labelW / 2, y + 44, { align: 'center' });
+
+        doc.setFontSize(6.5);
+        doc.setTextColor(100, 116, 139); // slate-500
+        doc.setFont('Helvetica', 'normal');
+        doc.text(`${p.category}`, x + labelW / 2, y + 49, { align: 'center' });
+
+        doc.setFontSize(7);
+        doc.setTextColor(15, 23, 42); // slate-900
+        doc.setFont('Helvetica', 'bold');
+        doc.text(`${p.core}C / ${p.sqmm}mm²  —  ${p.meter}M`, x + labelW / 2, y + 55, { align: 'center' });
+
+        idx++;
+      }
+
+      doc.save(`cable_qr_labels_${new Date().toISOString().slice(0, 10)}.pdf`);
+      Loading.hide();
+      Toast.show('success', 'PDF Saved', 'QR Label PDF downloaded successfully!');
+    } catch (err) {
+      Loading.hide();
+      console.error(err);
+      Toast.show('error', 'Print Error', err.message);
+    }
   },
 
   quickAction(mode, cableNo) {
