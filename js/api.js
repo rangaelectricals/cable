@@ -312,19 +312,37 @@ const API = (() => {
     await initDatabase();
     if (typeof params === 'number') params = { pageSize: params, page: 1 };
     
-    let rows = window.AppDB.logs;
+    let rows = window.AppDB.logs || [];
     
+    // Action Filtering
+    if (params.action) {
+      rows = rows.filter(r => r.action === params.action);
+    }
+    // Cable No / Search Filtering
+    if (params.cableNo || params.search) {
+      const q = String(params.cableNo || params.search).toLowerCase();
+      rows = rows.filter(r => 
+        String(r.no || '').toLowerCase().indexOf(q) >= 0 ||
+        String(r.cableNo || '').toLowerCase().indexOf(q) >= 0 ||
+        String(r.barcode || '').toLowerCase().indexOf(q) >= 0
+      );
+    }
     // Date Range Filtering
-    if (params.startDate) {
-      const s = new Date(params.startDate);
+    if (params.startDate || params.dateFrom) {
+      const startParam = params.startDate || params.dateFrom;
+      const s = new Date(startParam);
       s.setHours(0,0,0,0);
-      rows = rows.filter(r => new Date(r.timestamp) >= s);
+      rows = rows.filter(r => r.timestamp && new Date(r.timestamp).getTime() >= s.getTime());
     }
-    if (params.endDate) {
-      const e = new Date(params.endDate);
+    if (params.endDate || params.dateTo) {
+      const endParam = params.endDate || params.dateTo;
+      const e = new Date(endParam);
       e.setHours(23,59,59,999);
-      rows = rows.filter(r => new Date(r.timestamp) <= e);
+      rows = rows.filter(r => r.timestamp && new Date(r.timestamp).getTime() <= e.getTime());
     }
+
+    // Newest first
+    rows = [...rows].reverse();
 
     const total = rows.length;
     const page = params.page || 1;
