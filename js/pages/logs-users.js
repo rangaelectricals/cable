@@ -57,6 +57,39 @@ const LogsPage = {
           </button>`
         )}
 
+        <!-- Quick stats cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-indigo-400">Activations</div>
+              <div class="text-lg font-black text-indigo-700 leading-tight">${this._logs.filter(l => l.action === 'ACTIVATE').length} on page</div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-amber-400">Send Operations</div>
+              <div class="text-lg font-black text-amber-700 leading-tight">${this._logs.filter(l => l.action === 'SEND_TO_SITE').length} on page</div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-black uppercase text-emerald-400">Return Operations</div>
+              <div class="text-lg font-black text-emerald-700 leading-tight">${this._logs.filter(l => l.action === 'RETURN_TO_GODOWN').length} on page</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filter bar -->
         <div class="card bg-white shadow-sm border border-slate-200">
           <div class="card-body py-3 px-4">
