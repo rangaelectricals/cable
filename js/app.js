@@ -8,24 +8,43 @@ const App = {
     if (!Auth.requireLogin()) return;
     const user = Auth.getUser();
 
-    // Render sidebar + bottom nav
-    Nav.renderSidebar('dashboard');
-    Nav.renderBottomNav('dashboard');
+    const hash = window.location.hash.slice(1) || 'dashboard';
 
-    // Navigate to dashboard
-    await this.navigateTo('dashboard');
+    // Render sidebar + bottom nav
+    Nav.renderSidebar(hash);
+    Nav.renderBottomNav(hash);
+
+    // Navigate to section
+    await this.navigateTo(hash);
+
+    // Listen to hash changes
+    window.addEventListener('hashchange', () => {
+      const section = window.location.hash.slice(1) || 'dashboard';
+      if (this._currentSection !== section) {
+        this.navigateTo(section);
+      }
+    });
   },
 
   async navigateTo(section) {
     this._currentSection = section;
+    if (window.location.hash.slice(1) !== section) {
+      window.location.hash = section;
+    }
 
     // Update nav active state
     Nav.setActive(section);
 
     const container = document.getElementById('main-content');
     container.innerHTML = `
-      <div class="flex items-center justify-center h-64">
-        <span class="loading loading-spinner loading-lg text-indigo-600"></span>
+      <div class="space-y-6 animate-pulse p-4">
+        <div class="h-10 bg-slate-200/80 rounded-xl w-3/4"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+          <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+          <div class="h-32 bg-slate-200/80 rounded-2xl"></div>
+        </div>
+        <div class="h-96 bg-slate-200/80 rounded-2xl"></div>
       </div>`;
 
     try {
