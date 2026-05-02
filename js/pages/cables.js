@@ -435,7 +435,9 @@ const CablesPage = {
         ` : '<span class="text-slate-200 text-xs">—</span>'}
       </td>
       <!-- 8. Date Out -->
-      <td class="text-[10px] font-black text-slate-500 uppercase tracking-tight">${Helpers.formatDate(p.dateOut)}</td>
+      <td class="text-[10px] font-black text-slate-500 uppercase tracking-tight">
+        ${p.dateOut ? `${Helpers.formatDate(p.dateOut)} <span class="text-amber-600 block sm:inline font-bold">(${Math.max(0, Math.ceil(Math.abs(new Date() - new Date(p.dateOut)) / (1000 * 60 * 60 * 24)))}d aging)</span>` : '—'}
+      </td>
       <!-- 9. Active -->
       <td class="text-center">
         ${(String(p.activated)==='true'||p.activated===true)
@@ -564,7 +566,7 @@ const CablesPage = {
 
         <div class="flex items-center justify-between gap-2 p-3 pl-6 bg-slate-50/50 border-t border-slate-100">
           <div class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-            ${p.dateOut ? `Out: ${Helpers.formatDate(p.dateOut)}` : 'In Godown'}
+            ${p.dateOut ? `Out: ${Helpers.formatDate(p.dateOut)} <span class="text-amber-600 font-bold ml-1">(${Math.max(0, Math.ceil(Math.abs(new Date() - new Date(p.dateOut)) / (1000 * 60 * 60 * 24)))} days aging)</span>` : 'In Godown'}
           </div>
           <div class="flex gap-2">
             ${p.status === 'IN_GODOWN' ? `
