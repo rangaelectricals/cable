@@ -218,7 +218,7 @@ const CablesPage = {
         <div id="cables-cards" class="lg:hidden flex flex-col gap-3"></div>
 
         <!-- ── DESKTOP TABLE VIEW (hidden on mobile) ──────────────────────── -->
-        <div class="hidden lg:block card bg-white shadow-sm border border-slate-200 overflow-hidden">
+        <div class="hidden lg:block card no-hover bg-white shadow-sm border border-slate-200 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full table table-zebra border-collapse border border-slate-200 table-auto">
               <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">

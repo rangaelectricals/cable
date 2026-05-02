@@ -124,7 +124,7 @@ const LogsPage = {
         <div id="logs-cards" class="lg:hidden grid grid-cols-2 gap-3"></div>
 
         <!-- DESKTOP: table (hidden on mobile) -->
-        <div class="hidden lg:block card bg-white shadow-sm border border-slate-200 overflow-hidden">
+        <div class="hidden lg:block card no-hover bg-white shadow-sm border border-slate-200 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="table table-sm table-zebra">
               <thead class="bg-slate-100 text-xs uppercase tracking-wide">
@@ -359,7 +359,7 @@ const UsersPage = {
       <div id="users-cards" class="sm:hidden grid grid-cols-2 gap-3"></div>
 
       <!-- DESKTOP: table (hidden on mobile) -->
-      <div class="hidden sm:block card bg-white shadow-sm border border-slate-200 overflow-hidden">
+      <div class="hidden sm:block card no-hover bg-white shadow-sm border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="table table-sm table-zebra">
             <thead class="bg-slate-100 text-xs uppercase tracking-wide">
