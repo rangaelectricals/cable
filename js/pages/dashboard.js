@@ -61,8 +61,8 @@ const DashboardPage = {
         </button>`
       )}
 
-      <!-- Stats grid — 2 col on mobile, 6 col on xl -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 animate-fadeIn">
+      <!-- Stats grid — 2 col on mobile, 4 col on xl -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fadeIn">
         <div>
           ${UI.statCard({ icon:'package',    label:'Total Cables',  value: total,        color:'neutral', onclick:"App.navigateTo('cables')" })}
         </div>
@@ -74,12 +74,6 @@ const DashboardPage = {
         </div>
         <div>
           ${UI.statCard({ icon:'check-circle',label:'Activated',    value: activated,    color:'primary', onclick:"App.navigateTo('scan')"   })}
-        </div>
-        <div>
-          ${UI.statCard({ icon:'alert-triangle',label:'Aging Out',  value: outAging,     color:'error',   onclick:"App.navigateTo('cables')" })}
-        </div>
-        <div>
-          ${UI.statCard({ icon:'ruler',      label:'Total Length',  value: `${totalMeters}M`,color:'accent', onclick:"App.navigateTo('cables')" })}
         </div>
       </div>
 
