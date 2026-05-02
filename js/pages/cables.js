@@ -874,9 +874,10 @@ const CablesPage = {
       addDataRows(masterSheet, res.data);
 
       // 2. Create Event Type sheets (DAILY, EVENT, and MONTHLY)
-      const dailyItems = res.data.filter(p => (p.eventType || 'DAILY').toString().trim().toUpperCase() === 'DAILY');
-      const eventItems = res.data.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'EVENT');
-      const monthlyItems = res.data.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'MONTHLY');
+      const deployedItems = res.data.filter(p => p.status === 'SENT_TO_SITE');
+      const dailyItems = deployedItems.filter(p => (p.eventType || 'DAILY').toString().trim().toUpperCase() === 'DAILY');
+      const eventItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'EVENT');
+      const monthlyItems = deployedItems.filter(p => (p.eventType || '').toString().trim().toUpperCase() === 'MONTHLY');
       
       const dailySheet = workbook.addWorksheet('Daily Orders');
       applyStyles(dailySheet);
