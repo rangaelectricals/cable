@@ -239,7 +239,7 @@ const CablesPage = {
                 <tr>
                   <th class="py-3 px-4 w-12 border-r border-slate-200">#</th>
                   <th class="py-3 px-2 w-8 border-r border-slate-200 text-center">
-                    <input type="checkbox" id="cable-select-all" class="checkbox checkbox-xs" onchange="CablesPage.toggleSelectAll(this)" />
+                    <input type="checkbox" id="cable-select-all" class="w-4 h-4 cursor-pointer accent-indigo-600 border-slate-300 rounded" onchange="CablesPage.toggleSelectAll(this)" />
                   </th>
 
                   <th class="py-3 px-4 cursor-pointer hover:text-slate-900 group w-[320px] border-r border-slate-200" onclick="CablesPage._onSort('category')">
@@ -481,7 +481,7 @@ const CablesPage = {
         <div class="text-slate-400 text-[10px] font-black w-6 h-6 rounded-lg bg-slate-100/50 flex items-center justify-center">${rowStart+i+1}</div>
       </td>
       <td class="text-center border-r border-slate-200">
-        <input type="checkbox" data-cable-id="${p.id}" class="checkbox checkbox-xs cable-row-select" ${this._selectedCables.has(String(p.id))?'checked':''} onchange="CablesPage.toggleSelectRow(this)" />
+        <input type="checkbox" data-cable-id="${p.id}" class="w-4 h-4 cursor-pointer accent-indigo-600 border-slate-300 rounded cable-row-select" ${this._selectedCables.has(String(p.id))?'checked':''} onchange="CablesPage.toggleSelectRow(this)" />
       </td>
 
       <td>
