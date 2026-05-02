@@ -37,6 +37,13 @@ const DashboardPage = {
     const activated    = products.filter(p => String(p.activated)==='true'||p.activated===true).length;
     const notActivated = total - activated;
 
+    const activeDaily    = products.filter(p => p.status === 'SENT_TO_SITE' && (p.eventType || '').toUpperCase() === 'DAILY').length;
+    const activeEvent    = products.filter(p => p.status === 'SENT_TO_SITE' && (p.eventType || '').toUpperCase() === 'EVENT').length;
+    const activeMonthly  = products.filter(p => p.status === 'SENT_TO_SITE' && (p.eventType || '').toUpperCase() === 'MONTHLY').length;
+
+    const copperCables   = products.filter(p => (p.category || '').toUpperCase().includes('COPPER')).length;
+    const aluminumCables = products.filter(p => (p.category || '').toUpperCase().includes('ALUMINUM') || (p.category || '').toUpperCase().includes('ALUM')).length;
+
     container.innerHTML = `
     <div class="space-y-5 page-enter">
       ${UI.pageHeader('Dashboard', 'Real-time cable inventory overview',
@@ -78,6 +85,53 @@ const DashboardPage = {
           <i data-lucide="${q.icon}" class="w-6 h-6"></i>
           <span class="text-xs font-bold">${q.label}</span>
         </button>`).join('')}
+      </div>
+
+      <!-- Advanced Order Type Breakdown & Materials -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Deployed Order Types -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold text-slate-700">Deployed Orders Breakdown</h2>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Cables currently deployed across active sites categorized by order type.</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+              <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Daily</div>
+              <div class="text-xl font-black text-slate-700 mt-1">${activeDaily}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+              <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Event</div>
+              <div class="text-xl font-black text-slate-700 mt-1">${activeEvent}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+              <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Monthly</div>
+              <div class="text-xl font-black text-slate-700 mt-1">${activeMonthly}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Material Distribution -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold text-slate-700">Cable Material Insights</h2>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Breakdown of stock by conductor material.</p>
+          </div>
+          <div class="space-y-3">
+            ${UI.progressRow('Copper Conductors',   copperCables,   total, 'progress-primary')}
+            ${UI.progressRow('Aluminum Conductors', aluminumCables, total, 'progress-warning')}
+          </div>
+        </div>
       </div>
 
       <!-- Bottom row -->
