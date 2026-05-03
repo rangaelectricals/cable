@@ -191,8 +191,7 @@ const DashboardPage = {
                 <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
               </div>
               <h2 class="text-sm font-bold text-slate-700">Status Distribution</h2>
-            </div>
-            <div class="space-y-4 flex-1 flex flex-col justify-center">
+            </div>            <div class="space-y-4 flex-1 flex flex-col justify-between py-2">
               <div>
                 <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
                   <span class="text-slate-600">In Godown</span>
@@ -220,6 +219,36 @@ const DashboardPage = {
                 </div>
                 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
                   <div class="bg-gradient-to-r from-pink-400 to-pink-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (activated/total)*100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">Non-Activated</span>
+                  <span class="text-indigo-600">${notActivated} / ${total} (${total ? Math.round((notActivated/total)*100) : 0}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (notActivated/total)*100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">Out Aging (Site > 0 Days)</span>
+                  <span class="text-rose-600">${outAging} / ${total} (${total ? Math.round((outAging/total)*100) : 0}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-rose-400 to-rose-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (outAging/total)*100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">Total Cable Length</span>
+                  <span class="text-violet-600">${totalMeters.toLocaleString()} Meters</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-violet-400 to-violet-600 h-full rounded-full transition-all duration-500" style="width: 100%"></div>
                 </div>
               </div>
             </div>
