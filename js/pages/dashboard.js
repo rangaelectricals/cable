@@ -61,8 +61,8 @@ const DashboardPage = {
         </button>`
       )}
 
-      <!-- Stats grid — 2 col on mobile, 4 col on xl -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fadeIn">
+      <!-- Stats grid — 6 col layout for high data density -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 animate-fadeIn">
         <div>
           ${UI.statCard({ icon:'package',    label:'Total Cables',  value: total,        color:'neutral', onclick:"App.navigateTo('cables')" })}
         </div>
@@ -74,6 +74,12 @@ const DashboardPage = {
         </div>
         <div>
           ${UI.statCard({ icon:'check-circle',label:'Activated',    value: activated,    color:'primary', onclick:"App.navigateTo('scan')"   })}
+        </div>
+        <div>
+          ${UI.statCard({ icon:'ruler',      label:'Total Meters',  value: `${totalMeters}M`, color:'info', onclick:"App.navigateTo('cables')" })}
+        </div>
+        <div>
+          ${UI.statCard({ icon:'clock',      label:'Aging on Site', value: outAging,     color:'secondary', onclick:"App.navigateTo('cables')" })}
         </div>
       </div>
 
@@ -237,3 +243,5 @@ const DashboardPage = {
     </div>`;
   },
 };
+
+window.DashboardPage = DashboardPage;
