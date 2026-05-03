@@ -5,7 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#1d4ed8" />
   <title>Sign In — CableTrack</title>
-  
+  <script>
+    // Silence noise warnings from cdn/extensions
+    (function() {
+      const _warn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && (args[0].includes('cdn.tailwindcss.com') || args[0].includes('installHook') || args[0].includes('-webkit-text-size-adjust'))) return;
+        _warn.apply(console, args);
+      };
+      const _error = console.error;
+      console.error = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && (args[0].includes('installHook') || args[0].includes('Source map'))) return;
+        _error.apply(console, args);
+      };
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
