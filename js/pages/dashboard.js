@@ -51,9 +51,8 @@ const DashboardPage = {
     }).length;
 
     const totalMeters = products.reduce((acc, p) => acc + (Number(p.meter) || 0) * (Number(p.quantity) || 1), 0);
-
     container.innerHTML = `
-    <div class="space-y-5 page-enter">
+    <div class="space-y-6 page-enter">
       ${UI.pageHeader('Dashboard', 'Real-time cable inventory overview',
         `<button class="btn btn-ghost btn-sm gap-2" onclick="DashboardPage.render(document.getElementById('main-content'))">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -61,138 +60,193 @@ const DashboardPage = {
         </button>`
       )}
 
-      <!-- Stats grid — 6 col layout for high data density -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 animate-fadeIn">
-        <div>
-          ${UI.statCard({ icon:'package',    label:'Total Cables',  value: total,        color:'neutral', onclick:"App.navigateTo('cables')" })}
+      <!-- Premium vibrant gradient stat cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fadeIn">
+        <div onclick="App.navigateTo('cables')" class="cursor-pointer bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-3xl p-5 text-white border border-indigo-400/30 flex items-center justify-between shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all duration-300 select-none">
+          <div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-indigo-100 opacity-90">Total Cables</div>
+            <div class="text-3xl font-black mt-1.5 tracking-tight">${total}</div>
+          </div>
+          <div class="w-12 h-12 bg-indigo-400/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-indigo-300/30">
+            <i data-lucide="package" class="w-6 h-6 text-white"></i>
+          </div>
         </div>
-        <div>
-          ${UI.statCard({ icon:'warehouse',  label:'In Godown',     value: inGodown,     color:'success', onclick:"App.navigateTo('cables')" })}
+
+        <div onclick="App.navigateTo('cables')" class="cursor-pointer bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-3xl p-5 text-white border border-emerald-400/30 flex items-center justify-between shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-300 select-none">
+          <div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-emerald-100 opacity-90">In Godown</div>
+            <div class="text-3xl font-black mt-1.5 tracking-tight">${inGodown}</div>
+          </div>
+          <div class="w-12 h-12 bg-emerald-400/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-emerald-300/30">
+            <i data-lucide="warehouse" class="w-6 h-6 text-white"></i>
+          </div>
         </div>
-        <div>
-          ${UI.statCard({ icon:'truck',      label:'Sent to Site',  value: onSite,       color:'warning', onclick:"App.navigateTo('cables')" })}
+
+        <div onclick="App.navigateTo('cables')" class="cursor-pointer bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 rounded-3xl p-5 text-white border border-amber-400/30 flex items-center justify-between shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1 transition-all duration-300 select-none">
+          <div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-amber-100 opacity-90">Sent to Site</div>
+            <div class="text-3xl font-black mt-1.5 tracking-tight">${onSite}</div>
+          </div>
+          <div class="w-12 h-12 bg-amber-400/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-amber-300/30">
+            <i data-lucide="truck" class="w-6 h-6 text-white"></i>
+          </div>
         </div>
-        <div>
-          ${UI.statCard({ icon:'check-circle',label:'Activated',    value: activated,    color:'primary', onclick:"App.navigateTo('scan')"   })}
-        </div>
-        <div>
-          ${UI.statCard({ icon:'ruler',      label:'Total Meters',  value: `${totalMeters}M`, color:'info', onclick:"App.navigateTo('cables')" })}
-        </div>
-        <div>
-          ${UI.statCard({ icon:'clock',      label:'Aging on Site', value: outAging,     color:'secondary', onclick:"App.navigateTo('cables')" })}
+
+        <div onclick="App.navigateTo('scan')" class="cursor-pointer bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700 rounded-3xl p-5 text-white border border-pink-400/30 flex items-center justify-between shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1 transition-all duration-300 select-none">
+          <div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-pink-100 opacity-90">Activated</div>
+            <div class="text-3xl font-black mt-1.5 tracking-tight">${activated}</div>
+          </div>
+          <div class="w-12 h-12 bg-pink-400/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-pink-300/30">
+            <i data-lucide="check-circle" class="w-6 h-6 text-white"></i>
+          </div>
         </div>
       </div>
 
-      <!-- Quick actions (mobile-friendly) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <!-- Quick actions with gradients -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fadeIn">
         ${[
-          { label:'Add Cable',    icon:'plus-circle',   page:'cables', bg:'bg-indigo-50',  text:'text-indigo-700',  border:'border-indigo-200',  hbg:'hover:bg-indigo-100' },
-          { label:'Scan / Return',icon:'scan-line',      page:'scan',   bg:'bg-amber-50',   text:'text-amber-700',   border:'border-amber-200',   hbg:'hover:bg-amber-100'  },
-          { label:'View Logs',    icon:'activity',       page:'logs',   bg:'bg-blue-50',    text:'text-blue-700',    border:'border-blue-200',    hbg:'hover:bg-blue-100'   },
-          { label:'Masters',      icon:'settings-2',     page:'masters',bg:'bg-violet-50',  text:'text-violet-700',  border:'border-violet-200',  hbg:'hover:bg-violet-100' },
+          { label:'Add Cable',    icon:'plus-circle',   page:'cables', bg:'bg-gradient-to-br from-indigo-50 to-indigo-100/60',  text:'text-indigo-700',  border:'border-indigo-200/60',  hbg:'hover:from-indigo-100 hover:to-indigo-200/50' },
+          { label:'Scan / Return',icon:'scan-line',      page:'scan',   bg:'bg-gradient-to-br from-amber-50 to-amber-100/60',   text:'text-amber-700',   border:'border-amber-200/60',   hbg:'hover:from-amber-100 hover:to-amber-200/50'  },
+          { label:'View Logs',    icon:'activity',       page:'logs',   bg:'bg-gradient-to-br from-blue-50 to-blue-100/60',    text:'text-blue-700',    border:'border-blue-200/60',    hbg:'hover:from-blue-100 hover:to-blue-200/50'   },
+          { label:'Masters',      icon:'settings-2',     page:'masters',bg:'bg-gradient-to-br from-violet-50 to-violet-100/60',  text:'text-violet-700',  border:'border-violet-200/60',  hbg:'hover:from-violet-100 hover:to-violet-200/50' },
         ].map(q => `
         <button onclick="App.navigateTo('${q.page}')"
-                class="${q.bg} ${q.text} ${q.border} ${q.hbg} border rounded-2xl py-4 flex flex-col items-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5">
+                class="${q.bg} ${q.text} ${q.border} ${q.hbg} border rounded-3xl py-4 flex flex-col items-center gap-2 transition-all hover:shadow-md hover:-translate-y-0.5 font-bold">
           <i data-lucide="${q.icon}" class="w-6 h-6"></i>
-          <span class="text-xs font-bold">${q.label}</span>
+          <span class="text-xs font-black">${q.label}</span>
         </button>`).join('')}
       </div>
 
-      <!-- Advanced Order Type Breakdown & Materials -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Deployed Order Type Breakdown & Materials -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- Deployed Order Types -->
-        <div class="card no-hover p-5 bg-white border border-slate-200 flex flex-col justify-between h-full">
+        <div class="p-6 bg-white border border-slate-200/80 flex flex-col justify-between h-full rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
           <div>
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
                 <i data-lucide="layers" class="w-4 h-4"></i>
               </div>
               <h2 class="text-sm font-bold text-slate-700">Deployed Orders Breakdown</h2>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Cables currently deployed across active sites categorized by order type.</p>
+            <p class="text-xs text-slate-500 mb-5">Cables currently deployed across active sites categorized by order type.</p>
           </div>
           <div class="grid grid-cols-3 gap-3">
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+            <div class="p-4 bg-gradient-to-b from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 text-center hover:shadow-sm transition-all duration-300">
               <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Daily</div>
-              <div class="text-xl font-black text-slate-700 mt-1">${activeDaily}</div>
+              <div class="text-2xl font-black text-slate-700 mt-1">${activeDaily}</div>
             </div>
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+            <div class="p-4 bg-gradient-to-b from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 text-center hover:shadow-sm transition-all duration-300">
               <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Event</div>
-              <div class="text-xl font-black text-slate-700 mt-1">${activeEvent}</div>
+              <div class="text-2xl font-black text-slate-700 mt-1">${activeEvent}</div>
             </div>
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+            <div class="p-4 bg-gradient-to-b from-slate-50 to-slate-100/50 rounded-2xl border border-slate-100 text-center hover:shadow-sm transition-all duration-300">
               <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Monthly</div>
-              <div class="text-xl font-black text-slate-700 mt-1">${activeMonthly}</div>
+              <div class="text-2xl font-black text-slate-700 mt-1">${activeMonthly}</div>
             </div>
           </div>
         </div>
 
         <!-- Material Distribution -->
-        <div class="card no-hover p-5 bg-white border border-slate-200 flex flex-col justify-between h-full">
+        <div class="p-6 bg-white border border-slate-200/80 flex flex-col justify-between h-full rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
           <div>
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+              <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
                 <i data-lucide="shield" class="w-4 h-4"></i>
               </div>
               <h2 class="text-sm font-bold text-slate-700">Cable Material Insights</h2>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Breakdown of stock by conductor material.</p>
+            <p class="text-xs text-slate-500 mb-5">Breakdown of stock by conductor material.</p>
           </div>
-          <div class="space-y-3">
-            ${UI.progressRow('Copper Conductors',   copperCables,   total, 'progress-primary')}
-            ${UI.progressRow('Aluminum Conductors', aluminumCables, total, 'progress-warning')}
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                <span class="text-slate-600">Copper Conductors</span>
+                <span class="text-indigo-600">${copperCables} / ${total} (${total ? Math.round((copperCables/total)*100) : 0}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (copperCables/total)*100 : 0}%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                <span class="text-slate-600">Aluminum Conductors</span>
+                <span class="text-amber-600">${aluminumCables} / ${total} (${total ? Math.round((aluminumCables/total)*100) : 0}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (aluminumCables/total)*100 : 0}%"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Bottom row -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <!-- Status Distribution -->
         <div class="lg:col-span-2">
-          <div class="card no-hover bg-white border border-slate-200 h-full">
-            <div class="p-5">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
-                </div>
-                <h2 class="text-sm font-bold text-slate-700">Status Distribution</h2>
+          <div class="p-6 bg-white border border-slate-200/80 h-full rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
               </div>
-              ${total === 0
-                ? UI.emptyState('bar-chart-2','No cables yet','Add cables via Cable Inventory')
-                : `<div>
-                    ${UI.progressRow('In Godown',    inGodown, total, 'progress-success')}
-                    ${UI.progressRow('Sent to Site', onSite,   total, 'progress-warning')}
-                    ${UI.progressRow('Activated',    activated,total,  'progress-primary')}
-                   </div>`
-              }
+              <h2 class="text-sm font-bold text-slate-700">Status Distribution</h2>
+            </div>
+            <div class="space-y-4 flex-1 flex flex-col justify-center">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">In Godown</span>
+                  <span class="text-emerald-600">${inGodown} / ${total} (${total ? Math.round((inGodown/total)*100) : 0}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (inGodown/total)*100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">Sent to Site</span>
+                  <span class="text-amber-600">${onSite} / ${total} (${total ? Math.round((onSite/total)*100) : 0}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (onSite/total)*100 : 0}%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1 tracking-tight">
+                  <span class="text-slate-600">Activated</span>
+                  <span class="text-pink-600">${activated} / ${total} (${total ? Math.round((activated/total)*100) : 0}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/40">
+                  <div class="bg-gradient-to-r from-pink-400 to-pink-600 h-full rounded-full transition-all duration-500" style="width: ${total ? (activated/total)*100 : 0}%"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Recent Activity -->
         <div class="lg:col-span-3">
-          <div class="card no-hover bg-white border border-slate-200 h-full">
-            <div class="p-5">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <i data-lucide="activity" class="w-4 h-4 text-slate-600"></i>
-                  </div>
-                  <h2 class="text-sm font-bold text-slate-700">Recent Activity</h2>
+          <div class="p-6 bg-white border border-slate-200/80 h-full rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100/50">
+                  <i data-lucide="activity" class="w-4 h-4 text-slate-600"></i>
                 </div>
-                <button class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1" onclick="App.navigateTo('logs')">
-                  View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                </button>
+                <h2 class="text-sm font-bold text-slate-700">Recent Activity</h2>
               </div>
-              <div class="divide-y divide-slate-100">
-                ${logs.length
-                  ? logs.map(l => DashboardPage._logRow(l)).join('')
-                  : UI.emptyState('inbox','No activity yet','Scan operations appear here')}
-              </div>
+              <button class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50/50 px-3 py-1 rounded-xl transition-all" onclick="App.navigateTo('logs')">
+                View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <div class="divide-y divide-slate-100">
+              ${logs.length
+                ? logs.map(l => DashboardPage._logRow(l)).join('')
+                : UI.emptyState('inbox','No activity yet','Scan operations appear here')}
             </div>
           </div>
         </div>
-      </div>
     </div>`;
 
     if (window.lucide && container) lucide.createIcons({ nodes: [container] });
@@ -243,5 +297,3 @@ const DashboardPage = {
     </div>`;
   },
 };
-
-window.DashboardPage = DashboardPage;
