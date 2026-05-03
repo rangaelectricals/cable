@@ -283,14 +283,14 @@ const DashboardPage = {
 
   _logRow(log) {
     const map = {
-      ACTIVATE:         { icon:'check-circle', cls:'badge-primary', color:'text-indigo-600' },
-      SEND_TO_SITE:     { icon:'truck',         cls:'badge-warning', color:'text-amber-600' },
-      RETURN_TO_GODOWN: { icon:'warehouse',     cls:'badge-success', color:'text-emerald-600' },
+      ACTIVATE:         { icon:'check-circle', bg:'bg-indigo-50', border:'border-indigo-100', color:'text-indigo-600', badgeCls:'bg-indigo-50 text-indigo-600 border-indigo-100' },
+      SEND_TO_SITE:     { icon:'truck',        bg:'bg-amber-50',  border:'border-amber-100',  color:'text-amber-600',  badgeCls:'bg-amber-50 text-amber-600 border-amber-100' },
+      RETURN_TO_GODOWN: { icon:'warehouse',    bg:'bg-emerald-50',border:'border-emerald-100',color:'text-emerald-600',badgeCls:'bg-emerald-50 text-emerald-600 border-emerald-100' },
     };
-    const m = map[log.action] || { icon:'circle', cls:'badge-ghost', color:'text-slate-400' };
+    const m = map[log.action] || { icon:'circle', bg:'bg-slate-50', border:'border-slate-100', color:'text-slate-400', badgeCls:'bg-slate-50 text-slate-400 border-slate-100' };
     return `
     <div class="flex items-center gap-3 py-3 px-1 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors rounded-lg">
-      <div class="w-10 h-10 rounded-xl ${m.cls.replace('badge-','bg-').replace('success','emerald-50').replace('warning','amber-50').replace('info','indigo-50').replace('error','rose-50')} flex items-center justify-center shrink-0 border border-slate-100 shadow-sm">
+      <div class="w-10 h-10 rounded-xl ${m.bg} flex items-center justify-center shrink-0 border ${m.border} shadow-sm">
         <i data-lucide="${m.icon}" class="w-5 h-5 ${m.color}"></i>
       </div>
       <div class="flex-1 min-w-0">
@@ -319,7 +319,7 @@ const DashboardPage = {
         </div>
       </div>
       <div class="hidden sm:block">
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full ${m.cls.replace('badge-','bg-').replace('success','emerald-50 text-emerald-600 border-emerald-100').replace('warning','amber-50 text-amber-600 border-amber-100').replace('info','indigo-50 text-indigo-600 border-indigo-100').replace('error','rose-50 text-rose-600 border-rose-100')} border text-[9px] font-black uppercase tracking-widest shadow-sm">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full ${m.badgeCls} border text-[9px] font-black uppercase tracking-widest shadow-sm">
           ${log.action.replace(/_/g,' ')}
         </span>
       </div>
