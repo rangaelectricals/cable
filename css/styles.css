@@ -245,7 +245,7 @@ input:focus, select:focus, textarea:focus {
 	}
 
 	/* Stack buttons properly on mobile */
-	.flex-col.md\\:flex-row {
+	.flex-col.md\:flex-row {
 		gap: 0.75rem;
 	}
 
@@ -269,14 +269,14 @@ input:focus, select:focus, textarea:focus {
 /* Ensure proper grid spacing across breakpoints */
 @media (min-width: 640px) {
 	/* Small screens */
-	.gap-4.sm\\:gap-6 {
+	.gap-4.sm\:gap-6 {
 		gap: 1.5rem;
 	}
 }
 
 @media (min-width: 1024px) {
 	/* Large screens */
-	.gap-4.sm\\:gap-6.lg\\:gap-8 {
+	.gap-4.sm\:gap-6.lg\:gap-8 {
 		gap: 2rem;
 	}
 }
